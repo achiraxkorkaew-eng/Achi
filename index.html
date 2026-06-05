@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบบันทึกรายรับ-รายจ่าย & งวดงาน & หุ้น v7 (Clean Pastel Edition for Roh)</title>
+    <title>ระบบบันทึกรายรับ-รายจ่าย & งวดงาน & หุ้น v7 (Responsive Pastel)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -55,14 +55,22 @@
             box-shadow: 0 0 0 4px rgba(91, 92, 206, 0.1);
         }
 
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        /* Scrollbar styles for better mobile/desktop hybrid */
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        @media (min-width: 768px) { ::-webkit-scrollbar { width: 6px; height: 6px; } }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
         .custom-scroll::-webkit-scrollbar-track { background: #f7f8fc; border-radius: 10px; }
+        
+        /* Hide scrollbar for tabs on mobile but keep it scrollable */
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-        th { color: var(--text-muted); font-weight: 700; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.05em; padding-bottom: 1rem; border-bottom: 1px solid #f1f3f5; }
-        td { border-bottom: 1px solid #f8f9fa; padding: 1rem 0.5rem; }
+        th { color: var(--text-muted); font-weight: 700; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.05em; padding-bottom: 1rem; border-bottom: 1px solid #f1f3f5; white-space: nowrap; }
+        td { border-bottom: 1px solid #f8f9fa; padding: 1rem 0.5rem; white-space: nowrap; }
+        /* Allow detail columns to wrap slightly if needed on larger screens */
+        td.wrap-text { white-space: normal; min-width: 150px; }
         tr:hover td { background-color: #fafbfc; }
         
         .badge-purple { background-color: var(--pastel-purple); color: var(--pastel-purple-text); }
@@ -72,39 +80,39 @@
         .badge-yellow { background-color: var(--pastel-yellow); color: var(--pastel-yellow-text); }
     </style>
 </head>
-<body class="min-h-screen py-8">
+<body class="min-h-screen py-4 md:py-8">
 
-<div id="toast-container" class="fixed bottom-5 right-5 z-50 space-y-2 pointer-events-none font-sarabun"></div>
+<div id="toast-container" class="fixed bottom-5 right-5 z-50 space-y-2 pointer-events-none font-sarabun w-max max-w-[90vw]"></div>
 
 <!-- Confirm Modal -->
-<div id="custom-confirm-modal" class="hidden fixed inset-0 bg-slate-900/20 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-opacity">
-    <div class="card-soft p-8 max-w-sm w-full transform scale-95 transition-all duration-200">
+<div id="custom-confirm-modal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-opacity">
+    <div class="card-soft p-6 md:p-8 max-w-sm w-full transform scale-95 transition-all duration-200">
         <div class="text-xl font-bold text-slate-800 flex items-center gap-2 mb-2">
             <span>❓</span><span id="confirm-title">ยืนยันการดำเนินการ</span>
         </div>
         <p class="text-sm text-slate-500 mt-2 font-medium" id="confirm-message">มึงแน่ใจนะเว้ยว่าจะลบรายการนี้ถาวร?</p>
-        <div class="flex justify-end gap-3 mt-8">
-            <button id="confirm-cancel-btn" class="px-5 py-2.5 rounded-full text-sm font-bold text-slate-500 bg-slate-100 hover:bg-slate-200">ยกเลิก</button>
-            <button id="confirm-ok-btn" class="px-5 py-2.5 rounded-full text-sm font-bold text-white bg-rose-500 hover:bg-rose-600 shadow-md shadow-rose-500/30">ยืนยันลบข้อมูล</button>
+        <div class="flex flex-col-reverse sm:flex-row justify-end gap-3 mt-6 md:mt-8">
+            <button id="confirm-cancel-btn" class="px-5 py-3 sm:py-2.5 rounded-xl sm:rounded-full text-sm font-bold text-slate-500 bg-slate-100 hover:bg-slate-200">ยกเลิก</button>
+            <button id="confirm-ok-btn" class="px-5 py-3 sm:py-2.5 rounded-xl sm:rounded-full text-sm font-bold text-white bg-rose-500 hover:bg-rose-600 shadow-md shadow-rose-500/30">ยืนยันลบข้อมูล</button>
         </div>
     </div>
 </div>
 
 <!-- BACKUP MODAL -->
-<div id="backup-modal" class="hidden fixed inset-0 bg-slate-900/20 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-    <div class="card-soft p-8 max-w-md w-full relative">
-        <button onclick="closeBackupModal()" class="absolute top-5 right-5 bg-slate-100 hover:bg-slate-200 rounded-full w-8 h-8 flex items-center justify-center text-slate-500 font-bold transition">✕</button>
+<div id="backup-modal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+    <div class="card-soft p-5 md:p-8 max-w-md w-full relative max-h-[90vh] overflow-y-auto">
+        <button onclick="closeBackupModal()" class="absolute top-4 right-4 bg-slate-100 hover:bg-slate-200 rounded-full w-8 h-8 flex items-center justify-center text-slate-500 font-bold transition">✕</button>
         
-        <h2 class="text-xl font-extrabold text-slate-800 mb-2 flex items-center gap-2">💾 จัดการข้อมูล (ซิงค์ผ่านคลาวด์)</h2>
-        <p class="text-xs font-semibold text-slate-400 mb-6 pb-4 border-b border-slate-100">สำรองและกู้คืนข้อมูลของมึงผ่าน Google Sheets</p>
+        <h2 class="text-lg md:text-xl font-extrabold text-slate-800 mb-2 flex items-center gap-2 mt-2 md:mt-0">💾 จัดการข้อมูล</h2>
+        <p class="text-xs font-semibold text-slate-400 mb-5 pb-4 border-b border-slate-100">สำรองและกู้คืนข้อมูลของมึงผ่าน Google Sheets</p>
         
         <div class="mb-6 space-y-4">
             <h3 class="text-sm font-bold text-slate-700">1. เซฟลงเครื่อง (Offline)</h3>
             <div class="flex gap-3">
-                <button onclick="downloadBackupJSON()" class="flex-1 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold py-3 rounded-xl shadow-md flex items-center justify-center gap-2 transition">
+                <button onclick="downloadBackupJSON()" class="flex-1 bg-slate-900 hover:bg-slate-800 text-white text-xs md:text-sm font-bold py-3 rounded-xl shadow-md flex items-center justify-center gap-2 transition">
                     <span>📥</span> โหลดไฟล์
                 </button>
-                <button onclick="document.getElementById('import-file').click()" class="flex-1 bg-white border-2 border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-bold py-3 rounded-xl flex items-center justify-center gap-2 transition">
+                <button onclick="document.getElementById('import-file').click()" class="flex-1 bg-white border-2 border-slate-200 text-slate-700 hover:bg-slate-50 text-xs md:text-sm font-bold py-3 rounded-xl flex items-center justify-center gap-2 transition">
                     <span>📤</span> กู้คืนไฟล์
                 </button>
                 <input type="file" id="import-file" class="hidden" accept=".json" onchange="uploadBackupJSON(event)">
@@ -114,16 +122,17 @@
         <div class="space-y-4">
             <h3 class="text-sm font-bold text-slate-700">2. ซิงค์คลาวด์ (Google Sheets Web App)</h3>
             <div>
-                <label class="block text-xs font-bold text-slate-400 mb-2">Web App URL (ต้องลงท้ายด้วย /exec)</label>
-                <div class="flex gap-2">
-                    <input type="text" id="gas-url-input" class="flex-1 px-4 py-2.5 text-xs font-medium bg-[#f7f8fc]" placeholder="https://script.google.com/macros/s/.../exec">
-                    <button onclick="saveGasUrl()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold px-4 rounded-xl transition">บันทึก URL</button>
+                <label class="block text-[10px] md:text-xs font-bold text-slate-400 mb-2">Web App URL (ต้องลงท้ายด้วย /exec)</label>
+                <div class="flex flex-col sm:flex-row gap-2">
+                    <input type="text" id="gas-url-input" class="flex-1 px-4 py-2.5 text-xs font-medium bg-[#f7f8fc]" value="https://script.google.com/macros/s/AKfycbwoAAXkMTl3Vx-cyZWUgQnisXOSfEeIw_-nUFXq30-HTQYTuR4cPO4jiR-NGV6l_JI/exec" placeholder="https://script.google.com/macros/s/.../exec">
+                    <button onclick="saveGasUrl()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold px-4 py-2.5 rounded-xl transition">บันทึก URL</button>
                 </div>
+                <p class="text-[10px] text-slate-500 mt-2">💡 หากใส่ URL ไว้ ระบบจะ **Auto-Sync** ขึ้น Google Sheets ให้อัตโนมัติทุกครั้งที่บันทึกข้อมูล</p>
             </div>
             
             <div class="grid grid-cols-2 gap-3 mt-4">
                 <button onclick="pushToGoogleSheets()" id="btn-push-sheet" class="bg-[#dcf4e6] text-[#2d8a5c] hover:bg-[#cbf0db] text-xs font-extrabold py-3.5 rounded-xl flex items-center justify-center gap-2 transition">
-                    <span>☁️ ⬆️</span> ดันขึ้น Sheet
+                    <span>☁️ ⬆️</span> ดันขึ้น Sheet (Manual)
                 </button>
                 <button onclick="pullFromGoogleSheets()" id="btn-pull-sheet" class="bg-[#fff0d4] text-[#c28b27] hover:bg-[#ffe5be] text-xs font-extrabold py-3.5 rounded-xl flex items-center justify-center gap-2 transition">
                     <span>☁️ ⬇️</span> ดึงมาทับเว็บ
@@ -136,36 +145,39 @@
 <div class="container mx-auto px-4 max-w-7xl font-sarabun">
     
     <!-- Top Nav / Header -->
-    <header class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
-        <div class="flex items-center gap-4">
-            <div class="w-12 h-12 bg-slate-900 rounded-2xl flex items-center justify-center text-white text-xl shadow-lg shadow-slate-900/20">🚀</div>
+    <header class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 md:gap-6 mb-6 md:mb-8">
+        <div class="flex items-center gap-3 md:gap-4">
+            <div class="w-10 h-10 md:w-12 md:h-12 bg-slate-900 rounded-xl md:rounded-2xl flex items-center justify-center text-white text-lg md:text-xl shadow-lg shadow-slate-900/20">🚀</div>
             <div>
-                <h1 class="text-2xl font-extrabold tracking-tight text-slate-900">Finance & Track</h1>
-                <p class="text-slate-400 font-semibold text-xs mt-0.5">Hi, ไอ้เหี้ยโร๊ะ 👋 Clean Pastel Edition</p>
+                <h1 class="text-xl md:text-2xl font-extrabold tracking-tight text-slate-900 flex items-center gap-2">
+                    Finance & Track
+                    <span id="sync-indicator" class="text-[10px] md:text-xs font-bold transition-all"></span>
+                </h1>
+                <p class="text-slate-400 font-semibold text-[10px] md:text-xs mt-0.5">Hi, ไอ้เหี้ยโร๊ะ 👋 Clean Pastel Edition</p>
             </div>
         </div>
         
-        <div class="flex flex-wrap items-center gap-3">
-            <button onclick="openBackupModal()" class="bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 font-bold py-3 px-5 rounded-full text-sm flex items-center gap-2 transition shadow-sm">
-                <span>⚙️</span> Data Settings (ซิงค์ชีต)
+        <div class="flex flex-row flex-wrap items-center gap-2 md:gap-3 w-full md:w-auto justify-between md:justify-end">
+            <button onclick="openBackupModal()" class="flex-1 md:flex-none justify-center bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 font-bold py-2.5 md:py-3 px-4 md:px-5 rounded-full text-xs md:text-sm flex items-center gap-2 transition shadow-sm">
+                <span>⚙️</span> <span class="hidden sm:inline">Data Settings (ซิงค์ชีต)</span><span class="sm:hidden">ซิงค์ชีต</span>
             </button>
-            <!-- Bigger Month/Year Selector -->
-            <div class="bg-white p-2 rounded-full shadow-md border border-slate-100 flex items-center gap-1">
-                <select id="global-month" onchange="onGlobalFilterChange()" class="bg-[#f0f7ff] text-[#3b7cce] hover:bg-[#e0f0ff] font-black text-base md:text-lg rounded-full px-5 py-2 cursor-pointer transition outline-none">
-                    <option value="01" selected>มกราคม</option>
-                    <option value="02">กุมภาพันธ์</option>
-                    <option value="03">มีนาคม</option>
-                    <option value="04">เมษายน</option>
-                    <option value="05">พฤษภาคม</option>
-                    <option value="06">มิถุนายน</option>
-                    <option value="07">กรกฎาคม</option>
-                    <option value="08">สิงหาคม</option>
-                    <option value="09">กันยายน</option>
-                    <option value="10">ตุลาคม</option>
-                    <option value="11">พฤศจิกายน</option>
-                    <option value="12">ธันวาคม</option>
+            <!-- Month/Year Selector -->
+            <div class="bg-white p-1.5 md:p-2 rounded-full shadow-sm md:shadow-md border border-slate-100 flex items-center gap-1">
+                <select id="global-month" onchange="onGlobalFilterChange()" class="bg-[#f0f7ff] text-[#3b7cce] hover:bg-[#e0f0ff] font-black text-xs md:text-base rounded-full px-3 py-1.5 md:px-5 md:py-2 cursor-pointer transition outline-none">
+                    <option value="01" selected>ม.ค.</option>
+                    <option value="02">ก.พ.</option>
+                    <option value="03">มี.ค.</option>
+                    <option value="04">เม.ย.</option>
+                    <option value="05">พ.ค.</option>
+                    <option value="06">มิ.ย.</option>
+                    <option value="07">ก.ค.</option>
+                    <option value="08">ส.ค.</option>
+                    <option value="09">ก.ย.</option>
+                    <option value="10">ต.ค.</option>
+                    <option value="11">พ.ย.</option>
+                    <option value="12">ธ.ค.</option>
                 </select>
-                <select id="global-year" onchange="onGlobalFilterChange()" class="bg-[#f0f0ff] text-[#5b5cce] hover:bg-[#e5e5ff] font-black text-base md:text-lg rounded-full px-5 py-2 cursor-pointer transition outline-none">
+                <select id="global-year" onchange="onGlobalFilterChange()" class="bg-[#f0f0ff] text-[#5b5cce] hover:bg-[#e5e5ff] font-black text-xs md:text-base rounded-full px-3 py-1.5 md:px-5 md:py-2 cursor-pointer transition outline-none">
                     <option value="2024">2024</option>
                     <option value="2025">2025</option>
                     <option value="2026" selected>2026</option>
@@ -176,95 +188,92 @@
     </header>
 
     <!-- Main Tabs -->
-    <div class="flex gap-2 overflow-x-auto pb-4 mb-6 scrollbar-thin items-center bg-white p-2 rounded-[2rem] w-fit shadow-sm border border-slate-100/50">
-        <button class="tab-btn active bg-slate-900 text-white px-6 py-2.5 rounded-full font-bold text-sm whitespace-nowrap shadow-md shadow-slate-900/20 transition-all duration-200" onclick="switchTab(event, 'tab1')">💰 รายรับงาน</button>
-        <button class="tab-btn bg-transparent text-slate-500 hover:text-slate-900 hover:bg-slate-50 px-6 py-2.5 rounded-full font-semibold text-sm whitespace-nowrap transition-all duration-200" onclick="switchTab(event, 'tab2')">👷‍♂️ ค้างช่างมี้</button>
-        <button class="tab-btn bg-transparent text-slate-500 hover:text-slate-900 hover:bg-slate-50 px-6 py-2.5 rounded-full font-semibold text-sm whitespace-nowrap transition-all duration-200" onclick="switchTab(event, 'tab3')">📂 ค้างจ่ายอื่นๆ</button>
-        <button class="tab-btn bg-transparent text-slate-500 hover:text-slate-900 hover:bg-slate-50 px-6 py-2.5 rounded-full font-semibold text-sm whitespace-nowrap transition-all duration-200" onclick="switchTab(event, 'tab4')">🛒 จ่ายส่วนตัว</button>
-        <button class="tab-btn bg-transparent text-slate-500 hover:text-slate-900 hover:bg-slate-50 px-6 py-2.5 rounded-full font-semibold text-sm whitespace-nowrap transition-all duration-200" onclick="switchTab(event, 'tab5')">📈 หุ้น</button>
-        <button class="tab-btn bg-transparent text-slate-500 hover:text-slate-900 hover:bg-slate-50 px-6 py-2.5 rounded-full font-semibold text-sm whitespace-nowrap transition-all duration-200" onclick="switchTab(event, 'tab6')">📄 ภาษี</button>
-        <button class="tab-btn bg-transparent text-slate-500 hover:text-slate-900 hover:bg-slate-50 px-6 py-2.5 rounded-full font-semibold text-sm whitespace-nowrap transition-all duration-200" onclick="switchTab(event, 'tab7')">📊 แดชบอร์ด</button>
+    <div class="flex gap-1.5 md:gap-2 overflow-x-auto hide-scrollbar pb-2 mb-6 items-center bg-white p-1.5 md:p-2 rounded-2xl md:rounded-[2rem] w-full md:w-fit shadow-sm border border-slate-100/50">
+        <button class="tab-btn active bg-slate-900 text-white px-4 md:px-6 py-2 md:py-2.5 rounded-xl md:rounded-full font-bold text-xs md:text-sm whitespace-nowrap shadow-md shadow-slate-900/20 transition-all duration-200" onclick="switchTab(event, 'tab1')">💰 รายรับงาน</button>
+        <button class="tab-btn bg-transparent text-slate-500 hover:text-slate-900 hover:bg-slate-50 px-4 md:px-6 py-2 md:py-2.5 rounded-xl md:rounded-full font-semibold text-xs md:text-sm whitespace-nowrap transition-all duration-200" onclick="switchTab(event, 'tab2')">👷‍♂️ ค้างช่างมี้</button>
+        <button class="tab-btn bg-transparent text-slate-500 hover:text-slate-900 hover:bg-slate-50 px-4 md:px-6 py-2 md:py-2.5 rounded-xl md:rounded-full font-semibold text-xs md:text-sm whitespace-nowrap transition-all duration-200" onclick="switchTab(event, 'tab3')">📂 ค้างจ่ายอื่นๆ</button>
+        <button class="tab-btn bg-transparent text-slate-500 hover:text-slate-900 hover:bg-slate-50 px-4 md:px-6 py-2 md:py-2.5 rounded-xl md:rounded-full font-semibold text-xs md:text-sm whitespace-nowrap transition-all duration-200" onclick="switchTab(event, 'tab4')">🛒 จ่ายส่วนตัว</button>
+        <button class="tab-btn bg-transparent text-slate-500 hover:text-slate-900 hover:bg-slate-50 px-4 md:px-6 py-2 md:py-2.5 rounded-xl md:rounded-full font-semibold text-xs md:text-sm whitespace-nowrap transition-all duration-200" onclick="switchTab(event, 'tab5')">📈 หุ้น</button>
+        <button class="tab-btn bg-transparent text-slate-500 hover:text-slate-900 hover:bg-slate-50 px-4 md:px-6 py-2 md:py-2.5 rounded-xl md:rounded-full font-semibold text-xs md:text-sm whitespace-nowrap transition-all duration-200" onclick="switchTab(event, 'tab6')">📄 ภาษี</button>
+        <button class="tab-btn bg-transparent text-slate-500 hover:text-slate-900 hover:bg-slate-50 px-4 md:px-6 py-2 md:py-2.5 rounded-xl md:rounded-full font-semibold text-xs md:text-sm whitespace-nowrap transition-all duration-200" onclick="switchTab(event, 'tab7')">📊 แดชบอร์ด</button>
     </div>
 
-    <!-- TAB 1 -->
+    <!-- TAB 1: รายรับงาน -->
     <div id="tab1" class="tab-panel block">
         <!-- Summary Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <div class="card-soft bg-[#f0f0ff] p-6 flex flex-col justify-center relative overflow-hidden group">
-                <div class="absolute -right-4 -top-4 w-20 h-20 bg-[#e5e5ff] rounded-full opacity-50 group-hover:scale-150 transition-transform duration-500"></div>
-                <span class="text-[10px] font-extrabold uppercase tracking-widest text-[#5b5cce] relative z-10">รายรับรวมเดือนนี้</span>
-                <div class="text-3xl font-black mt-2 text-[#3b3c9e] relative z-10" id="t1-month-income">0</div>
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 mb-6 md:mb-8">
+            <div class="card-soft bg-[#f0f0ff] p-4 md:p-6 flex flex-col justify-center relative overflow-hidden group">
+                <span class="text-[9px] md:text-[10px] font-extrabold uppercase tracking-widest text-[#5b5cce] relative z-10">รายรับรวมเดือนนี้</span>
+                <div class="text-xl md:text-3xl font-black mt-1 md:mt-2 text-[#3b3c9e] relative z-10 truncate" id="t1-month-income">0</div>
             </div>
-            <div class="card-soft bg-[#fff0f4] p-6 flex flex-col justify-center relative overflow-hidden group">
-                <div class="absolute -right-4 -top-4 w-20 h-20 bg-[#ffe0e9] rounded-full opacity-50 group-hover:scale-150 transition-transform duration-500"></div>
-                <span class="text-[10px] font-extrabold uppercase tracking-widest text-[#d94b68] relative z-10">รายจ่ายงานเดือนนี้</span>
-                <div class="text-3xl font-black mt-2 text-[#b02f4a] relative z-10" id="t1-month-job-expense">0</div>
+            <div class="card-soft bg-[#fff0f4] p-4 md:p-6 flex flex-col justify-center relative overflow-hidden group">
+                <span class="text-[9px] md:text-[10px] font-extrabold uppercase tracking-widest text-[#d94b68] relative z-10">รายจ่ายงานเดือนนี้</span>
+                <div class="text-xl md:text-3xl font-black mt-1 md:mt-2 text-[#b02f4a] relative z-10 truncate" id="t1-month-job-expense">0</div>
             </div>
-            <div class="card-soft bg-[#f0f7ff] p-6 flex flex-col justify-center relative overflow-hidden group">
-                <div class="absolute -right-4 -top-4 w-20 h-20 bg-[#e0f0ff] rounded-full opacity-50 group-hover:scale-150 transition-transform duration-500"></div>
-                <span class="text-[10px] font-extrabold uppercase tracking-widest text-[#3b7cce] relative z-10" id="t1-year-summary-title">สุทธิสะสมปีนี้</span>
-                <div class="text-3xl font-black mt-2 text-[#245ba3] relative z-10" id="t1-year-net-accumulated">0</div>
+            <div class="card-soft bg-[#f0f7ff] p-4 md:p-6 flex flex-col justify-center relative overflow-hidden group">
+                <span class="text-[9px] md:text-[10px] font-extrabold uppercase tracking-widest text-[#3b7cce] relative z-10" id="t1-year-summary-title">สุทธิสะสมปีนี้</span>
+                <div class="text-xl md:text-3xl font-black mt-1 md:mt-2 text-[#245ba3] relative z-10 truncate" id="t1-year-net-accumulated">0</div>
             </div>
-            <div class="card-soft p-6 flex flex-col justify-center border-l-4 border-l-slate-800">
-                <span class="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">รายรับสุทธิหน้างาน</span>
-                <div class="text-3xl font-black mt-2 text-slate-800" id="t1-month-net-income">0</div>
-                <div class="text-[10px] mt-2 font-bold text-slate-400" id="t1-year-display">พ.ศ. 2569</div>
+            <div class="card-soft p-4 md:p-6 flex flex-col justify-center border-l-4 border-l-slate-800">
+                <span class="text-[9px] md:text-[10px] font-extrabold uppercase tracking-widest text-slate-400">รายรับสุทธิหน้างาน</span>
+                <div class="text-xl md:text-3xl font-black mt-1 md:mt-2 text-slate-800 truncate" id="t1-month-net-income">0</div>
+                <div class="text-[9px] md:text-[10px] mt-1 md:mt-2 font-bold text-slate-400" id="t1-year-display">พ.ศ. 2569</div>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
             <!-- Left Column: Forms -->
-            <div class="space-y-8">
-                <div class="card-soft p-7">
-                    <h2 class="text-base font-extrabold text-slate-800 mb-6 flex items-center gap-2">📝 บันทึกแมนนวล</h2>
+            <div class="space-y-6 md:space-y-8">
+                <div class="card-soft p-5 md:p-7">
+                    <h2 class="text-sm md:text-base font-extrabold text-slate-800 mb-4 md:mb-6 flex items-center gap-2">📝 บันทึกแมนนวล</h2>
                     <form id="income-form" onsubmit="addIncome(event)" class="space-y-4">
                         <div>
                             <label class="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">ประเภท</label>
-                            <select class="w-full px-4 py-3 text-sm font-bold cursor-pointer" id="inc-type"></select>
+                            <select class="w-full px-4 py-3 text-xs md:text-sm font-bold cursor-pointer" id="inc-type"></select>
                         </div>
                         <div>
                             <label class="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">รายละเอียดงาน</label>
-                            <input type="text" class="w-full px-4 py-3 text-sm font-bold" id="inc-detail" placeholder="เช่น ค่าสำรวจ" required>
+                            <input type="text" class="w-full px-4 py-3 text-xs md:text-sm font-bold" id="inc-detail" placeholder="เช่น ค่าสำรวจ" required>
                         </div>
-                        <div class="grid grid-cols-2 gap-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">รายรับ (฿)</label>
-                                <input type="number" step="0.01" class="w-full px-4 py-3 text-sm font-black text-[#2d8a5c] bg-[#f0fcf6] focus:bg-white" id="inc-amount" placeholder="0.00" value="0" required>
+                                <input type="number" step="0.01" class="w-full px-4 py-3 text-xs md:text-sm font-black text-[#2d8a5c] bg-[#f0fcf6] focus:bg-white" id="inc-amount" placeholder="0.00" value="0" required>
                             </div>
                             <div>
                                 <label class="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">ต้นทุน (฿)</label>
-                                <input type="number" step="0.01" class="w-full px-4 py-3 text-sm font-black text-[#d94b68] bg-[#fff0f4] focus:bg-white" id="inc-expense" placeholder="0.00" value="0" required>
+                                <input type="number" step="0.01" class="w-full px-4 py-3 text-xs md:text-sm font-black text-[#d94b68] bg-[#fff0f4] focus:bg-white" id="inc-expense" placeholder="0.00" value="0" required>
                             </div>
                         </div>
-                        <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-extrabold py-3.5 rounded-xl mt-4 shadow-md shadow-slate-900/20 transition-all">บันทึกรายการ</button>
+                        <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-extrabold py-3.5 rounded-xl mt-2 shadow-md shadow-slate-900/20 transition-all text-xs md:text-sm">บันทึกรายการ</button>
                     </form>
                 </div>
 
-                <div class="card-soft p-7">
-                    <h2 class="text-base font-extrabold text-slate-800 mb-5 flex items-center justify-between">
+                <div class="card-soft p-5 md:p-7">
+                    <h2 class="text-sm md:text-base font-extrabold text-slate-800 mb-4 md:mb-5 flex items-center justify-between">
                         <span>⚙️ จัดการประเภทงาน</span>
-                        <span class="text-xs bg-slate-100 text-slate-600 py-1 px-2.5 rounded-full font-bold" id="cat-count-badge">0</span>
+                        <span class="text-[10px] md:text-xs bg-slate-100 text-slate-600 py-1 px-2.5 rounded-full font-bold" id="cat-count-badge">0</span>
                     </h2>
-                    <div class="flex gap-2 mb-5">
-                        <input type="text" id="new-cat-input" placeholder="พิมพ์ชื่อประเภท..." class="flex-1 px-4 py-2 text-sm font-bold">
-                        <button onclick="addJobCategory()" class="bg-slate-100 hover:bg-slate-200 text-slate-800 font-extrabold text-xs px-4 py-2 rounded-xl transition">เพิ่ม</button>
+                    <div class="flex flex-col sm:flex-row gap-2 mb-4 md:mb-5">
+                        <input type="text" id="new-cat-input" placeholder="พิมพ์ชื่อประเภท..." class="flex-1 px-4 py-2.5 text-xs md:text-sm font-bold">
+                        <button onclick="addJobCategory()" class="bg-slate-100 hover:bg-slate-200 text-slate-800 font-extrabold text-xs px-4 py-2.5 rounded-xl transition">เพิ่ม</button>
                     </div>
                     <div class="max-h-48 overflow-y-auto space-y-1.5 custom-scroll pr-2" id="category-list-container"></div>
                 </div>
             </div>
 
             <!-- Right Column: Tables & Charts -->
-            <div class="lg:col-span-2 space-y-8">
-                <div class="card-soft p-7">
-                    <div class="flex justify-between items-end mb-6">
+            <div class="lg:col-span-2 space-y-6 md:space-y-8">
+                <div class="card-soft p-0 md:p-7 overflow-hidden">
+                    <div class="p-5 md:p-0 flex justify-between items-end mb-4 md:mb-6">
                         <div>
-                            <h2 class="text-base font-extrabold text-slate-800">ตารางรายรับเดือนนี้</h2>
-                            <span class="text-[10px] font-bold text-slate-400 mt-1 block tracking-wider uppercase">เฉพาะแมนนวลและงวดที่ชำระแล้ว</span>
+                            <h2 class="text-sm md:text-base font-extrabold text-slate-800">ตารางรายรับเดือนนี้</h2>
+                            <span class="text-[9px] md:text-[10px] font-bold text-slate-400 mt-1 block tracking-wider uppercase">เฉพาะแมนนวลและงวดที่ชำระแล้ว</span>
                         </div>
-                        <button class="bg-slate-100 hover:bg-slate-200 text-slate-600 text-[10px] font-extrabold px-4 py-2 rounded-full uppercase tracking-wider transition" onclick="exportPDF()">Print</button>
+                        <button class="bg-slate-100 hover:bg-slate-200 text-slate-600 text-[9px] md:text-[10px] font-extrabold px-3 py-1.5 md:px-4 md:py-2 rounded-full uppercase tracking-wider transition" onclick="exportPDF()">Print</button>
                     </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse">
+                    <div class="overflow-x-auto px-5 pb-5 md:px-0 md:pb-0">
+                        <table class="w-full min-w-max text-left border-collapse">
                             <thead>
                                 <tr>
                                     <th>โครงการ</th>
@@ -275,18 +284,18 @@
                                     <th class="text-center">จัดการ</th>
                                 </tr>
                             </thead>
-                            <tbody id="income-table-body" class="text-sm font-medium text-slate-600"></tbody>
+                            <tbody id="income-table-body" class="text-xs md:text-sm font-medium text-slate-600"></tbody>
                         </table>
                     </div>
                 </div>
 
-                <div class="card-soft p-7">
-                    <h3 class="text-base font-extrabold text-slate-800 mb-6 flex items-center justify-between">
-                        <span>📊 สรุปยอดสุทธิรายโครงการ (Bubble)</span>
-                        <span class="text-[10px] badge-blue px-3 py-1 rounded-full font-bold uppercase tracking-wider" id="t1-year-bubble-title">2569</span>
+                <div class="card-soft p-5 md:p-7">
+                    <h3 class="text-sm md:text-base font-extrabold text-slate-800 mb-4 md:mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <span>📊 สรุปยอดสุทธิรายโครงการ</span>
+                        <span class="text-[9px] md:text-[10px] badge-blue px-3 py-1 rounded-full font-bold uppercase tracking-wider w-fit" id="t1-year-bubble-title">2569</span>
                     </h3>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
-                        <div class="md:col-span-1 bg-[#f7f8fc] overflow-y-auto max-h-[250px] rounded-2xl p-4 custom-scroll">
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-center">
+                        <div class="lg:col-span-1 bg-[#f7f8fc] overflow-y-auto max-h-[200px] md:max-h-[250px] rounded-2xl p-4 custom-scroll">
                             <table class="w-full text-left border-collapse text-xs">
                                 <thead>
                                     <tr>
@@ -297,7 +306,7 @@
                                 <tbody id="project-yearly-breakdown-body" class="font-bold text-slate-600"></tbody>
                             </table>
                         </div>
-                        <div class="md:col-span-2 relative w-full h-[250px]">
+                        <div class="lg:col-span-2 relative w-full h-[200px] md:h-[250px]">
                             <canvas id="projectBubbleChart"></canvas>
                         </div>
                     </div>
@@ -306,56 +315,56 @@
         </div>
     </div>
 
-    <!-- TAB 2 -->
+    <!-- TAB 2: ช่างมี้ -->
     <div id="tab2" class="tab-panel hidden">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div class="card-soft bg-[#fff0f4] p-6 flex flex-col justify-center relative overflow-hidden group">
-                <span class="text-[10px] font-extrabold uppercase tracking-widest text-[#d94b68] relative z-10">ค้างช่างมี้สะสม</span>
-                <div class="text-3xl font-black mt-2 text-[#b02f4a] relative z-10" id="t2-total-debt">0</div>
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-6 mb-6 md:mb-8">
+            <div class="card-soft bg-[#fff0f4] p-4 md:p-6 flex flex-col justify-center">
+                <span class="text-[9px] md:text-[10px] font-extrabold uppercase tracking-widest text-[#d94b68]">ค้างช่างมี้สะสม</span>
+                <div class="text-xl md:text-3xl font-black mt-1 md:mt-2 text-[#b02f4a] truncate" id="t2-total-debt">0</div>
             </div>
-            <div class="card-soft bg-[#ebfcf4] p-6 flex flex-col justify-center relative overflow-hidden group">
-                <span class="text-[10px] font-extrabold uppercase tracking-widest text-[#2d8a5c] relative z-10">ชำระและลิงก์แล้ว</span>
-                <div class="text-3xl font-black mt-2 text-[#1a6e42] relative z-10" id="t2-total-paid">0</div>
+            <div class="card-soft bg-[#ebfcf4] p-4 md:p-6 flex flex-col justify-center">
+                <span class="text-[9px] md:text-[10px] font-extrabold uppercase tracking-widest text-[#2d8a5c]">ชำระและลิงก์แล้ว</span>
+                <div class="text-xl md:text-3xl font-black mt-1 md:mt-2 text-[#1a6e42] truncate" id="t2-total-paid">0</div>
             </div>
-            <div class="card-soft bg-[#f7f8fc] p-6 flex flex-col justify-center">
-                <span class="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">ประวัติที่จ่าย</span>
-                <div class="text-3xl font-black mt-2 text-slate-700" id="t2-paid-count">0 รายการ</div>
+            <div class="col-span-2 md:col-span-1 card-soft bg-[#f7f8fc] p-4 md:p-6 flex flex-col justify-center items-center md:items-start">
+                <span class="text-[9px] md:text-[10px] font-extrabold uppercase tracking-widest text-slate-400">ประวัติที่จ่าย</span>
+                <div class="text-xl md:text-3xl font-black mt-1 md:mt-2 text-slate-700" id="t2-paid-count">0 รายการ</div>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div class="card-soft p-7 h-fit space-y-6">
-                <h2 class="text-base font-extrabold text-slate-800 mb-6">👷‍♂️ บันทึกงวดช่างมี้</h2>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
+            <div class="card-soft p-5 md:p-7 h-fit">
+                <h2 class="text-sm md:text-base font-extrabold text-slate-800 mb-4 md:mb-6">👷‍♂️ บันทึกงวดช่างมี้</h2>
                 <form id="mee-form" onsubmit="addMeeDebt(event)" class="space-y-4">
                     <div>
                         <label class="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">รายละเอียด</label>
-                        <input type="text" class="w-full px-4 py-3 text-sm font-bold" id="mee-detail" placeholder="เช่น แปลง 4 ไร่" required>
+                        <input type="text" class="w-full px-4 py-3 text-xs md:text-sm font-bold" id="mee-detail" placeholder="เช่น แปลง 4 ไร่" required>
                     </div>
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">พื้นที่ (ไร่)</label>
-                            <input type="number" step="0.1" class="w-full px-4 py-3 text-sm font-black text-[#5b5cce] bg-[#f0f0ff] focus:bg-white" id="mee-rai" placeholder="0" oninput="calculateMeePriceFromRai()" required>
+                            <input type="number" step="0.1" class="w-full px-4 py-3 text-xs md:text-sm font-black text-[#5b5cce] bg-[#f0f0ff] focus:bg-white" id="mee-rai" placeholder="0" oninput="calculateMeePriceFromRai()" required>
                         </div>
                         <div>
                             <label class="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">งวดเงิน</label>
-                            <input type="number" step="1" class="w-full px-4 py-3 text-sm font-black text-slate-700" id="mee-amount" placeholder="ออโต้" required>
+                            <input type="number" step="1" class="w-full px-4 py-3 text-xs md:text-sm font-black text-slate-700" id="mee-amount" placeholder="ออโต้" required>
                         </div>
                     </div>
-                    <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-extrabold py-3.5 rounded-xl mt-2 shadow-md transition-all">บันทึก 💾</button>
+                    <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-extrabold py-3.5 rounded-xl mt-2 shadow-md transition-all text-xs md:text-sm">บันทึก 💾</button>
                 </form>
             </div>
 
-            <div class="lg:col-span-2 space-y-8">
-                <div class="card-soft p-7">
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-base font-extrabold text-slate-800 flex items-center gap-3">
+            <div class="lg:col-span-2 space-y-6 md:space-y-8">
+                <div class="card-soft p-0 md:p-7 overflow-hidden">
+                    <div class="p-5 md:p-0 flex flex-col sm:flex-row justify-between sm:items-center gap-2 mb-4 md:mb-6">
+                        <h2 class="text-sm md:text-base font-extrabold text-slate-800 flex items-center gap-3">
                             <span>🕒 งวดค้างจ่ายมี้</span>
-                            <span class="text-[10px] badge-pink px-3 py-1 rounded-full font-black tracking-widest" id="mee-active-count-badge">0 ค้าง</span>
+                            <span class="text-[9px] md:text-[10px] badge-pink px-2.5 py-1 rounded-full font-black tracking-widest" id="mee-active-count-badge">0 ค้าง</span>
                         </h2>
-                        <span class="text-xs text-[#d94b68] font-extrabold" id="mee-active-sum-text">รวม: 0.00</span>
+                        <span class="text-[10px] md:text-xs text-[#d94b68] font-extrabold" id="mee-active-sum-text">รวม: 0.00</span>
                     </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse">
+                    <div class="overflow-x-auto px-5 pb-5 md:px-0 md:pb-0">
+                        <table class="w-full min-w-max text-left border-collapse">
                             <thead>
                                 <tr>
                                     <th>รายละเอียด</th>
@@ -366,15 +375,17 @@
                                     <th class="text-center">ลบ</th>
                                 </tr>
                             </thead>
-                            <tbody id="mee-active-table-body" class="text-sm font-medium text-slate-600"></tbody>
+                            <tbody id="mee-active-table-body" class="text-xs md:text-sm font-medium text-slate-600"></tbody>
                         </table>
                     </div>
                 </div>
 
-                <div class="card-soft p-7">
-                    <h2 class="text-base font-extrabold text-slate-800 mb-6">✅ รวบรวมงวดงานที่ชำระแล้ว</h2>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse">
+                <div class="card-soft p-0 md:p-7 overflow-hidden">
+                    <div class="p-5 md:p-0">
+                        <h2 class="text-sm md:text-base font-extrabold text-slate-800 mb-4 md:mb-6">✅ รวบรวมงวดงานที่ชำระแล้ว</h2>
+                    </div>
+                    <div class="overflow-x-auto px-5 pb-5 md:px-0 md:pb-0">
+                        <table class="w-full min-w-max text-left border-collapse">
                             <thead>
                                 <tr>
                                     <th>วันที่ชำระ</th>
@@ -383,7 +394,7 @@
                                     <th class="text-center">ลบ</th>
                                 </tr>
                             </thead>
-                            <tbody id="mee-paid-table-body" class="text-sm font-medium text-slate-600"></tbody>
+                            <tbody id="mee-paid-table-body" class="text-xs md:text-sm font-medium text-slate-600"></tbody>
                         </table>
                     </div>
                 </div>
@@ -391,42 +402,42 @@
         </div>
     </div>
 
-    <!-- TAB 3 -->
+    <!-- TAB 3: จ่ายอื่น -->
     <div id="tab3" class="tab-panel hidden">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div class="card-soft bg-[#fffaf0] p-6 flex flex-col justify-center relative overflow-hidden group">
-                <span class="text-[10px] font-extrabold uppercase tracking-widest text-[#c28b27] relative z-10">ค้างจ่ายอื่นสะสม</span>
-                <div class="text-3xl font-black mt-2 text-[#a87413] relative z-10" id="t3-total-debt">0</div>
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-6 mb-6 md:mb-8">
+            <div class="card-soft bg-[#fffaf0] p-4 md:p-6 flex flex-col justify-center">
+                <span class="text-[9px] md:text-[10px] font-extrabold uppercase tracking-widest text-[#c28b27]">ค้างจ่ายอื่นสะสม</span>
+                <div class="text-xl md:text-3xl font-black mt-1 md:mt-2 text-[#a87413] truncate" id="t3-total-debt">0</div>
             </div>
-            <div class="card-soft bg-[#ebfcf4] p-6 flex flex-col justify-center relative overflow-hidden group">
-                <span class="text-[10px] font-extrabold uppercase tracking-widest text-[#2d8a5c] relative z-10">ชำระเงินแล้ว</span>
-                <div class="text-3xl font-black mt-2 text-[#1a6e42] relative z-10" id="t3-total-paid">0</div>
+            <div class="card-soft bg-[#ebfcf4] p-4 md:p-6 flex flex-col justify-center">
+                <span class="text-[9px] md:text-[10px] font-extrabold uppercase tracking-widest text-[#2d8a5c]">ชำระเงินแล้ว</span>
+                <div class="text-xl md:text-3xl font-black mt-1 md:mt-2 text-[#1a6e42] truncate" id="t3-total-paid">0</div>
             </div>
-            <div class="card-soft bg-[#f7f8fc] p-6 flex flex-col justify-center">
-                <span class="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">ประวัติชำระ</span>
-                <div class="text-3xl font-black mt-2 text-slate-700" id="t3-paid-count">0 รายการ</div>
+            <div class="col-span-2 md:col-span-1 card-soft bg-[#f7f8fc] p-4 md:p-6 flex flex-col justify-center items-center md:items-start">
+                <span class="text-[9px] md:text-[10px] font-extrabold uppercase tracking-widest text-slate-400">ประวัติชำระ</span>
+                <div class="text-xl md:text-3xl font-black mt-1 md:mt-2 text-slate-700" id="t3-paid-count">0 รายการ</div>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div class="space-y-8">
-                <div class="card-soft p-7 h-fit">
-                    <h2 class="text-base font-extrabold text-slate-800 mb-6 flex items-center gap-2">📂 บันทึกงวดจ่ายอื่น</h2>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
+            <div class="space-y-6 md:space-y-8">
+                <div class="card-soft p-5 md:p-7 h-fit">
+                    <h2 class="text-sm md:text-base font-extrabold text-slate-800 mb-4 md:mb-6 flex items-center gap-2">📂 บันทึกงวดจ่ายอื่น</h2>
                     <form id="other-debt-form" onsubmit="addOtherDebt(event)" class="space-y-4">
                         <div>
                             <label class="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">ประเภท</label>
-                            <select class="w-full px-4 py-3 text-sm font-bold" id="other-category-select"></select>
+                            <select class="w-full px-4 py-3 text-xs md:text-sm font-bold" id="other-category-select"></select>
                         </div>
                         <div>
                             <label class="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">ชื่องาน</label>
-                            <input type="text" class="w-full px-4 py-3 text-sm font-bold" id="other-detail" required>
+                            <input type="text" class="w-full px-4 py-3 text-xs md:text-sm font-bold" id="other-detail" required>
                         </div>
-                        <div class="grid grid-cols-2 gap-4 items-end">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start sm:items-end">
                             <div>
                                 <label class="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">จำนวนงวด</label>
-                                <input type="number" min="1" max="12" step="1" id="other-installments-count" oninput="generateInstallmentInputs()" class="w-full px-4 py-3 text-sm font-black text-[#5b5cce] bg-[#f0f0ff]" value="1" required>
+                                <input type="number" min="1" max="12" step="1" id="other-installments-count" oninput="generateInstallmentInputs()" class="w-full px-4 py-3 text-xs md:text-sm font-black text-[#5b5cce] bg-[#f0f0ff]" value="1" required>
                             </div>
-                            <div class="flex items-center gap-2 pb-3">
+                            <div class="flex items-center gap-2 sm:pb-3">
                                 <label class="flex items-center cursor-pointer gap-2 relative">
                                     <input type="checkbox" id="other-withholding-tax" onchange="generateInstallmentInputs()" class="peer sr-only">
                                     <div class="w-10 h-6 bg-slate-200 rounded-full peer-checked:bg-slate-900 transition-colors duration-300"></div>
@@ -439,27 +450,27 @@
                             <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">งวดเงิน (บาท)</span>
                             <div id="installment-fields-container" class="space-y-3"></div>
                         </div>
-                        <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-extrabold py-3.5 rounded-xl mt-4 shadow-md transition-all">บันทึก 💾</button>
+                        <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-extrabold py-3.5 rounded-xl mt-4 shadow-md transition-all text-xs md:text-sm">บันทึก 💾</button>
                     </form>
                 </div>
                 
-                <div class="card-soft p-7 h-fit">
-                    <h2 class="text-base font-extrabold text-slate-800 mb-5">⚙️ จัดการประเภท</h2>
-                    <div class="flex gap-2 mb-4">
-                        <input type="text" id="new-other-cat-input" placeholder="ประเภทใหม่..." class="flex-1 px-4 py-2.5 text-sm font-bold">
+                <div class="card-soft p-5 md:p-7 h-fit">
+                    <h2 class="text-sm md:text-base font-extrabold text-slate-800 mb-4 md:mb-5">⚙️ จัดการประเภท</h2>
+                    <div class="flex flex-col sm:flex-row gap-2 mb-4">
+                        <input type="text" id="new-other-cat-input" placeholder="ประเภทใหม่..." class="flex-1 px-4 py-2.5 text-xs md:text-sm font-bold">
                         <button onclick="addOtherJobCategory()" class="bg-slate-100 hover:bg-slate-200 text-slate-800 font-extrabold text-xs px-4 py-2.5 rounded-xl">เพิ่ม</button>
                     </div>
                     <div class="max-h-48 overflow-y-auto space-y-1.5 custom-scroll pr-2" id="other-category-list-container"></div>
                 </div>
             </div>
 
-            <div class="lg:col-span-2 space-y-8">
-                <div class="card-soft p-7">
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-base font-extrabold text-slate-800">🕒 รายการค้างจ่ายอื่น</h2>
+            <div class="lg:col-span-2 space-y-6 md:space-y-8">
+                <div class="card-soft p-0 md:p-7 overflow-hidden">
+                    <div class="p-5 md:p-0 flex justify-between items-center mb-4 md:mb-6">
+                        <h2 class="text-sm md:text-base font-extrabold text-slate-800">🕒 รายการค้างจ่ายอื่น</h2>
                     </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse">
+                    <div class="overflow-x-auto px-5 pb-5 md:px-0 md:pb-0">
+                        <table class="w-full min-w-max text-left border-collapse">
                             <thead>
                                 <tr>
                                     <th>ประเภท</th>
@@ -469,16 +480,16 @@
                                     <th class="text-center">ลบ</th>
                                 </tr>
                             </thead>
-                            <tbody id="other-active-table-body" class="text-sm font-medium text-slate-600"></tbody>
+                            <tbody id="other-active-table-body" class="text-xs md:text-sm font-medium text-slate-600"></tbody>
                         </table>
                     </div>
                 </div>
-                <div class="card-soft p-7">
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-base font-extrabold text-slate-800">✅ ประวัติชำระแล้ว</h2>
+                <div class="card-soft p-0 md:p-7 overflow-hidden">
+                    <div class="p-5 md:p-0 flex justify-between items-center mb-4 md:mb-6">
+                        <h2 class="text-sm md:text-base font-extrabold text-slate-800">✅ ประวัติชำระแล้ว</h2>
                     </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse">
+                    <div class="overflow-x-auto px-5 pb-5 md:px-0 md:pb-0">
+                        <table class="w-full min-w-max text-left border-collapse">
                             <thead>
                                 <tr>
                                     <th>วันที่ชำระ</th>
@@ -487,7 +498,7 @@
                                     <th class="text-center">ลบ</th>
                                 </tr>
                             </thead>
-                            <tbody id="other-paid-table-body" class="text-sm font-medium text-slate-600"></tbody>
+                            <tbody id="other-paid-table-body" class="text-xs md:text-sm font-medium text-slate-600"></tbody>
                         </table>
                     </div>
                 </div>
@@ -495,104 +506,106 @@
         </div>
     </div>
 
-    <!-- TAB 4 -->
+    <!-- TAB 4: ส่วนตัว -->
     <div id="tab4" class="tab-panel hidden">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            <div class="card-soft bg-[#fff0f4] p-6 flex flex-col justify-center">
-                <span class="text-[10px] font-extrabold uppercase tracking-widest text-[#d94b68]">จ่ายส่วนตัวเดือนนี้</span>
-                <div class="text-3xl font-black mt-2 text-[#b02f4a]" id="t4-month-expense">0</div>
+        <div class="grid grid-cols-2 gap-3 md:gap-6 mb-6 md:mb-8">
+            <div class="card-soft bg-[#fff0f4] p-4 md:p-6 flex flex-col justify-center">
+                <span class="text-[9px] md:text-[10px] font-extrabold uppercase tracking-widest text-[#d94b68]">จ่ายส่วนตัวเดือนนี้</span>
+                <div class="text-xl md:text-3xl font-black mt-1 md:mt-2 text-[#b02f4a] truncate" id="t4-month-expense">0</div>
             </div>
-            <div class="card-soft bg-[#ebfcf4] p-6 flex flex-col justify-center">
-                <span class="text-[10px] font-extrabold uppercase tracking-widest text-[#2d8a5c]">ลงทุน (ออโต้)</span>
-                <div class="text-3xl font-black mt-2 text-[#1a6e42]" id="t4-stock-investment-display">0</div>
+            <div class="card-soft bg-[#ebfcf4] p-4 md:p-6 flex flex-col justify-center">
+                <span class="text-[9px] md:text-[10px] font-extrabold uppercase tracking-widest text-[#2d8a5c]">ลงทุน (ออโต้)</span>
+                <div class="text-xl md:text-3xl font-black mt-1 md:mt-2 text-[#1a6e42] truncate" id="t4-stock-investment-display">0</div>
             </div>
         </div>
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div class="card-soft p-7 h-fit">
-                <h2 class="text-base font-extrabold text-slate-800 mb-6">📝 บันทึกรายจ่ายส่วนตัว</h2>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
+            <div class="card-soft p-5 md:p-7 h-fit">
+                <h2 class="text-sm md:text-base font-extrabold text-slate-800 mb-4 md:mb-6">📝 บันทึกรายจ่ายส่วนตัว</h2>
                 <form id="personal-expense-form" onsubmit="saveMonthlyPersonalExpenses(event)" class="space-y-4">
-                    <div><label class="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">ค่ากินรวม</label><input type="number" step="0.01" id="exp-eating" class="w-full px-4 py-3 text-sm font-bold" value="0"></div>
-                    <div><label class="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">บัตรเครดิต</label><input type="number" step="0.01" id="exp-card" class="w-full px-4 py-3 text-sm font-bold" value="0"></div>
-                    <div><label class="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">ที่พัก</label><input type="number" step="0.01" id="exp-rent" class="w-full px-4 py-3 text-sm font-bold" value="0"></div>
-                    <div><label class="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">ส่วนตัว</label><input type="number" step="0.01" id="exp-personal" class="w-full px-4 py-3 text-sm font-bold" value="0"></div>
-                    <div><label class="block text-[10px] font-extrabold text-[#2d8a5c] uppercase tracking-widest mb-1.5 ml-1">หุ้น/กองทุน (ออโต้)</label><input type="text" id="exp-stocks-display" class="w-full px-4 py-3 text-sm font-black text-[#2d8a5c] bg-[#ebfcf4] pointer-events-none" readonly value="0"></div>
-                    <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-extrabold py-3.5 rounded-xl mt-6 shadow-md transition-all">💾 เซฟยอดเดือนนี้</button>
+                    <div><label class="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">ค่ากินรวม</label><input type="number" step="0.01" id="exp-eating" class="w-full px-4 py-3 text-xs md:text-sm font-bold" value="0"></div>
+                    <div><label class="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">บัตรเครดิต</label><input type="number" step="0.01" id="exp-card" class="w-full px-4 py-3 text-xs md:text-sm font-bold" value="0"></div>
+                    <div><label class="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">ที่พัก</label><input type="number" step="0.01" id="exp-rent" class="w-full px-4 py-3 text-xs md:text-sm font-bold" value="0"></div>
+                    <div><label class="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">ส่วนตัว</label><input type="number" step="0.01" id="exp-personal" class="w-full px-4 py-3 text-xs md:text-sm font-bold" value="0"></div>
+                    <div><label class="block text-[10px] font-extrabold text-[#2d8a5c] uppercase tracking-widest mb-1.5 ml-1">หุ้น/กองทุน (ออโต้)</label><input type="text" id="exp-stocks-display" class="w-full px-4 py-3 text-xs md:text-sm font-black text-[#2d8a5c] bg-[#ebfcf4] pointer-events-none" readonly value="0"></div>
+                    <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-extrabold py-3.5 rounded-xl mt-6 shadow-md transition-all text-xs md:text-sm">💾 เซฟยอดเดือนนี้</button>
                 </form>
             </div>
-            <div class="lg:col-span-2 card-soft p-7 flex flex-col">
-                <h2 class="text-base font-extrabold text-slate-800 mb-6">📊 ค่าใช้จ่ายรายเดือน</h2>
-                <div class="relative w-full h-[400px] flex-1 flex items-center justify-center bg-[#f7f8fc] rounded-2xl p-4">
+            <div class="lg:col-span-2 card-soft p-5 md:p-7 flex flex-col">
+                <h2 class="text-sm md:text-base font-extrabold text-slate-800 mb-4 md:mb-6">📊 ค่าใช้จ่ายรายเดือน</h2>
+                <div class="relative w-full h-[250px] md:h-[400px] flex-1 flex items-center justify-center bg-[#f7f8fc] rounded-2xl p-2 md:p-4">
                     <canvas id="personalExpenseChart"></canvas>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- TAB 5 -->
+    <!-- TAB 5: หุ้น -->
     <div id="tab5" class="tab-panel hidden">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            <div class="card-soft bg-[#f0f0ff] p-6 flex flex-col justify-center">
-                <span class="text-[10px] font-extrabold uppercase tracking-widest text-[#5b5cce]">มูลค่าธุรกรรมเดือนนี้</span>
-                <div class="text-3xl font-black mt-2 text-[#3b3c9e]" id="t5-month-stock-turnover">0</div>
+        <div class="grid grid-cols-2 gap-3 md:gap-6 mb-6 md:mb-8">
+            <div class="card-soft bg-[#f0f0ff] p-4 md:p-6 flex flex-col justify-center">
+                <span class="text-[9px] md:text-[10px] font-extrabold uppercase tracking-widest text-[#5b5cce]">มูลค่าธุรกรรมเดือนนี้</span>
+                <div class="text-xl md:text-3xl font-black mt-1 md:mt-2 text-[#3b3c9e] truncate" id="t5-month-stock-turnover">0</div>
             </div>
-            <div class="card-soft bg-[#f7f8fc] p-6 flex flex-col justify-center">
-                <span class="text-[10px] font-extrabold uppercase tracking-widest text-slate-500">จำนวนธุรกรรม</span>
-                <div class="text-3xl font-black mt-2 text-slate-700" id="t5-stock-count">0 รายการ</div>
+            <div class="card-soft bg-[#f7f8fc] p-4 md:p-6 flex flex-col justify-center">
+                <span class="text-[9px] md:text-[10px] font-extrabold uppercase tracking-widest text-slate-500">จำนวนธุรกรรม</span>
+                <div class="text-xl md:text-3xl font-black mt-1 md:mt-2 text-slate-700 truncate" id="t5-stock-count">0 รายการ</div>
             </div>
         </div>
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
             
-            <div class="space-y-8">
-                <div class="card-soft p-7 h-fit">
-                    <h2 class="text-base font-extrabold text-slate-800 mb-6">📝 บันทึกลงทุน</h2>
+            <div class="space-y-6 md:space-y-8">
+                <div class="card-soft p-5 md:p-7 h-fit">
+                    <h2 class="text-sm md:text-base font-extrabold text-slate-800 mb-4 md:mb-6">📝 บันทึกลงทุน</h2>
                     <form id="stock-form" onsubmit="addStockTransaction(event)" class="space-y-4">
                         <div>
                             <label class="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">สินทรัพย์</label>
-                            <select class="w-full px-4 py-3 text-sm font-black uppercase cursor-pointer" id="stock-name" required></select>
+                            <select class="w-full px-4 py-3 text-xs md:text-sm font-black uppercase cursor-pointer" id="stock-name" required></select>
                         </div>
                         <div>
                             <label class="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">ประเภท</label>
-                            <select class="w-full px-4 py-3 text-sm font-bold" id="stock-type">
+                            <select class="w-full px-4 py-3 text-xs md:text-sm font-bold" id="stock-type">
                                 <option value="BUY">ซื้อ (BUY)</option>
                                 <option value="SELL">ขาย (SELL)</option>
                                 <option value="DIVIDEND">ปันผล (DIVIDEND)</option>
                             </select>
                         </div>
-                        <div>
-                            <label class="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">มูลค่า</label>
-                            <input type="number" step="0.01" class="w-full px-4 py-3 text-sm font-black" id="stock-price" placeholder="0.00" required>
-                        </div>
-                        <div>
-                            <label class="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">สกุลเงิน</label>
-                            <div class="flex items-center bg-[#f7f8fc] p-1.5 rounded-[1.25rem] w-full">
-                                <button type="button" id="stock-curr-usd" onclick="setStockCurrency('USD')" class="flex-1 py-2.5 text-xs font-black rounded-xl transition-all text-slate-400">USD</button>
-                                <button type="button" id="stock-curr-thb" onclick="setStockCurrency('THB')" class="flex-1 py-2.5 text-xs font-black rounded-xl transition-all bg-white text-[#1a1b1e] shadow-sm">THB</button>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">มูลค่า</label>
+                                <input type="number" step="0.01" class="w-full px-4 py-3 text-xs md:text-sm font-black" id="stock-price" placeholder="0.00" required>
                             </div>
-                            <input type="hidden" id="stock-currency" value="THB">
+                            <div>
+                                <label class="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">สกุลเงิน</label>
+                                <div class="flex items-center bg-[#f7f8fc] p-1.5 rounded-[1.25rem] w-full">
+                                    <button type="button" id="stock-curr-usd" onclick="setStockCurrency('USD')" class="flex-1 py-2 text-xs font-black rounded-xl transition-all text-slate-400">USD</button>
+                                    <button type="button" id="stock-curr-thb" onclick="setStockCurrency('THB')" class="flex-1 py-2 text-xs font-black rounded-xl transition-all bg-white text-[#1a1b1e] shadow-sm">THB</button>
+                                </div>
+                                <input type="hidden" id="stock-currency" value="THB">
+                            </div>
                         </div>
-                        <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-extrabold py-3.5 rounded-xl mt-6 shadow-md transition-all">บันทึก 💾</button>
+                        <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-extrabold py-3.5 rounded-xl mt-6 shadow-md transition-all text-xs md:text-sm">บันทึก 💾</button>
                     </form>
                 </div>
 
-                <div class="card-soft p-7 h-fit">
-                    <h2 class="text-base font-extrabold text-slate-800 mb-5 flex items-center justify-between">
+                <div class="card-soft p-5 md:p-7 h-fit">
+                    <h2 class="text-sm md:text-base font-extrabold text-slate-800 mb-4 md:mb-5 flex items-center justify-between">
                         <span>⚙️ จัดการรายการสินทรัพย์</span>
-                        <span class="text-xs bg-slate-100 text-slate-600 py-1 px-2.5 rounded-full font-bold" id="stock-cat-count-badge">0</span>
+                        <span class="text-[10px] md:text-xs bg-slate-100 text-slate-600 py-1 px-2.5 rounded-full font-bold" id="stock-cat-count-badge">0</span>
                     </h2>
-                    <div class="flex gap-2 mb-5">
-                        <input type="text" id="new-stock-cat-input" placeholder="พิมพ์ชื่อสินทรัพย์..." class="flex-1 px-4 py-2 text-sm font-bold uppercase">
-                        <button onclick="addStockAsset()" class="bg-slate-100 hover:bg-slate-200 text-slate-800 font-extrabold text-xs px-4 py-2 rounded-xl transition">เพิ่ม</button>
+                    <div class="flex flex-col sm:flex-row gap-2 mb-4 md:mb-5">
+                        <input type="text" id="new-stock-cat-input" placeholder="พิมพ์ชื่อสินทรัพย์..." class="flex-1 px-4 py-2.5 text-xs md:text-sm font-bold uppercase">
+                        <button onclick="addStockAsset()" class="bg-slate-100 hover:bg-slate-200 text-slate-800 font-extrabold text-xs px-4 py-2.5 rounded-xl transition">เพิ่ม</button>
                     </div>
                     <div class="max-h-48 overflow-y-auto space-y-1.5 custom-scroll pr-2" id="stock-category-list-container"></div>
                 </div>
             </div>
 
-            <div class="lg:col-span-2 card-soft p-7">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-base font-extrabold text-slate-800">ประวัติการลงทุนเดือนนี้</h2>
+            <div class="lg:col-span-2 card-soft p-0 md:p-7 overflow-hidden">
+                <div class="p-5 md:p-0 flex justify-between items-center mb-4 md:mb-6">
+                    <h2 class="text-sm md:text-base font-extrabold text-slate-800">ประวัติการลงทุนเดือนนี้</h2>
                 </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
+                <div class="overflow-x-auto px-5 pb-5 md:px-0 md:pb-0">
+                    <table class="w-full min-w-max text-left border-collapse">
                         <thead>
                             <tr>
                                 <th>สินทรัพย์</th>
@@ -602,124 +615,128 @@
                                 <th class="text-center">ลบ</th>
                             </tr>
                         </thead>
-                        <tbody id="stock-table-body" class="text-sm font-medium text-slate-600"></tbody>
+                        <tbody id="stock-table-body" class="text-xs md:text-sm font-medium text-slate-600"></tbody>
                     </table>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- TAB 6 -->
+    <!-- TAB 6: ภาษี -->
     <div id="tab6" class="tab-panel hidden">
-        <div class="card-soft p-8">
-            <h2 class="text-lg font-extrabold text-slate-800 mb-8 pb-4 border-b border-slate-100">รายงานภาษีหัก ณ ที่จ่าย (3%)</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <div class="bg-[#fffaf0] p-6 rounded-2xl border border-white">
-                    <span class="text-[10px] font-extrabold text-[#c28b27] uppercase tracking-widest">งวดที่หักภาษี</span>
-                    <div class="text-3xl font-black text-[#a87413] mt-2" id="tax-items-count">0 งวด</div>
+        <div class="card-soft p-5 md:p-8">
+            <h2 class="text-base md:text-lg font-extrabold text-slate-800 mb-6 md:mb-8 pb-4 border-b border-slate-100">รายงานภาษีหัก ณ ที่จ่าย (3%)</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
+                <div class="bg-[#fffaf0] p-5 md:p-6 rounded-2xl border border-white">
+                    <span class="text-[9px] md:text-[10px] font-extrabold text-[#c28b27] uppercase tracking-widest">งวดที่หักภาษี</span>
+                    <div class="text-xl md:text-3xl font-black text-[#a87413] mt-1 md:mt-2" id="tax-items-count">0 งวด</div>
                 </div>
-                <div class="bg-[#fff0f4] p-6 rounded-2xl border border-white">
-                    <span class="text-[10px] font-extrabold text-[#d94b68] uppercase tracking-widest">ภาษีถูกหักรวม</span>
-                    <div class="text-3xl font-black text-[#b02f4a] mt-2" id="tax-total-deducted">0</div>
+                <div class="bg-[#fff0f4] p-5 md:p-6 rounded-2xl border border-white">
+                    <span class="text-[9px] md:text-[10px] font-extrabold text-[#d94b68] uppercase tracking-widest">ภาษีถูกหักรวม</span>
+                    <div class="text-xl md:text-3xl font-black text-[#b02f4a] mt-1 md:mt-2 truncate" id="tax-total-deducted">0</div>
                 </div>
-                <div class="bg-[#ebfcf4] p-6 rounded-2xl border border-white">
-                    <span class="text-[10px] font-extrabold text-[#2d8a5c] uppercase tracking-widest">รับสุทธิรวม</span>
-                    <div class="text-3xl font-black text-[#1a6e42] mt-2" id="tax-total-net-payout">0</div>
+                <div class="bg-[#ebfcf4] p-5 md:p-6 rounded-2xl border border-white">
+                    <span class="text-[9px] md:text-[10px] font-extrabold text-[#2d8a5c] uppercase tracking-widest">รับสุทธิรวม</span>
+                    <div class="text-xl md:text-3xl font-black text-[#1a6e42] mt-1 md:mt-2 truncate" id="tax-total-net-payout">0</div>
                 </div>
             </div>
-            <div class="overflow-x-auto bg-[#f7f8fc] rounded-2xl p-2">
-                <table class="w-full text-left border-collapse">
+            <div class="overflow-x-auto bg-[#f7f8fc] rounded-2xl p-2 md:p-4">
+                <table class="w-full min-w-max text-left border-collapse">
                     <thead>
                         <tr>
-                            <th class="pt-4 pl-4 border-none">วันที่ชำระ</th>
-                            <th class="pt-4 border-none">รายละเอียด</th>
-                            <th class="pt-4 text-right border-none text-[#d94b68]">หัก 3%</th>
-                            <th class="pt-4 text-right pr-4 border-none text-[#2d8a5c]">รับสุทธิ</th>
+                            <th class="pt-2 md:pt-4 pl-2 md:pl-4 border-none">วันที่ชำระ</th>
+                            <th class="pt-2 md:pt-4 border-none">รายละเอียด</th>
+                            <th class="pt-2 md:pt-4 text-right border-none text-[#d94b68]">หัก 3%</th>
+                            <th class="pt-2 md:pt-4 text-right pr-2 md:pr-4 border-none text-[#2d8a5c]">รับสุทธิ</th>
                         </tr>
                     </thead>
-                    <tbody id="tax-table-body" class="text-sm font-bold text-slate-600"></tbody>
+                    <tbody id="tax-table-body" class="text-xs md:text-sm font-bold text-slate-600"></tbody>
                 </table>
             </div>
         </div>
     </div>
 
-    <!-- TAB 7: DASHBOARD (PASTEL LIGHT) -->
+    <!-- TAB 7: DASHBOARD -->
     <div id="tab7" class="tab-panel hidden">
         
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-6 md:mb-8 gap-4">
             <div>
-                <h2 class="text-2xl font-black text-slate-800 tracking-tight uppercase">แดชบอร์ดสรุปภาพรวม</h2>
-                <p class="text-[11px] font-extrabold text-slate-400 mt-1 uppercase tracking-widest" id="dash-header-year">ข้อมูลวิเคราะห์ประจำปี พ.ศ. 2569</p>
+                <h2 class="text-xl md:text-2xl font-black text-slate-800 tracking-tight uppercase">แดชบอร์ดสรุปภาพรวม</h2>
+                <p class="text-[9px] md:text-[11px] font-extrabold text-slate-400 mt-1 uppercase tracking-widest" id="dash-header-year">ข้อมูลวิเคราะห์ประจำปี พ.ศ. 2569</p>
             </div>
-            <div class="flex gap-4">
-                <div class="bg-white px-5 py-3 rounded-2xl shadow-sm border border-slate-100/50 text-right min-w-[120px]">
-                    <div class="text-[9px] text-slate-400 font-extrabold uppercase tracking-widest">กำไรสุทธิ (ปี)</div>
-                    <div class="text-xl font-black text-[#2d8a5c] mt-0.5" id="dash-overall-net">0 ฿</div>
+            <div class="flex flex-wrap sm:flex-nowrap gap-3 md:gap-4 w-full md:w-auto">
+                <div class="flex-1 sm:flex-none bg-white px-4 md:px-5 py-3 rounded-2xl shadow-sm border border-slate-100/50 text-right min-w-[120px]">
+                    <div class="text-[8px] md:text-[9px] text-slate-400 font-extrabold uppercase tracking-widest">กำไรสุทธิ (ปี)</div>
+                    <div class="text-lg md:text-xl font-black text-[#2d8a5c] mt-0.5 truncate" id="dash-overall-net">0 ฿</div>
                 </div>
-                <div class="bg-white px-5 py-3 rounded-2xl shadow-sm border border-slate-100/50 text-right min-w-[120px]">
-                    <div class="text-[9px] text-slate-400 font-extrabold uppercase tracking-widest">ยอดลงทุนสะสม (ปี)</div>
-                    <div class="text-xl font-black text-[#5b5cce] mt-0.5" id="dash-overall-invest">0 ฿</div>
+                <div class="flex-1 sm:flex-none bg-white px-4 md:px-5 py-3 rounded-2xl shadow-sm border border-slate-100/50 text-right min-w-[120px]">
+                    <div class="text-[8px] md:text-[9px] text-slate-400 font-extrabold uppercase tracking-widest">ยอดลงทุนสะสม (ปี)</div>
+                    <div class="text-lg md:text-xl font-black text-[#5b5cce] mt-0.5 truncate" id="dash-overall-invest">0 ฿</div>
                 </div>
             </div>
         </div>
 
         <!-- Dashboard Grid -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 relative z-10">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 relative z-10">
             
             <!-- Panel 1: Income vs Expense vs Invest Comparison -->
-            <div class="card-soft p-6 lg:col-span-2">
-                <div class="flex justify-between items-center mb-6">
-                    <h3 class="text-sm font-extrabold text-slate-800">เปรียบเทียบ รายรับ / รายจ่าย / ลงทุน (รายเดือน)</h3>
-                    <div class="flex gap-2 text-[9px] font-black bg-[#f7f8fc] px-3 py-1.5 rounded-full uppercase tracking-wider">
+            <div class="card-soft p-5 md:p-6 lg:col-span-2 overflow-hidden">
+                <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-2 mb-4 md:mb-6">
+                    <h3 class="text-xs md:text-sm font-extrabold text-slate-800 leading-tight">เปรียบเทียบ รายรับ / รายจ่าย / ลงทุน (รายเดือน)</h3>
+                    <div class="flex gap-2 text-[8px] md:text-[9px] font-black bg-[#f7f8fc] px-3 py-1.5 rounded-full uppercase tracking-wider w-fit">
                         <span class="text-[#2d8a5c]">รับ</span> | <span class="text-[#d94b68]">จ่าย</span> | <span class="text-[#5b5cce]">ลงทุน</span>
                     </div>
                 </div>
-                <div class="relative w-full h-[320px]">
-                    <canvas id="dashComparisonChart"></canvas>
+                <div class="relative w-full h-[250px] md:h-[320px] overflow-x-auto custom-scroll">
+                    <div class="min-w-[500px] h-full">
+                        <canvas id="dashComparisonChart"></canvas>
+                    </div>
                 </div>
             </div>
 
             <!-- Panel 2: Expense Analysis (Average) -->
-            <div class="card-soft p-6">
-                <div class="flex justify-between items-center mb-6">
+            <div class="card-soft p-5 md:p-6">
+                <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3 mb-4 md:mb-6">
                     <div>
-                        <h3 class="text-sm font-extrabold text-slate-800">ค่าใช้จ่ายส่วนตัว (เฉลี่ยรายเดือน)</h3>
-                        <div class="text-[9px] font-bold text-slate-400 mt-1" id="dash-exp-month-count">(เฉลี่ยจาก 0 เดือน)</div>
+                        <h3 class="text-xs md:text-sm font-extrabold text-slate-800">ค่าใช้จ่ายส่วนตัว (เฉลี่ยรายเดือน)</h3>
+                        <div class="text-[8px] md:text-[9px] font-bold text-slate-400 mt-0.5 md:mt-1" id="dash-exp-month-count">(เฉลี่ยจาก 0 เดือน)</div>
                     </div>
-                    <span class="text-[11px] badge-pink px-3 py-1.5 rounded-full font-black tracking-widest" id="dash-exp-total-avg">0 ฿ /ด.</span>
+                    <span class="text-[10px] md:text-[11px] badge-pink px-3 py-1.5 rounded-full font-black tracking-widest w-fit" id="dash-exp-total-avg">0 ฿ /ด.</span>
                 </div>
-                <div class="relative w-full h-[220px] flex justify-center items-center">
+                <div class="relative w-full h-[200px] md:h-[220px] flex justify-center items-center">
                     <canvas id="dashExpenseChart"></canvas>
                 </div>
             </div>
 
             <!-- Panel 3: Stock Trading -->
-            <div class="card-soft p-6">
-                <div class="flex justify-between items-center mb-6">
-                    <h3 class="text-sm font-extrabold text-slate-800">ปริมาณการซื้อขายสินทรัพย์</h3>
-                    <div class="flex gap-2 text-[9px] font-black bg-[#f7f8fc] px-3 py-1.5 rounded-full uppercase tracking-wider">
+            <div class="card-soft p-5 md:p-6 overflow-hidden">
+                <div class="flex justify-between items-center mb-4 md:mb-6">
+                    <h3 class="text-xs md:text-sm font-extrabold text-slate-800">ปริมาณซื้อขายสินทรัพย์</h3>
+                    <div class="flex gap-2 text-[8px] md:text-[9px] font-black bg-[#f7f8fc] px-3 py-1.5 rounded-full uppercase tracking-wider">
                         <span class="text-[#2d8a5c]">ซื้อ</span> <span class="text-slate-300">|</span> <span class="text-[#d94b68]">ขาย</span>
                     </div>
                 </div>
-                <div class="relative w-full h-[220px]">
-                    <canvas id="dashStockChart"></canvas>
+                <div class="relative w-full h-[200px] md:h-[220px] overflow-x-auto custom-scroll">
+                    <div class="min-w-[400px] h-full">
+                        <canvas id="dashStockChart"></canvas>
+                    </div>
                 </div>
             </div>
 
             <!-- Panel 4: Yearly Grand Summary -->
-            <div class="card-soft p-6 flex flex-col lg:col-span-2">
-                <div class="flex justify-between items-center mb-6">
-                    <h3 class="text-sm font-extrabold text-slate-800">ประวัติผลประกอบการรายปี</h3>
+            <div class="card-soft p-5 md:p-6 flex flex-col lg:col-span-2">
+                <div class="flex justify-between items-center mb-4 md:mb-6">
+                    <h3 class="text-xs md:text-sm font-extrabold text-slate-800">ประวัติผลประกอบการรายปี</h3>
                 </div>
                 
-                <div class="overflow-x-auto flex-1 bg-[#f7f8fc] rounded-2xl p-2">
-                    <table class="w-full text-left text-xs border-collapse">
+                <div class="overflow-x-auto flex-1 bg-[#f7f8fc] rounded-2xl p-2 md:p-4">
+                    <table class="w-full min-w-max text-left text-[10px] md:text-xs border-collapse">
                         <thead>
                             <tr>
-                                <th class="pt-3 pl-4 border-none">ปี</th>
-                                <th class="pt-3 text-right border-none text-[#2d8a5c]">รายรับสุทธิ</th>
-                                <th class="pt-3 text-right border-none text-[#d94b68]">รายจ่ายรวม</th>
-                                <th class="pt-3 text-right pr-4 border-none">คงเหลือ</th>
+                                <th class="pt-2 md:pt-3 pl-2 md:pl-4 border-none">ปี</th>
+                                <th class="pt-2 md:pt-3 text-right border-none text-[#2d8a5c]">รายรับสุทธิ</th>
+                                <th class="pt-2 md:pt-3 text-right border-none text-[#d94b68]">รายจ่ายรวม</th>
+                                <th class="pt-2 md:pt-3 text-right pr-2 md:pr-4 border-none">คงเหลือ</th>
                             </tr>
                         </thead>
                         <tbody id="dash-yearly-tbody" class="font-bold text-slate-600">
@@ -765,6 +782,43 @@
         localStorage.setItem('roh_jobCategories', JSON.stringify(jobCategories));
         localStorage.setItem('roh_otherJobCategories', JSON.stringify(otherJobCategories));
         localStorage.setItem('roh_stockAssetList', JSON.stringify(stockAssetList));
+        
+        // Auto Sync Feature
+        const url = localStorage.getItem('roh_gas_url');
+        if (url) backgroundSync(url);
+    }
+    
+    // Background Auto Sync Logic
+    let syncTimeout = null;
+    function backgroundSync(url) {
+        clearTimeout(syncTimeout);
+        const syncIndicator = document.getElementById('sync-indicator');
+        if(syncIndicator) syncIndicator.innerHTML = '<span class="text-[#5b5cce] bg-[#f0f0ff] px-2 py-0.5 rounded-full">⏳ Auto-syncing...</span>';
+        
+        syncTimeout = setTimeout(async () => {
+            try {
+                const payload = { action: 'backup', data: getAllDataAsObject() };
+                const finalUrl = cleanAndBuildUrl(url, {});
+                
+                const response = await fetch(finalUrl, { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify(payload),
+                    redirect: 'follow'
+                });
+                
+                const result = await response.json();
+                if(result.status === 'success') {
+                    if(syncIndicator) syncIndicator.innerHTML = '<span class="text-[#2d8a5c] bg-[#ebfcf4] px-2 py-0.5 rounded-full">☁️ Saved to Cloud</span>';
+                } else {
+                    if(syncIndicator) syncIndicator.innerHTML = '<span class="text-[#d94b68] bg-[#fff0f4] px-2 py-0.5 rounded-full">⚠️ Sync Failed</span>';
+                }
+            } catch(e) {
+                if(syncIndicator) syncIndicator.innerHTML = '<span class="text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">⚠️ Cloud Offline</span>';
+            }
+            
+            setTimeout(() => { if(syncIndicator) syncIndicator.innerHTML = ''; }, 3000);
+        }, 1500); // 1.5s debounce to prevent spamming
     }
 
     function loadData() {
@@ -777,7 +831,15 @@
             if(localStorage.getItem('roh_jobCategories')) jobCategories = JSON.parse(localStorage.getItem('roh_jobCategories'));
             if(localStorage.getItem('roh_otherJobCategories')) otherJobCategories = JSON.parse(localStorage.getItem('roh_otherJobCategories'));
             if(localStorage.getItem('roh_stockAssetList')) stockAssetList = JSON.parse(localStorage.getItem('roh_stockAssetList'));
-            if(localStorage.getItem('roh_gas_url')) document.getElementById('gas-url-input').value = localStorage.getItem('roh_gas_url');
+            
+            // ตั้งค่า Default Web App URL
+            const defaultGasUrl = 'https://script.google.com/macros/s/AKfycbwoAAXkMTl3Vx-cyZWUgQnisXOSfEeIw_-nUFXq30-HTQYTuR4cPO4jiR-NGV6l_JI/exec';
+            if(localStorage.getItem('roh_gas_url')) {
+                document.getElementById('gas-url-input').value = localStorage.getItem('roh_gas_url');
+            } else {
+                document.getElementById('gas-url-input').value = defaultGasUrl;
+                localStorage.setItem('roh_gas_url', defaultGasUrl);
+            }
         } catch(e) { console.error("Error loading data", e); }
     }
 
@@ -795,7 +857,7 @@
         const container = document.getElementById('toast-container');
         if (!container) return;
         const toast = document.createElement('div');
-        toast.className = `p-4 rounded-2xl shadow-lg border-0 text-sm font-bold transition-all duration-300 transform translate-y-2 opacity-0 flex items-center gap-3 bg-white border border-slate-100`;
+        toast.className = `p-4 rounded-2xl shadow-lg border-0 text-xs md:text-sm font-bold transition-all duration-300 transform translate-y-2 opacity-0 flex items-center gap-3 bg-white border border-slate-100`;
         if (type === "error") {
             toast.innerHTML = `<span class="text-xl">⚠️</span> <span class="text-[#d94b68]">${message}</span>`;
         } else if (type === "loading") {
@@ -844,17 +906,13 @@
     }
 
     function cleanAndBuildUrl(baseUrl, params) {
-        // ทำความสะอาด URL เผื่อผู้ใช้ไปก๊อปปี้เอา query strings ติดมา
         let cleanedUrl = baseUrl.trim();
         if (cleanedUrl.includes('?')) {
             cleanedUrl = cleanedUrl.split('?')[0];
         }
-        
-        // ตรวจสอบขั้นพื้นฐานว่าต้องเป็นสคริปต์ Google
         if (!cleanedUrl.startsWith('https://script.google.com/')) {
             console.warn("Invalid Google Script URL format detected.");
         }
-        
         try {
             const urlObj = new URL(cleanedUrl);
             for (const key in params) {
@@ -871,13 +929,14 @@
     function saveGasUrl() {
         let url = document.getElementById('gas-url-input').value.trim();
         if(url) {
-            // ดักแก่ เผื่อก๊อปมาทั้งหน้าจอแก้ไขสคริปต์
             if (url.includes('/edit') && !url.includes('/exec')) {
                 showNotification("⚠️ ลิงก์ที่มึงส่งมาเป็นลิงก์แก้ไขสคริปต์! ต้องใช้ลิงก์ Deploy ที่ลงท้ายด้วย /exec นะ", "error");
                 return;
             }
             localStorage.setItem('roh_gas_url', url); 
             showNotification("✅ บันทึกและซิงค์ URL สำเร็จเรียบร้อย!"); 
+            // Trigger initial sync
+            backgroundSync(url);
         } else { 
             showNotification("⚠️ ใส่ URL มาด้วยดิไอ้โร๊ะ", "error"); 
         }
@@ -900,9 +959,9 @@
             
             const response = await fetch(finalUrl, { 
                 method: 'POST', 
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // ป้องกันการติด preflight CORS
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                 body: JSON.stringify(payload),
-                redirect: 'follow' // สั่งให้ตาม Google Apps Script redirect ชัดเจน
+                redirect: 'follow'
             });
             
             const result = await response.json();
@@ -912,10 +971,10 @@
                 showNotification("⚠️ ล้มเหลว: " + result.message, "error"); 
             }
         } catch(err) { 
-            showNotification("⚠️ ติดต่อชีตไม่ได้ เช็คสิทธิ์ 'สิทธิ์การเข้าถึง: ทุกคน (Anyone)' ในหน้าสคริปต์ด่วนๆ", "error"); 
+            showNotification("⚠️ ติดต่อชีตไม่ได้ เช็คสิทธิ์ 'สิทธิ์การเข้าถึง: ทุกคน' ในหน้าสคริปต์ด่วนๆ", "error"); 
             console.error(err); 
         } finally { 
-            btn.innerHTML = `<span>☁️ ⬆️</span> ดันขึ้น Sheet`; 
+            btn.innerHTML = `<span>☁️ ⬆️</span> ดันขึ้น Sheet (Manual)`; 
             btn.disabled = false; 
         }
     }
@@ -951,7 +1010,16 @@
                     if(parsed.otherJobCategories) otherJobCategories = parsed.otherJobCategories; 
                     if(parsed.stockAssetList) stockAssetList = parsed.stockAssetList;
                     
-                    saveData(); 
+                    // Don't auto-sync back immediately on a pull
+                    localStorage.setItem('roh_incomeData', JSON.stringify(incomeData));
+                    localStorage.setItem('roh_meeDebtData', JSON.stringify(meeDebtData));
+                    localStorage.setItem('roh_otherDebtData', JSON.stringify(otherDebtData));
+                    localStorage.setItem('roh_personalExpenseData', JSON.stringify(personalExpenseData));
+                    localStorage.setItem('roh_stockData', JSON.stringify(stockData));
+                    localStorage.setItem('roh_jobCategories', JSON.stringify(jobCategories));
+                    localStorage.setItem('roh_otherJobCategories', JSON.stringify(otherJobCategories));
+                    localStorage.setItem('roh_stockAssetList', JSON.stringify(stockAssetList));
+                    
                     refreshAll(); 
                     closeBackupModal(); 
                     showNotification("☁️ สำเร็จ! กู้คืนและเขียนทับข้อมูลจาก Google Sheets เรียบร้อย!");
@@ -1011,8 +1079,8 @@
     function setStockCurrency(curr) {
         const hiddenInp = document.getElementById('stock-currency'); const usdBtn = document.getElementById('stock-curr-usd'); const thbBtn = document.getElementById('stock-curr-thb');
         if (!hiddenInp || !usdBtn || !thbBtn) return; hiddenInp.value = curr;
-        if (curr === 'USD') { usdBtn.className = "flex-1 py-2.5 text-xs font-black rounded-xl transition-all bg-white text-slate-800 shadow-sm"; thbBtn.className = "flex-1 py-2.5 text-xs font-black rounded-xl transition-all text-slate-500 hover:text-slate-700"; } 
-        else { thbBtn.className = "flex-1 py-2.5 text-xs font-black rounded-xl transition-all bg-white text-slate-800 shadow-sm"; usdBtn.className = "flex-1 py-2.5 text-xs font-black rounded-xl transition-all text-slate-500 hover:text-slate-700"; }
+        if (curr === 'USD') { usdBtn.className = "flex-1 py-2 md:py-2.5 text-xs font-black rounded-xl transition-all bg-white text-slate-800 shadow-sm"; thbBtn.className = "flex-1 py-2 md:py-2.5 text-xs font-black rounded-xl transition-all text-slate-500 hover:text-slate-700"; } 
+        else { thbBtn.className = "flex-1 py-2 md:py-2.5 text-xs font-black rounded-xl transition-all bg-white text-slate-800 shadow-sm"; usdBtn.className = "flex-1 py-2 md:py-2.5 text-xs font-black rounded-xl transition-all text-slate-500 hover:text-slate-700"; }
     }
 
     function populateCategoryDropdowns() {
@@ -1032,7 +1100,7 @@
             c1.innerHTML = ''; safeSetText('cat-count-badge', jobCategories.length);
             jobCategories.forEach((cat, index) => {
                 const row = document.createElement('div'); row.className = "flex items-center justify-between p-2 rounded-xl text-xs gap-2 transition hover:bg-[#f7f8fc]";
-                row.innerHTML = `<div class="flex-1 font-bold text-slate-700 ml-2" id="cat-display-${index}">${cat}</div><div class="flex items-center gap-1" id="cat-action-${index}"><button onclick="startEditCategory(${index})" class="text-[#5b5cce] font-black px-2 py-1 rounded-lg hover:bg-slate-100">✏️</button><button onclick="deleteJobCategory(${index})" class="text-[#d94b68] font-black px-2 py-1 rounded-lg hover:bg-slate-100">🗑️</button></div>`;
+                row.innerHTML = `<div class="flex-1 font-bold text-slate-700 ml-2 truncate" id="cat-display-${index}">${cat}</div><div class="flex items-center gap-1 shrink-0" id="cat-action-${index}"><button type="button" onclick="startEditCategory(${index})" class="text-[#5b5cce] font-black px-2 py-1 rounded-lg hover:bg-slate-100">✏️</button><button type="button" onclick="deleteJobCategory(${index})" class="text-[#d94b68] font-black px-2 py-1 rounded-lg hover:bg-slate-100">🗑️</button></div>`;
                 c1.appendChild(row);
             });
         }
@@ -1041,7 +1109,7 @@
             c3.innerHTML = ''; 
             otherJobCategories.forEach((cat, index) => {
                 const row = document.createElement('div'); row.className = "flex items-center justify-between p-2 rounded-xl text-xs gap-2 transition hover:bg-[#f7f8fc]";
-                row.innerHTML = `<div class="flex-1 font-bold text-slate-700 ml-2" id="other-cat-display-${index}">${cat}</div><div class="flex items-center gap-1" id="other-cat-action-${index}"><button onclick="startEditOtherCategory(${index})" class="text-[#5b5cce] font-black px-2 py-1 rounded-lg hover:bg-slate-100">✏️</button><button onclick="deleteOtherJobCategory(${index})" class="text-[#d94b68] font-black px-2 py-1 rounded-lg hover:bg-slate-100">🗑️</button></div>`;
+                row.innerHTML = `<div class="flex-1 font-bold text-slate-700 ml-2 truncate" id="other-cat-display-${index}">${cat}</div><div class="flex items-center gap-1 shrink-0" id="other-cat-action-${index}"><button type="button" onclick="startEditOtherCategory(${index})" class="text-[#5b5cce] font-black px-2 py-1 rounded-lg hover:bg-slate-100">✏️</button><button type="button" onclick="deleteOtherJobCategory(${index})" class="text-[#d94b68] font-black px-2 py-1 rounded-lg hover:bg-slate-100">🗑️</button></div>`;
                 c3.appendChild(row);
             });
         }
@@ -1050,7 +1118,7 @@
             cStock.innerHTML = ''; safeSetText('stock-cat-count-badge', stockAssetList.length);
             stockAssetList.forEach((cat, index) => {
                 const row = document.createElement('div'); row.className = "flex items-center justify-between p-2 rounded-xl text-xs gap-2 transition hover:bg-[#f7f8fc]";
-                row.innerHTML = `<div class="flex-1 font-bold text-slate-700 ml-2" id="stock-cat-display-${index}">${cat}</div><div class="flex items-center gap-1" id="stock-cat-action-${index}"><button onclick="startEditStockAsset(${index})" class="text-[#5b5cce] font-black px-2 py-1 rounded-lg hover:bg-slate-100">✏️</button><button onclick="deleteStockAsset(${index})" class="text-[#d94b68] font-black px-2 py-1 rounded-lg hover:bg-slate-100">🗑️</button></div>`;
+                row.innerHTML = `<div class="flex-1 font-bold text-slate-700 ml-2 truncate" id="stock-cat-display-${index}">${cat}</div><div class="flex items-center gap-1 shrink-0" id="stock-cat-action-${index}"><button type="button" onclick="startEditStockAsset(${index})" class="text-[#5b5cce] font-black px-2 py-1 rounded-lg hover:bg-slate-100">✏️</button><button type="button" onclick="deleteStockAsset(${index})" class="text-[#d94b68] font-black px-2 py-1 rounded-lg hover:bg-slate-100">🗑️</button></div>`;
                 cStock.appendChild(row);
             });
         }
@@ -1058,7 +1126,7 @@
 
     function startEditCategory(index) {
         const displayEl = document.getElementById(`cat-display-${index}`); const actionEl = document.getElementById(`cat-action-${index}`);
-        displayEl.innerHTML = `<input type="text" id="cat-edit-input-${index}" value="${jobCategories[index]}" class="w-full bg-[#f7f8fc] px-2 py-1 rounded outline-none text-xs font-bold text-slate-800">`;
+        displayEl.innerHTML = `<input type="text" id="cat-edit-input-${index}" value="${jobCategories[index]}" class="w-full bg-[#f7f8fc] px-2 py-1 rounded outline-none text-xs font-bold text-slate-800 border border-slate-200">`;
         actionEl.innerHTML = `<button onclick="saveCategory(${index})" class="text-[#2d8a5c] font-black px-2">✔️</button><button onclick="renderCategoryManagers()" class="text-slate-400 font-black px-2">❌</button>`;
     }
     function saveCategory(index) {
@@ -1076,7 +1144,7 @@
 
     function startEditOtherCategory(index) {
         const displayEl = document.getElementById(`other-cat-display-${index}`); const actionEl = document.getElementById(`other-cat-action-${index}`);
-        displayEl.innerHTML = `<input type="text" id="other-cat-edit-input-${index}" value="${otherJobCategories[index]}" class="w-full bg-[#f7f8fc] px-2 py-1 rounded outline-none text-xs font-bold text-slate-800">`;
+        displayEl.innerHTML = `<input type="text" id="other-cat-edit-input-${index}" value="${otherJobCategories[index]}" class="w-full bg-[#f7f8fc] px-2 py-1 rounded outline-none text-xs font-bold text-slate-800 border border-slate-200">`;
         actionEl.innerHTML = `<button onclick="saveOtherCategory(${index})" class="text-[#2d8a5c] font-black px-2">✔️</button><button onclick="renderCategoryManagers()" class="text-slate-400 font-black px-2">❌</button>`;
     }
     function saveOtherCategory(index) {
@@ -1094,7 +1162,7 @@
 
     function startEditStockAsset(index) {
         const displayEl = document.getElementById(`stock-cat-display-${index}`); const actionEl = document.getElementById(`stock-cat-action-${index}`);
-        displayEl.innerHTML = `<input type="text" id="stock-cat-edit-input-${index}" value="${stockAssetList[index]}" class="w-full bg-[#f7f8fc] px-2 py-1 rounded outline-none text-xs font-bold text-slate-800 uppercase">`;
+        displayEl.innerHTML = `<input type="text" id="stock-cat-edit-input-${index}" value="${stockAssetList[index]}" class="w-full bg-[#f7f8fc] px-2 py-1 rounded outline-none text-xs font-bold text-slate-800 uppercase border border-slate-200">`;
         actionEl.innerHTML = `<button onclick="saveStockAsset(${index})" class="text-[#2d8a5c] font-black px-2">✔️</button><button onclick="renderCategoryManagers()" class="text-slate-400 font-black px-2">❌</button>`;
     }
     function saveStockAsset(index) {
@@ -1123,6 +1191,8 @@
         if (evt && evt.currentTarget) { 
             evt.currentTarget.classList.remove('bg-transparent', 'text-slate-500');
             evt.currentTarget.classList.add('bg-slate-900', 'text-white', 'shadow-md', 'shadow-slate-900/20');
+            // Scroll tab into view on mobile
+            evt.currentTarget.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
         }
         refreshAll();
     }
@@ -1148,7 +1218,7 @@
         safeSetText('t1-month-income', totalInc.toLocaleString(undefined, {minimumFractionDigits: 0}));
         safeSetText('t1-month-job-expense', totalJobExp.toLocaleString(undefined, {minimumFractionDigits: 0}));
         const netIncomeEl = document.getElementById('t1-month-net-income');
-        if (netIncomeEl) { netIncomeEl.innerText = (totalInc - totalJobExp).toLocaleString(undefined, {minimumFractionDigits: 0}); netIncomeEl.className = (totalInc - totalJobExp) >= 0 ? "text-3xl font-black mt-2 text-slate-800" : "text-3xl font-black mt-2 text-[#d94b68]"; }
+        if (netIncomeEl) { netIncomeEl.innerText = (totalInc - totalJobExp).toLocaleString(undefined, {minimumFractionDigits: 0}); netIncomeEl.className = (totalInc - totalJobExp) >= 0 ? "text-xl md:text-3xl font-black mt-1 md:mt-2 text-slate-800 truncate" : "text-xl md:text-3xl font-black mt-1 md:mt-2 text-[#d94b68] truncate"; }
 
         let annMan = incomeData.filter(d => d.year === selYear), annMee = meeDebtData.filter(d => d.paid && d.paidYear === selYear), annOth = otherDebtData.filter(d => d.paid && d.paidYear === selYear);
         let annRev = annMan.reduce((s, i) => s + i.amount, 0) + annMee.reduce((s, i) => s + i.amount, 0) + annOth.reduce((s, i) => s + (i.taxDeducted ? i.amount * 0.97 : i.amount), 0);
@@ -1223,59 +1293,59 @@
 
     function renderIncome(manual, meePaid, otherPaid) {
         const tbody = document.getElementById('income-table-body'); if (!tbody) return; tbody.innerHTML = '';
-        if(manual.length === 0 && meePaid.length === 0 && otherPaid.length === 0) { tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400 font-bold">ยังไม่มีประวัติในเดือนนี้</td></tr>`; return; }
+        if(manual.length === 0 && meePaid.length === 0 && otherPaid.length === 0) { tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400 font-bold whitespace-nowrap">ยังไม่มีประวัติในเดือนนี้</td></tr>`; return; }
         manual.forEach(item => {
             const proj = getProjectFromDetail(item.detail);
             if (editingIncomeId === item.id) {
-                tbody.innerHTML += `<tr class="bg-[#f0f0ff] transition"><td class="p-4 text-[10px] italic font-semibold text-[#5b5cce]">${proj}</td><td class="p-4"><span class="px-2 py-1 bg-white text-[#5b5cce] border border-[#5b5cce] text-[10px] font-black rounded-lg uppercase tracking-wider">${item.type}</span></td><td class="p-4"><input type="text" id="edit-detail-${item.id}" value="${item.detail}" class="w-full bg-white px-3 py-2 text-xs font-bold rounded-lg border border-slate-200"></td><td class="p-4 text-right"><input type="number" step="0.01" id="edit-amount-${item.id}" value="${item.amount}" class="w-24 text-right bg-white px-3 py-2 text-xs font-bold rounded-lg text-[#2d8a5c] border border-slate-200"></td><td class="p-4 text-right"><input type="number" step="0.01" id="edit-expense-${item.id}" value="${item.expense || 0}" class="w-24 text-right bg-white px-3 py-2 text-xs font-bold rounded-lg text-[#d94b68] border border-slate-200"></td><td class="p-4 text-center"><div class="flex justify-center gap-2"><button onclick="saveInlineEditIncome('${item.id}')" class="bg-[#2d8a5c] text-white px-2 py-1.5 rounded-lg text-xs font-bold">Save</button><button onclick="cancelInlineEditIncome()" class="bg-slate-300 text-slate-700 px-2 py-1.5 rounded-lg text-xs font-bold">Cancel</button></div></td></tr>`;
+                tbody.innerHTML += `<tr class="bg-[#f0f0ff] transition"><td class="p-4 text-[10px] italic font-semibold text-[#5b5cce] whitespace-nowrap">${proj}</td><td class="p-4 whitespace-nowrap"><span class="px-2 py-1 bg-white text-[#5b5cce] border border-[#5b5cce] text-[10px] font-black rounded-lg uppercase tracking-wider">${item.type}</span></td><td class="p-4 min-w-[200px]"><input type="text" id="edit-detail-${item.id}" value="${item.detail}" class="w-full bg-white px-3 py-2 text-xs font-bold rounded-lg border border-slate-200"></td><td class="p-4 text-right whitespace-nowrap"><input type="number" step="0.01" id="edit-amount-${item.id}" value="${item.amount}" class="w-24 text-right bg-white px-3 py-2 text-xs font-bold rounded-lg text-[#2d8a5c] border border-slate-200"></td><td class="p-4 text-right whitespace-nowrap"><input type="number" step="0.01" id="edit-expense-${item.id}" value="${item.expense || 0}" class="w-24 text-right bg-white px-3 py-2 text-xs font-bold rounded-lg text-[#d94b68] border border-slate-200"></td><td class="p-4 text-center whitespace-nowrap"><div class="flex justify-center gap-2"><button onclick="saveInlineEditIncome('${item.id}')" class="bg-[#2d8a5c] text-white px-2 py-1.5 rounded-lg text-xs font-bold">Save</button><button onclick="cancelInlineEditIncome()" class="bg-slate-300 text-slate-700 px-2 py-1.5 rounded-lg text-xs font-bold">Cancel</button></div></td></tr>`;
             } else {
-                tbody.innerHTML += `<tr><td class="font-extrabold text-slate-800">${proj}</td><td><span class="px-2.5 py-1 bg-[#f0f0ff] text-[#5b5cce] text-[9px] font-black rounded-full uppercase tracking-wider">${item.type}</span></td><td class="font-bold text-xs">${item.detail} <span class="text-[8px] text-slate-400 font-black tracking-widest ml-1 uppercase bg-slate-100 px-1.5 py-0.5 rounded-full">Manual</span></td><td class="text-right text-[#2d8a5c] font-black">${item.amount.toLocaleString(undefined, {minimumFractionDigits: 2})}</td><td class="text-right text-[#d94b68] font-black">${item.expense > 0 ? '-' + item.expense.toLocaleString(undefined, {minimumFractionDigits: 2}) : '-'}</td><td class="text-center"><div class="flex justify-center gap-2"><button class="bg-slate-100 hover:bg-slate-200 text-slate-600 p-1.5 rounded-lg transition" onclick="startInlineEditIncome('${item.id}')">✏️</button><button class="bg-[#fff0f4] hover:bg-[#ffe0e9] text-[#d94b68] p-1.5 rounded-lg transition" onclick="deleteRegistryConfirm('${item.id}', 'inc')">🗑️</button></div></td></tr>`;
+                tbody.innerHTML += `<tr><td class="font-extrabold text-slate-800 whitespace-nowrap">${proj}</td><td class="whitespace-nowrap"><span class="px-2.5 py-1 bg-[#f0f0ff] text-[#5b5cce] text-[9px] font-black rounded-full uppercase tracking-wider">${item.type}</span></td><td class="font-bold text-xs wrap-text">${item.detail} <span class="text-[8px] text-slate-400 font-black tracking-widest ml-1 uppercase bg-slate-100 px-1.5 py-0.5 rounded-full inline-block mt-1 sm:mt-0">Manual</span></td><td class="text-right text-[#2d8a5c] font-black whitespace-nowrap">${item.amount.toLocaleString(undefined, {minimumFractionDigits: 2})}</td><td class="text-right text-[#d94b68] font-black whitespace-nowrap">${item.expense > 0 ? '-' + item.expense.toLocaleString(undefined, {minimumFractionDigits: 2}) : '-'}</td><td class="text-center whitespace-nowrap"><div class="flex justify-center gap-2"><button class="bg-slate-100 hover:bg-slate-200 text-slate-600 p-1.5 rounded-lg transition" onclick="startInlineEditIncome('${item.id}')">✏️</button><button class="bg-[#fff0f4] hover:bg-[#ffe0e9] text-[#d94b68] p-1.5 rounded-lg transition" onclick="deleteRegistryConfirm('${item.id}', 'inc')">🗑️</button></div></td></tr>`;
             }
         });
-        meePaid.forEach(item => { tbody.innerHTML += `<tr><td class="font-extrabold text-slate-800">${getProjectFromDetail(item.detail)}</td><td><span class="px-2.5 py-1 bg-[#fff0f4] text-[#d94b68] text-[9px] font-black rounded-full uppercase tracking-wider">งานช่างมี้</span></td><td class="font-bold text-xs">${item.detail} <span class="text-[8px] text-[#2d8a5c] bg-[#ebfcf4] px-1.5 py-0.5 rounded-full font-black tracking-widest ml-1 uppercase">Linked</span></td><td class="text-right text-[#2d8a5c] font-black">${item.amount.toLocaleString(undefined, {minimumFractionDigits: 2})}</td><td class="text-right text-slate-300">-</td><td class="text-center text-[9px] text-slate-400 font-extrabold uppercase tracking-widest">Tab 2</td></tr>`; });
-        otherPaid.forEach(item => { tbody.innerHTML += `<tr><td class="font-extrabold text-slate-800">${getProjectFromDetail(item.detail)}</td><td><span class="px-2.5 py-1 bg-[#fffaf0] text-[#c28b27] text-[9px] font-black rounded-full uppercase tracking-wider">${item.category || 'งานอื่น'}</span></td><td class="font-bold text-xs"><div class="flex items-center gap-1">${item.detail} <span class="text-[8px] text-[#2d8a5c] bg-[#ebfcf4] px-1.5 py-0.5 rounded-full font-black tracking-widest uppercase">Linked</span></div>${item.taxDeducted ? `<div class="text-[9px] text-[#d94b68] font-extrabold mt-1">หักภาษี 3% (ก่อนหัก: ${item.amount.toLocaleString(undefined, {minimumFractionDigits: 2})})</div>` : ''}</td><td class="text-right text-[#2d8a5c] font-black">${(item.taxDeducted ? item.amount * 0.97 : item.amount).toLocaleString(undefined, {minimumFractionDigits: 2})}</td><td class="text-right text-slate-300">-</td><td class="text-center text-[9px] text-slate-400 font-extrabold uppercase tracking-widest">Tab 3</td></tr>`; });
+        meePaid.forEach(item => { tbody.innerHTML += `<tr><td class="font-extrabold text-slate-800 whitespace-nowrap">${getProjectFromDetail(item.detail)}</td><td class="whitespace-nowrap"><span class="px-2.5 py-1 bg-[#fff0f4] text-[#d94b68] text-[9px] font-black rounded-full uppercase tracking-wider">งานช่างมี้</span></td><td class="font-bold text-xs wrap-text">${item.detail} <span class="text-[8px] text-[#2d8a5c] bg-[#ebfcf4] px-1.5 py-0.5 rounded-full font-black tracking-widest ml-1 uppercase inline-block mt-1 sm:mt-0">Linked</span></td><td class="text-right text-[#2d8a5c] font-black whitespace-nowrap">${item.amount.toLocaleString(undefined, {minimumFractionDigits: 2})}</td><td class="text-right text-slate-300 whitespace-nowrap">-</td><td class="text-center text-[9px] text-slate-400 font-extrabold uppercase tracking-widest whitespace-nowrap">Tab 2</td></tr>`; });
+        otherPaid.forEach(item => { tbody.innerHTML += `<tr><td class="font-extrabold text-slate-800 whitespace-nowrap">${getProjectFromDetail(item.detail)}</td><td class="whitespace-nowrap"><span class="px-2.5 py-1 bg-[#fffaf0] text-[#c28b27] text-[9px] font-black rounded-full uppercase tracking-wider">${item.category || 'งานอื่น'}</span></td><td class="font-bold text-xs wrap-text"><div class="flex items-center gap-1 flex-wrap">${item.detail} <span class="text-[8px] text-[#2d8a5c] bg-[#ebfcf4] px-1.5 py-0.5 rounded-full font-black tracking-widest uppercase inline-block">Linked</span></div>${item.taxDeducted ? `<div class="text-[9px] text-[#d94b68] font-extrabold mt-1">หักภาษี 3% (ก่อนหัก: ${item.amount.toLocaleString(undefined, {minimumFractionDigits: 2})})</div>` : ''}</td><td class="text-right text-[#2d8a5c] font-black whitespace-nowrap">${(item.taxDeducted ? item.amount * 0.97 : item.amount).toLocaleString(undefined, {minimumFractionDigits: 2})}</td><td class="text-right text-slate-300 whitespace-nowrap">-</td><td class="text-center text-[9px] text-slate-400 font-extrabold uppercase tracking-widest whitespace-nowrap">Tab 3</td></tr>`; });
     }
 
     function renderMeeActive(data) {
         const tbody = document.getElementById('mee-active-table-body'); if (!tbody) return; tbody.innerHTML = '';
-        if (data.length === 0) { tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400 font-bold">ไม่มีรายการค้างชำระ</td></tr>`; return; }
+        if (data.length === 0) { tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400 font-bold whitespace-nowrap">ไม่มีรายการค้างชำระ</td></tr>`; return; }
         data.forEach(item => {
             let opts = ''; workSteps.forEach(s => { opts += `<option value="${s}" ${item.step === s ? 'selected':''}>${s}</option>`; });
-            tbody.innerHTML += `<tr><td class="font-extrabold text-slate-700">${item.detail}</td><td class="text-center font-black text-[#5b5cce]">${item.rai} <span class="text-[10px] text-slate-400">ไร่</span></td><td class="text-right font-black text-[#d94b68]">${item.amount.toLocaleString()}</td><td class="text-center"><select onchange="changeMeeStep('${item.id}', this.value)" class="bg-[#f7f8fc] px-3 py-1.5 rounded-lg text-[11px] font-extrabold cursor-pointer border border-transparent hover:border-slate-200 focus:bg-white">${opts}</select></td><td class="text-center"><button onclick="payMeeJob('${item.id}')" class="bg-[#1a1b1e] hover:bg-slate-700 text-white text-[10px] font-black uppercase tracking-wider py-2 px-4 rounded-full transition shadow-md">Pay</button></td><td class="text-center"><button class="text-slate-400 hover:text-[#d94b68] bg-slate-50 hover:bg-[#fff0f4] p-2 rounded-full transition" onclick="deleteRegistryConfirm('${item.id}', 'mee')">🗑️</button></td></tr>`;
+            tbody.innerHTML += `<tr><td class="font-extrabold text-slate-700 wrap-text">${item.detail}</td><td class="text-center font-black text-[#5b5cce] whitespace-nowrap">${item.rai} <span class="text-[10px] text-slate-400">ไร่</span></td><td class="text-right font-black text-[#d94b68] whitespace-nowrap">${item.amount.toLocaleString()}</td><td class="text-center whitespace-nowrap"><select onchange="changeMeeStep('${item.id}', this.value)" class="bg-[#f7f8fc] px-3 py-1.5 rounded-lg text-[10px] sm:text-[11px] font-extrabold cursor-pointer border border-transparent hover:border-slate-200 focus:bg-white">${opts}</select></td><td class="text-center whitespace-nowrap"><button onclick="payMeeJob('${item.id}')" class="bg-[#1a1b1e] hover:bg-slate-700 text-white text-[10px] font-black uppercase tracking-wider py-1.5 sm:py-2 px-3 sm:px-4 rounded-full transition shadow-md">Pay</button></td><td class="text-center whitespace-nowrap"><button class="text-slate-400 hover:text-[#d94b68] bg-slate-50 hover:bg-[#fff0f4] p-2 rounded-full transition" onclick="deleteRegistryConfirm('${item.id}', 'mee')">🗑️</button></td></tr>`;
         });
     }
 
     function renderMeePaid(data) {
         const tbody = document.getElementById('mee-paid-table-body'); if (!tbody) return; tbody.innerHTML = '';
-        if (data.length === 0) { tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-slate-400 font-bold">ไม่มีประวัติ</td></tr>`; return; }
+        if (data.length === 0) { tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-slate-400 font-bold whitespace-nowrap">ไม่มีประวัติ</td></tr>`; return; }
         data.forEach(item => {
-            tbody.innerHTML += `<tr><td class="text-slate-400 text-xs font-extrabold tracking-widest">${item.paidDate || '-'}</td><td class="font-extrabold text-slate-700">${item.detail}</td><td class="text-right font-black text-[#2d8a5c]">${item.amount.toLocaleString()}</td><td class="text-center"><button class="text-slate-300 hover:text-[#d94b68] transition" onclick="deleteRegistryConfirm('${item.id}', 'mee')">🗑️</button></td></tr>`;
+            tbody.innerHTML += `<tr><td class="text-slate-400 text-xs font-extrabold tracking-widest whitespace-nowrap">${item.paidDate || '-'}</td><td class="font-extrabold text-slate-700 wrap-text">${item.detail}</td><td class="text-right font-black text-[#2d8a5c] whitespace-nowrap">${item.amount.toLocaleString()}</td><td class="text-center whitespace-nowrap"><button class="text-slate-300 hover:text-[#d94b68] transition" onclick="deleteRegistryConfirm('${item.id}', 'mee')">🗑️</button></td></tr>`;
         });
     }
 
     function renderOtherActive(data) {
         const tbody = document.getElementById('other-active-table-body'); if (!tbody) return; tbody.innerHTML = '';
-        if (data.length === 0) { tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-400 font-bold">ไม่มีรายการค้างจ่าย</td></tr>`; return; }
+        if (data.length === 0) { tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-400 font-bold whitespace-nowrap">ไม่มีรายการค้างจ่าย</td></tr>`; return; }
         data.forEach(item => {
             let opts = ''; workSteps.forEach(s => { opts += `<option value="${s}" ${item.step === s ? 'selected':''}>${s}</option>`; });
-            tbody.innerHTML += `<tr><td><span class="px-2.5 py-1 badge-yellow text-[9px] font-black rounded-full uppercase tracking-wider">${item.category}</span></td><td class="font-extrabold text-slate-700 text-xs">${item.detail}</td><td class="text-right font-black text-[#c28b27]">${item.amount.toLocaleString(undefined, {minimumFractionDigits: 2})} ${item.taxDeducted ? `<span class="text-[9px] text-[#d94b68] block font-extrabold tracking-widest mt-0.5">หัก 3%</span>` : ''}</td><td class="text-center"><button onclick="payOtherJob('${item.id}')" class="bg-[#1a1b1e] hover:bg-slate-700 text-white text-[10px] font-black uppercase tracking-wider py-2 px-4 rounded-full transition shadow-md">Pay</button></td><td class="text-center"><button class="text-slate-400 hover:text-[#d94b68] bg-slate-50 hover:bg-[#fff0f4] p-2 rounded-full transition" onclick="deleteRegistryConfirm('${item.id}', 'oth')">🗑️</button></td></tr>`;
+            tbody.innerHTML += `<tr><td class="whitespace-nowrap"><span class="px-2.5 py-1 badge-yellow text-[9px] font-black rounded-full uppercase tracking-wider">${item.category}</span></td><td class="font-extrabold text-slate-700 text-xs wrap-text">${item.detail}</td><td class="text-right font-black text-[#c28b27] whitespace-nowrap">${item.amount.toLocaleString(undefined, {minimumFractionDigits: 2})} ${item.taxDeducted ? `<span class="text-[9px] text-[#d94b68] block font-extrabold tracking-widest mt-0.5">หัก 3%</span>` : ''}</td><td class="text-center whitespace-nowrap"><button onclick="payOtherJob('${item.id}')" class="bg-[#1a1b1e] hover:bg-slate-700 text-white text-[10px] font-black uppercase tracking-wider py-1.5 sm:py-2 px-3 sm:px-4 rounded-full transition shadow-md">Pay</button></td><td class="text-center whitespace-nowrap"><button class="text-slate-400 hover:text-[#d94b68] bg-slate-50 hover:bg-[#fff0f4] p-2 rounded-full transition" onclick="deleteRegistryConfirm('${item.id}', 'oth')">🗑️</button></td></tr>`;
         });
     }
 
     function renderOtherPaid(data) {
         const tbody = document.getElementById('other-paid-table-body'); if (!tbody) return; tbody.innerHTML = '';
-        if (data.length === 0) { tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-slate-400 font-bold">ไม่มีประวัติชำระ</td></tr>`; return; }
+        if (data.length === 0) { tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-slate-400 font-bold whitespace-nowrap">ไม่มีประวัติชำระ</td></tr>`; return; }
         data.forEach(item => {
-            tbody.innerHTML += `<tr><td class="text-slate-400 text-xs font-extrabold tracking-widest">${item.paidDate || '-'}</td><td class="font-extrabold text-slate-700 text-xs">${item.detail}</td><td class="text-right font-black text-[#2d8a5c]">${(item.taxDeducted ? item.amount * 0.97 : item.amount).toLocaleString(undefined, {minimumFractionDigits: 2})}</td><td class="text-center"><button class="text-slate-300 hover:text-[#d94b68] transition" onclick="deleteRegistryConfirm('${item.id}', 'oth')">🗑️</button></td></tr>`;
+            tbody.innerHTML += `<tr><td class="text-slate-400 text-xs font-extrabold tracking-widest whitespace-nowrap">${item.paidDate || '-'}</td><td class="font-extrabold text-slate-700 text-xs wrap-text">${item.detail}</td><td class="text-right font-black text-[#2d8a5c] whitespace-nowrap">${(item.taxDeducted ? item.amount * 0.97 : item.amount).toLocaleString(undefined, {minimumFractionDigits: 2})}</td><td class="text-center whitespace-nowrap"><button class="text-slate-300 hover:text-[#d94b68] transition" onclick="deleteRegistryConfirm('${item.id}', 'oth')">🗑️</button></td></tr>`;
         });
     }
 
     function renderStocksTable(data) {
         const tbody = document.getElementById('stock-table-body'); if (!tbody) return; tbody.innerHTML = '';
-        if(data.length === 0) { tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-400 font-bold">ไม่มีประวัติการลงทุน</td></tr>`; return; }
+        if(data.length === 0) { tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-400 font-bold whitespace-nowrap">ไม่มีประวัติการลงทุน</td></tr>`; return; }
         data.forEach(item => {
             let tc = item.type === 'BUY' ? 'badge-green' : item.type === 'SELL' ? 'badge-pink' : 'badge-blue';
-            tbody.innerHTML += `<tr><td class="text-slate-800 font-black">${item.name}</td><td class="text-center"><span class="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider ${tc}">${item.type}</span></td><td class="text-right font-black text-slate-700">${item.price.toLocaleString(undefined, {minimumFractionDigits: 2})}</td><td class="text-center font-bold text-slate-400 text-[10px] tracking-widest">${item.currency}</td><td class="text-center"><button class="text-slate-400 hover:text-[#d94b68] bg-slate-50 hover:bg-[#fff0f4] p-2 rounded-full transition" onclick="deleteRegistryConfirm('${item.id}', 'stk')">🗑️</button></td></tr>`;
+            tbody.innerHTML += `<tr><td class="text-slate-800 font-black whitespace-nowrap">${item.name}</td><td class="text-center whitespace-nowrap"><span class="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider ${tc}">${item.type}</span></td><td class="text-right font-black text-slate-700 whitespace-nowrap">${item.price.toLocaleString(undefined, {minimumFractionDigits: 2})}</td><td class="text-center font-bold text-slate-400 text-[10px] tracking-widest whitespace-nowrap">${item.currency}</td><td class="text-center whitespace-nowrap"><button class="text-slate-400 hover:text-[#d94b68] bg-slate-50 hover:bg-[#fff0f4] p-2 rounded-full transition" onclick="deleteRegistryConfirm('${item.id}', 'stk')">🗑️</button></td></tr>`;
         });
     }
 
@@ -1284,10 +1354,10 @@
         let taxItems = otherDebtData.filter(d => d.paid && d.taxDeducted && d.paidYear === year && d.paidMonth === month);
         let tGross = 0, tTax = 0, tNet = 0;
         safeSetText('tax-items-count', `${taxItems.length} งวด`);
-        if (taxItems.length === 0) { tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-slate-400 font-bold">ไม่มีรายการในรอบเดือนนี้</td></tr>`; safeSetText('tax-total-deducted', '0.00'); safeSetText('tax-total-net-payout', '0.00'); return; }
+        if (taxItems.length === 0) { tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-slate-400 font-bold whitespace-nowrap">ไม่มีรายการในรอบเดือนนี้</td></tr>`; safeSetText('tax-total-deducted', '0.00'); safeSetText('tax-total-net-payout', '0.00'); return; }
         taxItems.forEach(item => {
             const gross = item.amount, tax = gross * 0.03, net = gross - tax; tGross += gross; tTax += tax; tNet += net;
-            tbody.innerHTML += `<tr><td class="pl-4 text-[11px] text-slate-400 font-extrabold tracking-widest">${item.paidDate || '-'}</td><td class="text-slate-700 font-black text-xs">${item.detail}</td><td class="text-right font-black text-[#d94b68]">-${tax.toLocaleString(undefined, {minimumFractionDigits: 2})}</td><td class="text-right pr-4 font-black text-[#2d8a5c]">${net.toLocaleString(undefined, {minimumFractionDigits: 2})}</td></tr>`;
+            tbody.innerHTML += `<tr><td class="pl-2 md:pl-4 text-[10px] md:text-[11px] text-slate-400 font-extrabold tracking-widest whitespace-nowrap">${item.paidDate || '-'}</td><td class="text-slate-700 font-black text-xs wrap-text">${item.detail}</td><td class="text-right font-black text-[#d94b68] whitespace-nowrap">-${tax.toLocaleString(undefined, {minimumFractionDigits: 2})}</td><td class="text-right pr-2 md:pr-4 font-black text-[#2d8a5c] whitespace-nowrap">${net.toLocaleString(undefined, {minimumFractionDigits: 2})}</td></tr>`;
         });
         safeSetText('tax-total-deducted', tTax.toLocaleString(undefined, {minimumFractionDigits: 2})); safeSetText('tax-total-net-payout', tNet.toLocaleString(undefined, {minimumFractionDigits: 2}));
     }
@@ -1307,7 +1377,7 @@
         const projectsList = Object.keys(projectStats);
         if (projectsList.length === 0) { tbody.innerHTML = `<tr><td colspan="2" class="p-4 text-center font-bold text-slate-400 bg-white rounded-xl">ยังไม่มีสถิติในปีนี้</td></tr>`; if (projectBubbleChartInstance) projectBubbleChartInstance.destroy(); return; }
         projectsList.sort((a,b) => (projectStats[b].totalRevenue - projectStats[b].totalExpense) - (projectStats[a].totalRevenue - projectStats[a].totalExpense));
-        projectsList.forEach(proj => { const net = projectStats[proj].totalRevenue - projectStats[proj].totalExpense; tbody.innerHTML += `<tr><td class="font-extrabold text-slate-600 truncate max-w-[140px]" title="${proj}">${proj}</td><td class="text-right font-black ${net >= 0 ? 'text-[#2d8a5c]':'text-[#d94b68]'}">${net.toLocaleString(undefined, {maximumFractionDigits:0})}</td></tr>`; });
+        projectsList.forEach(proj => { const net = projectStats[proj].totalRevenue - projectStats[proj].totalExpense; tbody.innerHTML += `<tr><td class="font-extrabold text-slate-600 truncate max-w-[140px]" title="${proj}">${proj}</td><td class="text-right font-black ${net >= 0 ? 'text-[#2d8a5c]':'text-[#d94b68]'} whitespace-nowrap">${net.toLocaleString(undefined, {maximumFractionDigits:0})}</td></tr>`; });
 
         const colors = [ 'rgba(91, 92, 206, 0.6)', 'rgba(45, 138, 92, 0.6)', 'rgba(217, 75, 104, 0.6)', 'rgba(194, 139, 39, 0.6)', 'rgba(59, 124, 206, 0.6)' ];
         const bubbleDatasets = projectsList.map((proj, idx) => {
@@ -1331,7 +1401,7 @@
                         x: { grid: {display: false}, min: 0, max: 13, ticks: { stepSize: 1, callback: v => (v >= 1 && v <= 12) ? `M${v}` : '' } }, 
                         y: { grid: {color: '#f1f3f5'} } 
                     }, 
-                    plugins: { legend: { position: 'top', labels: { boxWidth: 10, usePointStyle: true } } } 
+                    plugins: { legend: { position: 'top', labels: { boxWidth: 10, usePointStyle: true, font: {size: 10} } } } 
                 } 
             });
         }
@@ -1360,10 +1430,10 @@
             options: { 
                 responsive: true, maintainAspectRatio: false, 
                 scales: { 
-                    x: { stacked: true, grid: {display: false} }, 
-                    y: { stacked: true, beginAtZero: true, grid: {color: '#f1f3f5'} } 
+                    x: { stacked: true, grid: {display: false}, ticks: {font: {size: window.innerWidth < 768 ? 9 : 12}} }, 
+                    y: { stacked: true, beginAtZero: true, grid: {color: '#f1f3f5'}, ticks: {font: {size: window.innerWidth < 768 ? 9 : 12}} } 
                 }, 
-                plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 6, padding: 20 } } } 
+                plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 6, padding: window.innerWidth < 768 ? 10 : 20, font: {size: window.innerWidth < 768 ? 10 : 12} } } } 
             } 
         });
     }
@@ -1377,7 +1447,6 @@
         let incArr = [], expArr = [], investArr = [], stkBuyArr = [], stkSellArr = [];
         let totalInvestYear = 0, totalIncYear = 0, totalExpTotalYear = 0;
 
-        // 1. Data Processing
         months.forEach(m => {
             let manInc = incomeData.filter(d => d.year === selectedYear && d.month === m).reduce((s,i) => s + i.amount - (i.expense||0), 0);
             let meeInc = meeDebtData.filter(d => d.paid && d.paidYear === selectedYear && d.paidMonth === m).reduce((s,i) => s + i.amount, 0);
@@ -1396,7 +1465,6 @@
             stkBuyArr.push(buy); stkSellArr.push(sell); totalInvestYear += buy;
         });
 
-        // 2. Average Expense Logic (Only count months with data)
         let activeExpRecords = personalExpenseData.filter(d => d.year === selectedYear && (d.eating > 0 || d.creditCard > 0 || d.rent > 0 || d.personal > 0));
         let expMonthCount = activeExpRecords.length > 0 ? activeExpRecords.length : 1; 
         
@@ -1409,13 +1477,11 @@
         let avgPers = yPers / expMonthCount;
         let totalAvgExp = avgEat + avgCard + avgRent + avgPers;
 
-        // KPIs
         safeSetText('dash-overall-net', (totalIncYear - totalExpTotalYear).toLocaleString(undefined, {maximumFractionDigits: 0}) + ' ฿');
         safeSetText('dash-overall-invest', totalInvestYear.toLocaleString(undefined, {maximumFractionDigits: 0}) + ' ฿');
         safeSetText('dash-exp-month-count', `(เฉลี่ยจาก ${activeExpRecords.length} เดือนที่กรอก)`);
         safeSetText('dash-exp-total-avg', totalAvgExp.toLocaleString(undefined, {maximumFractionDigits: 0}) + ' ฿/เดือน');
 
-        // Panel 1: Income vs Expense vs Invest (Comparison Grouped Bar)
         const ctxComp = document.getElementById('dashComparisonChart');
         if(dashComparisonChartInst) dashComparisonChartInst.destroy();
         if(ctxComp) {
@@ -1425,26 +1491,25 @@
                     labels: labels,
                     datasets: [
                         { label: 'รายรับ (Income)', data: incArr, backgroundColor: '#2d8a5c', borderRadius: 4 },
-                        { label: 'รายจ่ายส่วนตัว (Expense)', data: expArr, backgroundColor: '#d94b68', borderRadius: 4 },
-                        { label: 'เงินลงทุน (Invest)', data: investArr, backgroundColor: '#5b5cce', borderRadius: 4 }
+                        { label: 'รายจ่าย (Expense)', data: expArr, backgroundColor: '#d94b68', borderRadius: 4 },
+                        { label: 'ลงทุน (Invest)', data: investArr, backgroundColor: '#5b5cce', borderRadius: 4 }
                     ]
                 },
                 options: {
                     responsive: true, maintainAspectRatio: false,
                     scales: { y: { grid: { color: '#f1f3f5' } }, x: { grid: { display: false } } },
-                    plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 8 } } }
+                    plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 8, font: {size: window.innerWidth < 768 ? 10 : 12} } } }
                 }
             });
         }
 
-        // Panel 2: Average Personal Expense (Doughnut)
         const ctxExp = document.getElementById('dashExpenseChart');
         if(dashExpenseChartInst) dashExpenseChartInst.destroy();
         if(ctxExp) {
             dashExpenseChartInst = new Chart(ctxExp, {
                 type: 'doughnut',
                 data: {
-                    labels: ['ค่ากิน (เฉลี่ย)', 'บัตร (เฉลี่ย)', 'ที่พัก (เฉลี่ย)', 'ส่วนตัว (เฉลี่ย)'],
+                    labels: ['ค่ากิน', 'บัตร', 'ที่พัก', 'ส่วนตัว'],
                     datasets: [{
                         data: [avgEat, avgCard, avgRent, avgPers],
                         backgroundColor: ['#d94b68', '#c28b27', '#3b7cce', '#5b5cce'],
@@ -1452,16 +1517,15 @@
                     }]
                 },
                 options: {
-                    responsive: true, maintainAspectRatio: false, cutout: '70%',
+                    responsive: true, maintainAspectRatio: false, cutout: '65%',
                     plugins: { 
-                        legend: { position: 'right', labels: { usePointStyle: true, boxWidth: 8, padding: 15 } },
+                        legend: { position: window.innerWidth < 768 ? 'bottom' : 'right', labels: { usePointStyle: true, boxWidth: 8, padding: 15, font: {size: 10} } },
                         tooltip: { callbacks: { label: function(c) { return c.label + ': ' + c.parsed.toLocaleString(undefined, {maximumFractionDigits:0}) + ' ฿/ด.'; } } }
                     }
                 }
             });
         }
 
-        // Panel 3: Stock Trading Volume
         const ctxStk = document.getElementById('dashStockChart');
         if(dashStockChartInst) dashStockChartInst.destroy();
         if(ctxStk) {
@@ -1482,7 +1546,6 @@
             });
         }
 
-        // Panel 4: Yearly Grand Summary (Thai)
         const tbodyYr = document.getElementById('dash-yearly-tbody');
         if(tbodyYr) {
             tbodyYr.innerHTML = '';
@@ -1503,10 +1566,10 @@
                 
                 tbodyYr.innerHTML += `
                     <tr>
-                        <td class="pl-4 font-black text-slate-800 border-none">${parseInt(y)+543}</td>
+                        <td class="pl-2 md:pl-4 font-black text-slate-800 border-none">${parseInt(y)+543}</td>
                         <td class="text-right text-[#2d8a5c] font-black border-none">${yInc.toLocaleString(undefined, {maximumFractionDigits:0})}</td>
                         <td class="text-right text-[#d94b68] font-black border-none">${yExp.toLocaleString(undefined, {maximumFractionDigits:0})}</td>
-                        <td class="pr-4 text-right font-black ${netColor} border-none">${yNet.toLocaleString(undefined, {maximumFractionDigits:0})}</td>
+                        <td class="pr-2 md:pr-4 text-right font-black ${netColor} border-none">${yNet.toLocaleString(undefined, {maximumFractionDigits:0})}</td>
                     </tr>
                 `;
             });
