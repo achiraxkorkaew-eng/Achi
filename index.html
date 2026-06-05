@@ -127,7 +127,7 @@
                     <input type="text" id="gas-url-input" class="flex-1 px-4 py-2.5 text-xs font-medium bg-[#f7f8fc]" value="https://script.google.com/macros/s/AKfycbwoAAXkMTl3Vx-cyZWUgQnisXOSfEeIw_-nUFXq30-HTQYTuR4cPO4jiR-NGV6l_JI/exec" placeholder="https://script.google.com/macros/s/.../exec">
                     <button onclick="saveGasUrl()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold px-4 py-2.5 rounded-xl transition">บันทึก URL</button>
                 </div>
-                <p class="text-[10px] text-slate-500 mt-2">💡 หากใส่ URL ไว้ ระบบจะ **Auto-Sync** ขึ้น Google Sheets ให้อัตโนมัติทุกครั้งที่บันทึกข้อมูล</p>
+                <p class="text-[10px] text-slate-500 mt-2">💡 หากใส่ URL ไว้ ระบบจะ **Auto-Sync** ขึ้นและลง Google Sheets ให้อัตโนมัติเวลาเปิดเว็บหรือบันทึกข้อมูล</p>
             </div>
             
             <div class="grid grid-cols-2 gap-3 mt-4">
@@ -788,7 +788,7 @@
         if (url) backgroundSync(url);
     }
     
-    // Background Auto Sync Logic
+    // Background Auto Sync Logic (Push to cloud)
     let syncTimeout = null;
     function backgroundSync(url) {
         clearTimeout(syncTimeout);
@@ -821,6 +821,53 @@
         }, 1500); // 1.5s debounce to prevent spamming
     }
 
+    // Auto Pull Logic (Fetch from cloud on startup)
+    async function autoPullFromCloud(url) {
+        const syncIndicator = document.getElementById('sync-indicator');
+        if(syncIndicator) syncIndicator.innerHTML = '<span class="text-[#5b5cce] bg-[#f0f0ff] px-2 py-0.5 rounded-full">⏳ Loading Cloud Data...</span>';
+        
+        try {
+            const finalUrl = cleanAndBuildUrl(url, { action: 'restore' });
+            const response = await fetch(finalUrl, { 
+                method: 'GET',
+                redirect: 'follow'
+            }); 
+            const result = await response.json();
+            
+            if(result.status === 'success' && result.data) {
+                const parsed = result.data;
+                if(parsed.incomeData) incomeData = parsed.incomeData; 
+                if(parsed.meeDebtData) meeDebtData = parsed.meeDebtData; 
+                if(parsed.otherDebtData) otherDebtData = parsed.otherDebtData; 
+                if(parsed.personalExpenseData) personalExpenseData = parsed.personalExpenseData; 
+                if(parsed.stockData) stockData = parsed.stockData; 
+                if(parsed.jobCategories) jobCategories = parsed.jobCategories; 
+                if(parsed.otherJobCategories) otherJobCategories = parsed.otherJobCategories; 
+                if(parsed.stockAssetList) stockAssetList = parsed.stockAssetList;
+                
+                // Save to local storage silently
+                localStorage.setItem('roh_incomeData', JSON.stringify(incomeData));
+                localStorage.setItem('roh_meeDebtData', JSON.stringify(meeDebtData));
+                localStorage.setItem('roh_otherDebtData', JSON.stringify(otherDebtData));
+                localStorage.setItem('roh_personalExpenseData', JSON.stringify(personalExpenseData));
+                localStorage.setItem('roh_stockData', JSON.stringify(stockData));
+                localStorage.setItem('roh_jobCategories', JSON.stringify(jobCategories));
+                localStorage.setItem('roh_otherJobCategories', JSON.stringify(otherJobCategories));
+                localStorage.setItem('roh_stockAssetList', JSON.stringify(stockAssetList));
+                
+                refreshAll(); 
+                if(syncIndicator) syncIndicator.innerHTML = '<span class="text-[#2d8a5c] bg-[#ebfcf4] px-2 py-0.5 rounded-full">✅ Cloud Synced</span>';
+            } else {
+                if(syncIndicator) syncIndicator.innerHTML = '<span class="text-[#d94b68] bg-[#fff0f4] px-2 py-0.5 rounded-full">⚠️ No Cloud Data</span>';
+            }
+        } catch(err) { 
+            console.error("Auto pull failed:", err); 
+            if(syncIndicator) syncIndicator.innerHTML = '<span class="text-[#d94b68] bg-[#fff0f4] px-2 py-0.5 rounded-full">⚠️ Offline Mode</span>';
+        }
+        
+        setTimeout(() => { if(syncIndicator) syncIndicator.innerHTML = ''; }, 3000);
+    }
+
     function loadData() {
         try {
             if(localStorage.getItem('roh_incomeData')) incomeData = JSON.parse(localStorage.getItem('roh_incomeData'));
@@ -851,6 +898,12 @@
         renderCategoryManagers();
         generateInstallmentInputs();
         refreshAll();
+
+        // 🚀 Auto-Pull จาก Cloud ตอนเปิดเว็บ
+        const gasUrl = localStorage.getItem('roh_gas_url');
+        if (gasUrl) {
+            autoPullFromCloud(gasUrl);
+        }
     };
 
     function showNotification(message, type = "success") {
