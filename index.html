@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบบันทึกรายรับ-รายจ่าย & งวดงาน & หุ้น v7 (Responsive Pastel)</title>
+    <title>ระบบบันทึกรายรับ-รายจ่าย & งวดงาน & หุ้น v8 (Responsive Pastel)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -55,7 +55,7 @@
             box-shadow: 0 0 0 4px rgba(91, 92, 206, 0.1);
         }
 
-        /* Scrollbar styles for better mobile/desktop hybrid */
+        /* Scrollbar styles */
         ::-webkit-scrollbar { width: 4px; height: 4px; }
         @media (min-width: 768px) { ::-webkit-scrollbar { width: 6px; height: 6px; } }
         ::-webkit-scrollbar-track { background: transparent; }
@@ -63,13 +63,11 @@
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
         .custom-scroll::-webkit-scrollbar-track { background: #f7f8fc; border-radius: 10px; }
         
-        /* Hide scrollbar for tabs on mobile but keep it scrollable */
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
         th { color: var(--text-muted); font-weight: 700; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.05em; padding-bottom: 1rem; border-bottom: 1px solid #f1f3f5; white-space: nowrap; }
         td { border-bottom: 1px solid #f8f9fa; padding: 1rem 0.5rem; white-space: nowrap; }
-        /* Allow detail columns to wrap slightly if needed on larger screens */
         td.wrap-text { white-space: normal; min-width: 150px; }
         tr:hover td { background-color: #fafbfc; }
         
@@ -100,7 +98,7 @@
 
 <!-- BACKUP MODAL -->
 <div id="backup-modal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-    <div class="card-soft p-5 md:p-8 max-w-md w-full relative max-h-[90vh] overflow-y-auto">
+    <div class="card-soft p-5 md:p-8 max-w-md w-full relative max-h-[90vh] overflow-y-auto custom-scroll">
         <button onclick="closeBackupModal()" class="absolute top-4 right-4 bg-slate-100 hover:bg-slate-200 rounded-full w-8 h-8 flex items-center justify-center text-slate-500 font-bold transition">✕</button>
         
         <h2 class="text-lg md:text-xl font-extrabold text-slate-800 mb-2 flex items-center gap-2 mt-2 md:mt-0">💾 จัดการข้อมูล</h2>
@@ -119,7 +117,7 @@
             </div>
         </div>
 
-        <div class="space-y-4">
+        <div class="space-y-4 mb-6">
             <h3 class="text-sm font-bold text-slate-700">2. ซิงค์คลาวด์ (Google Sheets Web App)</h3>
             <div>
                 <label class="block text-[10px] md:text-xs font-bold text-slate-400 mb-2">Web App URL (ต้องลงท้ายด้วย /exec)</label>
@@ -132,12 +130,20 @@
             
             <div class="grid grid-cols-2 gap-3 mt-4">
                 <button onclick="pushToGoogleSheets()" id="btn-push-sheet" class="bg-[#dcf4e6] text-[#2d8a5c] hover:bg-[#cbf0db] text-xs font-extrabold py-3.5 rounded-xl flex items-center justify-center gap-2 transition">
-                    <span>☁️ ⬆️</span> ดันขึ้น Sheet (Manual)
+                    <span>☁️ ⬆️</span> ดันขึ้น Sheet
                 </button>
                 <button onclick="pullFromGoogleSheets()" id="btn-pull-sheet" class="bg-[#fff0d4] text-[#c28b27] hover:bg-[#ffe5be] text-xs font-extrabold py-3.5 rounded-xl flex items-center justify-center gap-2 transition">
                     <span>☁️ ⬇️</span> ดึงมาทับเว็บ
                 </button>
             </div>
+        </div>
+
+        <div class="space-y-4 pt-4 border-t border-slate-100">
+            <h3 class="text-sm font-bold text-slate-700 flex items-center gap-2"><span>3. พิเศษ (Import จากรูปที่ส่งมา)</span></h3>
+            <button onclick="importExcelLegacyData()" class="w-full bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-500 hover:to-amber-600 text-white text-xs md:text-sm font-extrabold py-3.5 rounded-xl shadow-md flex items-center justify-center gap-2 transition">
+                <span>🔥</span> โหลดประวัติหุ้น 130 รายการเข้าแอป
+            </button>
+            <p class="text-[9px] text-slate-400 text-center">ระบบจะดึงรายการหุ้นปี 2568-2569 ที่เจ มิ หนู๋ย พิมพ์ให้ เข้าไปใน Tab หุ้นให้เลย (กดแค่ครั้งเดียวพอนะมึง)</p>
         </div>
     </div>
 </div>
@@ -164,7 +170,7 @@
             <!-- Month/Year Selector -->
             <div class="bg-white p-1.5 md:p-2 rounded-full shadow-sm md:shadow-md border border-slate-100 flex items-center gap-1">
                 <select id="global-month" onchange="onGlobalFilterChange()" class="bg-[#f0f7ff] text-[#3b7cce] hover:bg-[#e0f0ff] font-black text-xs md:text-base rounded-full px-3 py-1.5 md:px-5 md:py-2 cursor-pointer transition outline-none">
-                    <option value="01" selected>ม.ค.</option>
+                    <option value="01">ม.ค.</option>
                     <option value="02">ก.พ.</option>
                     <option value="03">มี.ค.</option>
                     <option value="04">เม.ย.</option>
@@ -178,10 +184,20 @@
                     <option value="12">ธ.ค.</option>
                 </select>
                 <select id="global-year" onchange="onGlobalFilterChange()" class="bg-[#f0f0ff] text-[#5b5cce] hover:bg-[#e5e5ff] font-black text-xs md:text-base rounded-full px-3 py-1.5 md:px-5 md:py-2 cursor-pointer transition outline-none">
+                    <option value="2023">2023</option>
                     <option value="2024">2024</option>
                     <option value="2025">2025</option>
-                    <option value="2026" selected>2026</option>
+                    <option value="2026">2026</option>
                     <option value="2027">2027</option>
+                    <option value="2028">2028</option>
+                    <option value="2029">2029</option>
+                    <option value="2030">2030</option>
+                    <option value="2031">2031</option>
+                    <option value="2032">2032</option>
+                    <option value="2033">2033</option>
+                    <option value="2034">2034</option>
+                    <option value="2035">2035</option>
+                    <option value="2036">2036</option>
                 </select>
             </div>
         </div>
@@ -382,16 +398,16 @@
 
                 <div class="card-soft p-0 md:p-7 overflow-hidden">
                     <div class="p-5 md:p-0">
-                        <h2 class="text-sm md:text-base font-extrabold text-slate-800 mb-4 md:mb-6">✅ รวบรวมงวดงานที่ชำระแล้ว</h2>
+                        <h2 class="text-sm md:text-base font-extrabold text-slate-800 mb-4 md:mb-6">✅ ประวัติงานที่ชำระแล้ว</h2>
                     </div>
-                    <div class="overflow-x-auto px-5 pb-5 md:px-0 md:pb-0">
+                    <div class="overflow-x-auto px-0 pb-0">
                         <table class="w-full min-w-max text-left border-collapse">
                             <thead>
                                 <tr>
-                                    <th>วันที่ชำระ</th>
+                                    <th class="pl-4">วันที่ชำระ</th>
                                     <th>รายละเอียด</th>
                                     <th class="text-right">ยอดที่ชำระ</th>
-                                    <th class="text-center">ลบ</th>
+                                    <th class="text-center pr-4">ลบ</th>
                                 </tr>
                             </thead>
                             <tbody id="mee-paid-table-body" class="text-xs md:text-sm font-medium text-slate-600"></tbody>
@@ -486,16 +502,16 @@
                 </div>
                 <div class="card-soft p-0 md:p-7 overflow-hidden">
                     <div class="p-5 md:p-0 flex justify-between items-center mb-4 md:mb-6">
-                        <h2 class="text-sm md:text-base font-extrabold text-slate-800">✅ ประวัติชำระแล้ว</h2>
+                        <h2 class="text-sm md:text-base font-extrabold text-slate-800">✅ ประวัติงานทีชำระแล้ว</h2>
                     </div>
-                    <div class="overflow-x-auto px-5 pb-5 md:px-0 md:pb-0">
+                    <div class="overflow-x-auto px-0 pb-0">
                         <table class="w-full min-w-max text-left border-collapse">
                             <thead>
                                 <tr>
-                                    <th>วันที่ชำระ</th>
+                                    <th class="pl-4">วันที่ชำระ</th>
                                     <th>ชื่องาน</th>
                                     <th class="text-right">ยอดเคลียร์</th>
-                                    <th class="text-center">ลบ</th>
+                                    <th class="text-center pr-4">ลบ</th>
                                 </tr>
                             </thead>
                             <tbody id="other-paid-table-body" class="text-xs md:text-sm font-medium text-slate-600"></tbody>
@@ -526,6 +542,8 @@
                     <div><label class="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">บัตรเครดิต</label><input type="number" step="0.01" id="exp-card" class="w-full px-4 py-3 text-xs md:text-sm font-bold" value="0"></div>
                     <div><label class="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">ที่พัก</label><input type="number" step="0.01" id="exp-rent" class="w-full px-4 py-3 text-xs md:text-sm font-bold" value="0"></div>
                     <div><label class="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">ส่วนตัว</label><input type="number" step="0.01" id="exp-personal" class="w-full px-4 py-3 text-xs md:text-sm font-bold" value="0"></div>
+                    <div><label class="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">อื่นๆ</label><input type="number" step="0.01" id="exp-others" class="w-full px-4 py-3 text-xs md:text-sm font-bold" value="0"></div>
+                    <div><label class="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">เก็บรวมเกมอั๋น</label><input type="number" step="0.01" id="exp-game" class="w-full px-4 py-3 text-xs md:text-sm font-bold" value="0"></div>
                     <div><label class="block text-[10px] font-extrabold text-[#2d8a5c] uppercase tracking-widest mb-1.5 ml-1">หุ้น/กองทุน (ออโต้)</label><input type="text" id="exp-stocks-display" class="w-full px-4 py-3 text-xs md:text-sm font-black text-[#2d8a5c] bg-[#ebfcf4] pointer-events-none" readonly value="0"></div>
                     <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-extrabold py-3.5 rounded-xl mt-6 shadow-md transition-all text-xs md:text-sm">💾 เซฟยอดเดือนนี้</button>
                 </form>
@@ -625,21 +643,28 @@
     <!-- TAB 6: ภาษี -->
     <div id="tab6" class="tab-panel hidden">
         <div class="card-soft p-5 md:p-8">
-            <h2 class="text-base md:text-lg font-extrabold text-slate-800 mb-6 md:mb-8 pb-4 border-b border-slate-100">รายงานภาษีหัก ณ ที่จ่าย (3%)</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
-                <div class="bg-[#fffaf0] p-5 md:p-6 rounded-2xl border border-white">
+            <h2 class="text-base md:text-lg font-extrabold text-slate-800 mb-6 md:mb-8 pb-4 border-b border-slate-100">รายงานภาษีหัก ณ ที่จ่าย (3%) ประจำปี <span id="tax-header-year"></span></h2>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8">
+                <div class="bg-[#fffaf0] p-4 md:p-6 rounded-2xl border border-white">
                     <span class="text-[9px] md:text-[10px] font-extrabold text-[#c28b27] uppercase tracking-widest">งวดที่หักภาษี</span>
                     <div class="text-xl md:text-3xl font-black text-[#a87413] mt-1 md:mt-2" id="tax-items-count">0 งวด</div>
                 </div>
-                <div class="bg-[#fff0f4] p-5 md:p-6 rounded-2xl border border-white">
-                    <span class="text-[9px] md:text-[10px] font-extrabold text-[#d94b68] uppercase tracking-widest">ภาษีถูกหักรวม</span>
+                <div class="bg-[#fff0f4] p-4 md:p-6 rounded-2xl border border-white">
+                    <span class="text-[9px] md:text-[10px] font-extrabold text-[#d94b68] uppercase tracking-widest">ภาษีถูกหักรวมปีนี้</span>
                     <div class="text-xl md:text-3xl font-black text-[#b02f4a] mt-1 md:mt-2 truncate" id="tax-total-deducted">0</div>
                 </div>
-                <div class="bg-[#ebfcf4] p-5 md:p-6 rounded-2xl border border-white">
-                    <span class="text-[9px] md:text-[10px] font-extrabold text-[#2d8a5c] uppercase tracking-widest">รับสุทธิรวม</span>
+                <div class="bg-[#ebfcf4] p-4 md:p-6 rounded-2xl border border-white">
+                    <span class="text-[9px] md:text-[10px] font-extrabold text-[#2d8a5c] uppercase tracking-widest">รับสุทธิรวมปีนี้</span>
                     <div class="text-xl md:text-3xl font-black text-[#1a6e42] mt-1 md:mt-2 truncate" id="tax-total-net-payout">0</div>
                 </div>
+                <!-- กล่องใหม่ All-time -->
+                <div class="bg-slate-900 p-4 md:p-6 rounded-2xl border border-slate-800 shadow-lg shadow-slate-900/20">
+                    <span class="text-[9px] md:text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">ภาษีรวมทุกปี (All-Time)</span>
+                    <div class="text-xl md:text-3xl font-black text-white mt-1 md:mt-2 truncate" id="tax-total-all-time">0</div>
+                </div>
             </div>
+
             <div class="overflow-x-auto bg-[#f7f8fc] rounded-2xl p-2 md:p-4">
                 <table class="w-full min-w-max text-left border-collapse">
                     <thead>
@@ -690,6 +715,18 @@
                 <div class="relative w-full h-[250px] md:h-[320px] overflow-x-auto custom-scroll">
                     <div class="min-w-[500px] h-full">
                         <canvas id="dashComparisonChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panel 1.5: Income by Category Chart (NEW) -->
+            <div class="card-soft p-5 md:p-6 lg:col-span-2 overflow-hidden">
+                <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-2 mb-4 md:mb-6">
+                    <h3 class="text-xs md:text-sm font-extrabold text-slate-800 leading-tight">สัดส่วนรายรับแยกตามประเภทงาน (รายปี)</h3>
+                </div>
+                <div class="relative w-full h-[250px] overflow-x-auto custom-scroll">
+                    <div class="min-w-[400px] h-full">
+                        <canvas id="dashIncomeCatChart"></canvas>
                     </div>
                 </div>
             </div>
@@ -760,6 +797,7 @@
     let jobCategories = ["งานฝั่ง", "Fastwork", "งานช่างมี้", "งานอื่น"];
     let otherJobCategories = ["งานออกแบบสถาปัตย์", "งานเขียนแบบ 2D", "งานโมเดล 3D", "งานประสานงาน", "งานอื่นๆ"];
     let stockAssetList = ["SET50", "S&P500", "BTC", "GOLD", "กองทุนรวม"];
+    let autoInvestedMonths = []; // ไว้เก็บประวัติว่าเดือนไหนยิงหุ้นออโต้ไปแล้วบ้าง
     const workSteps = ["ยังไม่เริ่มงาน", "ขั้นทำแปลน", "ขั้นโมเดล", "ขั้นวีดีโอ", "งานสำเร็จ"];
     
     let personalExpenseChartInstance = null;
@@ -768,10 +806,71 @@
     let dashComparisonChartInst = null;
     let dashExpenseChartInst = null;
     let dashStockChartInst = null;
+    let dashIncomeCatChartInst = null;
 
     Chart.defaults.color = '#8a8d9b';
     Chart.defaults.font.family = 'Sarabun';
     Chart.defaults.font.weight = '700';
+
+    const monthNamesFullTh = { '01': 'มกราคม', '02': 'กุมภาพันธ์', '03': 'มีนาคม', '04': 'เมษายน', '05': 'พฤษภาคม', '06': 'มิถุนายน', '07': 'กรกฎาคม', '08': 'สิงหาคม', '09': 'กันยายน', '10': 'ตุลาคม', '11': 'พฤศจิกายน', '12': 'ธันวาคม', '00': 'ไม่ระบุ' };
+
+    // Helpers สำหรับสร้าง Dropdown เลือกเดือน/ปี ตอนแก้ไข
+    function getMonthOptions(selectedMonth) {
+        let opts = '';
+        for(let i=1; i<=12; i++) {
+            let m = String(i).padStart(2, '0');
+            opts += `<option value="${m}" ${m===selectedMonth?'selected':''}>${monthNamesFullTh[m]}</option>`;
+        }
+        return opts;
+    }
+    function getYearOptions(selectedYear) {
+        let opts = '';
+        for(let i=2023; i<=2036; i++) {
+            opts += `<option value="${String(i)}" ${String(i)===String(selectedYear)?'selected':''}>${i}</option>`;
+        }
+        return opts;
+    }
+
+    function toggleGroup(groupId, iconId) {
+        const rows = document.querySelectorAll('.' + groupId);
+        const icon = document.getElementById(iconId);
+        let isHidden = false;
+        rows.forEach(r => {
+            r.classList.toggle('hidden');
+            if(r.classList.contains('hidden')) isHidden = true;
+        });
+        if(icon) icon.innerText = isHidden ? '▶' : '▼';
+    }
+
+    let editingMeeDateId = null;
+    function startEditMeeDate(id) { editingMeeDateId = id.toString(); refreshAll(); }
+    function cancelMeeDate() { editingMeeDateId = null; refreshAll(); }
+    function saveMeeDate(id) {
+        const item = meeDebtData.find(d => d.id === id.toString());
+        if(item) { 
+            item.paidDate = document.getElementById(`edit-mee-date-${id}`).value.trim(); 
+            item.paidMonth = document.getElementById(`edit-mee-month-${id}`).value;
+            item.paidYear = document.getElementById(`edit-mee-year-${id}`).value;
+            saveData(); 
+            showNotification("💾 โยกเดือน/แก้ไขข้อมูลสำเร็จ!"); 
+        }
+        editingMeeDateId = null; refreshAll();
+    }
+
+    let editingOtherDateId = null;
+    function startEditOtherDate(id) { editingOtherDateId = id.toString(); refreshAll(); }
+    function cancelOtherDate() { editingOtherDateId = null; refreshAll(); }
+    function saveOtherDate(id) {
+        const item = otherDebtData.find(d => d.id === id.toString());
+        if(item) { 
+            item.paidDate = document.getElementById(`edit-other-date-${id}`).value.trim(); 
+            item.paidMonth = document.getElementById(`edit-other-month-${id}`).value;
+            item.paidYear = document.getElementById(`edit-other-year-${id}`).value;
+            saveData(); 
+            showNotification("💾 โยกเดือน/แก้ไขข้อมูลสำเร็จ!"); 
+        }
+        editingOtherDateId = null; refreshAll();
+    }
     
     function saveData() {
         localStorage.setItem('roh_incomeData', JSON.stringify(incomeData));
@@ -782,6 +881,7 @@
         localStorage.setItem('roh_jobCategories', JSON.stringify(jobCategories));
         localStorage.setItem('roh_otherJobCategories', JSON.stringify(otherJobCategories));
         localStorage.setItem('roh_stockAssetList', JSON.stringify(stockAssetList));
+        localStorage.setItem('roh_autoInvestedMonths', JSON.stringify(autoInvestedMonths));
         
         // Auto Sync Feature
         const url = localStorage.getItem('roh_gas_url');
@@ -818,7 +918,7 @@
             }
             
             setTimeout(() => { if(syncIndicator) syncIndicator.innerHTML = ''; }, 3000);
-        }, 1500); // 1.5s debounce to prevent spamming
+        }, 1500); // 1.5s debounce
     }
 
     // Auto Pull Logic (Fetch from cloud on startup)
@@ -844,6 +944,7 @@
                 if(parsed.jobCategories) jobCategories = parsed.jobCategories; 
                 if(parsed.otherJobCategories) otherJobCategories = parsed.otherJobCategories; 
                 if(parsed.stockAssetList) stockAssetList = parsed.stockAssetList;
+                if(parsed.autoInvestedMonths) autoInvestedMonths = parsed.autoInvestedMonths;
                 
                 // Save to local storage silently
                 localStorage.setItem('roh_incomeData', JSON.stringify(incomeData));
@@ -854,6 +955,7 @@
                 localStorage.setItem('roh_jobCategories', JSON.stringify(jobCategories));
                 localStorage.setItem('roh_otherJobCategories', JSON.stringify(otherJobCategories));
                 localStorage.setItem('roh_stockAssetList', JSON.stringify(stockAssetList));
+                localStorage.setItem('roh_autoInvestedMonths', JSON.stringify(autoInvestedMonths));
                 
                 refreshAll(); 
                 if(syncIndicator) syncIndicator.innerHTML = '<span class="text-[#2d8a5c] bg-[#ebfcf4] px-2 py-0.5 rounded-full">✅ Cloud Synced</span>';
@@ -878,8 +980,8 @@
             if(localStorage.getItem('roh_jobCategories')) jobCategories = JSON.parse(localStorage.getItem('roh_jobCategories'));
             if(localStorage.getItem('roh_otherJobCategories')) otherJobCategories = JSON.parse(localStorage.getItem('roh_otherJobCategories'));
             if(localStorage.getItem('roh_stockAssetList')) stockAssetList = JSON.parse(localStorage.getItem('roh_stockAssetList'));
+            if(localStorage.getItem('roh_autoInvestedMonths')) autoInvestedMonths = JSON.parse(localStorage.getItem('roh_autoInvestedMonths'));
             
-            // ตั้งค่า Default Web App URL
             const defaultGasUrl = 'https://script.google.com/macros/s/AKfycbwoAAXkMTl3Vx-cyZWUgQnisXOSfEeIw_-nUFXq30-HTQYTuR4cPO4jiR-NGV6l_JI/exec';
             if(localStorage.getItem('roh_gas_url')) {
                 document.getElementById('gas-url-input').value = localStorage.getItem('roh_gas_url');
@@ -892,19 +994,190 @@
 
     window.onload = function() {
         loadData();
-        document.getElementById('global-year').value = '2026';
-        document.getElementById('global-month').value = '01';
+        
+        // เซ็ตเดือนและปีปัจจุบันอัตโนมัติตามปฏิทิน
+        const now = new Date();
+        const currentYear = now.getFullYear().toString();
+        const currentMonth = String(now.getMonth() + 1).padStart(2, '0');
+        
+        const yearSelect = document.getElementById('global-year');
+        const monthSelect = document.getElementById('global-month');
+        
+        // ถ้าปีปัจจุบันยังไม่มีใน dropdown ให้เพิ่มเข้าไป (กันพลาดเวลาปีใหม่)
+        if (!Array.from(yearSelect.options).some(opt => opt.value === currentYear)) {
+            const opt = document.createElement('option');
+            opt.value = currentYear;
+            opt.text = currentYear;
+            yearSelect.appendChild(opt);
+        }
+
+        yearSelect.value = currentYear;
+        monthSelect.value = currentMonth;
+
         populateCategoryDropdowns();
         renderCategoryManagers();
         generateInstallmentInputs();
+
+        // รันฟังก์ชันยิงหุ้นออโต้
+        checkAndRunAutoInvest(currentYear, currentMonth);
+
         refreshAll();
 
-        // 🚀 Auto-Pull จาก Cloud ตอนเปิดเว็บ
         const gasUrl = localStorage.getItem('roh_gas_url');
         if (gasUrl) {
             autoPullFromCloud(gasUrl);
         }
     };
+
+    // ฟังก์ชันยิงออเดอร์หุ้นออโต้ทุกเดือน
+    function checkAndRunAutoInvest(year, month) {
+        const monthKey = `${year}-${month}`;
+        
+        // ตรวจสอบว่าเดือนนี้เคยยิงออโต้ไปหรือยัง
+        if(!autoInvestedMonths.includes(monthKey)) {
+            // มึงบอกให้เพิ่ม Basia 500 กับ Bgold 500 กูจัดให้ละ
+            const autoList = [
+                { name: 'BAC', price: 300 },
+                { name: 'JNJ', price: 450 },
+                { name: 'AAPL', price: 420 },
+                { name: 'GOOG', price: 540 },
+                { name: 'AMZN', price: 600 },
+                { name: 'MSFT', price: 690 },
+                { name: 'BASIA', price: 500 },
+                { name: 'BGOLD', price: 500 }
+            ];
+
+            let addedCount = 0;
+            autoList.forEach((item, idx) => {
+                // เช็คว่ามีชื่อหุ้นนี้ในลิสต์ยัง ถ้ายังให้เพิ่ม
+                if (!stockAssetList.includes(item.name)) {
+                    stockAssetList.push(item.name);
+                }
+                
+                stockData.push({
+                    id: 'auto_' + Date.now().toString() + '_' + idx,
+                    year: year,
+                    month: month,
+                    name: item.name,
+                    type: 'BUY',
+                    price: item.price,
+                    currency: 'THB' // ตามที่บอกมาเป็นบาท กูเลยเซ็ตเป็น THB ให้
+                });
+                addedCount++;
+            });
+
+            if(addedCount > 0) {
+                autoInvestedMonths.push(monthKey);
+                saveData(); // บันทึกและซิงค์คลาวด์
+                showNotification(`🤖 ยิงออเดอร์หุ้นออโต้ประจำเดือน ${month}/${year} (เพิ่ม Basia กับ Bgold แล้วนะมึง) เรียบร้อย!`, "success");
+            }
+        }
+    }
+
+// --- SCRIPT พิเศษ: สำหรับลอกข้อมูลจากรายการที่มึงให้มา ---
+    function importExcelLegacyData() {
+        if(stockData.find(s => s.id && s.id.startsWith('legacy_'))) {
+            showNotification("⚠️ มึงเคยกดดึงไปแล้ว ไอ้สัส เดี๋ยวหุ้นเบิ้ล!", "error");
+            return;
+        }
+
+        const legacyTransactions = [
+            {d:'18/07/2025', t:'BUY', n:'MSTZ', p:9.22}, {d:'21/07/2025', t:'BUY', n:'ASML', p:9.27},
+            {d:'22/07/2025', t:'BUY', n:'MSFT', p:9.28}, {d:'23/07/2025', t:'BUY', n:'AMZN', p:6.19},
+            {d:'24/07/2025', t:'BUY', n:'PEP', p:9.35}, {d:'25/07/2025', t:'BUY', n:'COST', p:30.65},
+            {d:'26/07/2025', t:'BUY', n:'TTWO', p:15.32}, {d:'27/07/2025', t:'BUY', n:'ASML', p:15.32},
+            {d:'31/07/2025', t:'BUY', n:'GOOG', p:9.73}, {d:'31/08/2025', t:'BUY', n:'PEP', p:9.19},
+            {d:'01/09/2025', t:'BUY', n:'AAPL', p:15.33}, {d:'02/09/2025', t:'BUY', n:'AMZN', p:15.32},
+            {d:'03/09/2025', t:'BUY', n:'FLR', p:9.19}, {d:'04/09/2025', t:'BUY', n:'MSFT', p:15.31},
+            {d:'05/09/2025', t:'BUY', n:'GOOG', p:15.3}, {d:'06/09/2025', t:'BUY', n:'AMZN', p:15.39},
+            {d:'09/09/2025', t:'BUY', n:'KO', p:3.06}, {d:'11/09/2025', t:'BUY', n:'DELL', p:9.17},
+            {d:'12/09/2025', t:'BUY', n:'MSFT', p:30.61}, {d:'13/09/2025', t:'BUY', n:'AMZN', p:9.18},
+            {d:'14/09/2025', t:'BUY', n:'GOOG', p:15.3}, {d:'15/09/2025', t:'BUY', n:'AAPL', p:15.3},
+            {d:'16/09/2025', t:'BUY', n:'MSFT', p:9.18}, {d:'20/09/2025', t:'BUY', n:'PLTR', p:15.39},
+            {d:'21/09/2025', t:'BUY', n:'MSFT', p:9.07}, {d:'22/09/2025', t:'BUY', n:'MSFT', p:10},
+            {d:'31/09/2025', t:'BUY', n:'BAC', p:10}, {d:'31/09/2026', t:'BUY', n:'JNJ', p:14.98},
+            {d:'31/09/2027', t:'BUY', n:'MSFT', p:28.36}, {d:'31/09/2028', t:'BUY', n:'DELL', p:14.98},
+            {d:'31/09/2029', t:'BUY', n:'ASML', p:9.25}, {d:'31/09/2031', t:'BUY', n:'JNJ', p:18.5},
+            {d:'31/09/2032', t:'BUY', n:'BAC', p:12.33}, {d:'31/09/2033', t:'BUY', n:'AMZN', p:24.67},
+            {d:'31/09/2034', t:'BUY', n:'AAPL', p:17.27}, {d:'31/09/2035', t:'BUY', n:'GOOG', p:22.2},
+            {d:'31/09/2036', t:'BUY', n:'JNJ', p:38.74}, {d:'31/09/2038', t:'BUY', n:'MSTF', p:17.97},
+            {d:'31/09/2039', t:'BUY', n:'PLTR', p:9.98}, {d:'31/09/2040', t:'BUY', n:'BAC', p:14},
+            {d:'31/09/2041', t:'BUY', n:'KO', p:6.99}, {d:'31/09/2043', t:'BUY', n:'KO', p:15.69},
+            {d:'31/09/2045', t:'BUY', n:'BALL', p:28.29}, {d:'31/09/2046', t:'BUY', n:'KO', p:9.98},
+            {d:'31/09/2047', t:'BUY', n:'BALL', p:9.69}, {d:'31/09/2049', t:'BUY', n:'PG', p:62.57},
+            {d:'31/09/2050', t:'BUY', n:'DPZ', p:26.27}, {d:'31/09/2053', t:'BUY', n:'NKE', p:34.94},
+            {d:'31/09/2054', t:'BUY', n:'AMZN', p:20.97}, {d:'31/09/2055', t:'BUY', n:'BALL', p:30.88},
+            {d:'31/09/2056', t:'BUY', n:'NKE', p:30.87}, {d:'31/09/2058', t:'BUY', n:'COST', p:31.95},
+            {d:'01/11/2025', t:'BUY', n:'BAC', p:9.22}, {d:'02/11/2025', t:'BUY', n:'MSFT', p:21.21},
+            {d:'03/11/2025', t:'BUY', n:'AMZN', p:18.45}, {d:'04/11/2025', t:'BUY', n:'JNJ', p:13.83},
+            {d:'05/11/2025', t:'BUY', n:'GOOG', p:16.6}, {d:'06/11/2025', t:'BUY', n:'AAPL', p:12.91},
+            {d:'07/11/2025', t:'BUY', n:'META', p:32.95}, {d:'08/11/2025', t:'BUY', n:'DPZ', p:24.4},
+            {d:'09/11/2025', t:'BUY', n:'NKE', p:14.63}, {d:'10/11/2025', t:'BUY', n:'AMZN', p:30.31},
+            {d:'13/11/2025', t:'BUY', n:'META', p:37.94}, {d:'14/11/2025', t:'BUY', n:'DPZ', p:30.81},
+            {d:'31/11/2025', t:'BUY', n:'AMZN', p:18.46}, {d:'31/11/2026', t:'BUY', n:'MSFT', p:21.23},
+            {d:'31/11/2027', t:'BUY', n:'JNJ', p:13.85}, {d:'31/11/2028', t:'BUY', n:'GOOG', p:16.62},
+            {d:'31/11/2029', t:'BUY', n:'BAC', p:9.23}, {d:'31/11/2030', t:'BUY', n:'AAPL', p:12.92},
+            {d:'31/11/2031', t:'BUY', n:'META', p:91.68}, {d:'31/11/2033', t:'BUY', n:'META', p:62.78},
+            {d:'31/11/2034', t:'BUY', n:'PG', p:36.9}, {d:'31/11/2038', t:'BUY', n:'MSFT', p:41.96},
+            {d:'31/11/2039', t:'BUY', n:'MSFT', p:61.46}, {d:'31/12/2025', t:'BUY', n:'BAC', p:9.33},
+            {d:'01/01/2026', t:'BUY', n:'MSFT', p:21.47}, {d:'02/01/2026', t:'BUY', n:'AAPL', p:13.07},
+            {d:'03/01/2026', t:'BUY', n:'GOOG', p:16.8}, {d:'04/01/2026', t:'BUY', n:'AMZN', p:18.67},
+            {d:'05/01/2026', t:'BUY', n:'JNJ', p:14.01}, {d:'08/01/2026', t:'BUY', n:'COST', p:29.95},
+            {d:'10/01/2026', t:'BUY', n:'MSFT', p:24.96}, {d:'12/01/2026', t:'BUY', n:'COST', p:39.4},
+            {d:'16/01/2026', t:'BUY', n:'BAC', p:9.47}, {d:'17/01/2026', t:'BUY', n:'MSFT', p:21.8},
+            {d:'18/01/2026', t:'BUY', n:'AAPL', p:13.27}, {d:'19/01/2026', t:'BUY', n:'GOOG', p:17.06},
+            {d:'20/01/2026', t:'BUY', n:'AMZN', p:18.95}, {d:'21/01/2026', t:'BUY', n:'JNJ', p:14.21},
+            {d:'22/01/2026', t:'BUY', n:'PG', p:47.66}, {d:'23/01/2026', t:'BUY', n:'MSFT', p:32.08},
+            {d:'24/01/2026', t:'BUY', n:'MSFT', p:63.89}, {d:'27/01/2026', t:'BUY', n:'BAC', p:39.94},
+            {d:'01/02/2026', t:'BUY', n:'BAC', p:9.46}, {d:'02/02/2026', t:'BUY', n:'GOOG', p:17.03},
+            {d:'03/02/2026', t:'BUY', n:'JAJ', p:14.19}, {d:'04/02/2026', t:'BUY', n:'MSFT', p:21.76},
+            {d:'05/02/2026', t:'BUY', n:'AMZN', p:18.92}, {d:'06/02/2026', t:'BUY', n:'AAPL', p:13.24},
+            {d:'07/02/2026', t:'BUY', n:'MSFT', p:26}, {d:'08/02/2026', t:'BUY', n:'MSFT', p:80},
+            {d:'09/02/2026', t:'BUY', n:'AMZN', p:30}, {d:'10/02/2026', t:'BUY', n:'GOOG', p:31},
+            {d:'11/02/2026', t:'BUY', n:'PEP', p:1.5}, {d:'12/02/2026', t:'BUY', n:'AMZN', p:80},
+            {d:'14/02/2026', t:'BUY', n:'AMZN', p:50}, {d:'15/02/2026', t:'BUY', n:'MSFT', p:31},
+            {d:'17/02/2026', t:'BUY', n:'BAC', p:32.08}, {d:'18/02/2026', t:'BUY', n:'BAC', p:64.22},
+            {d:'01/03/2026', t:'BUY', n:'LH', p:22.91}, {d:'02/03/2026', t:'BUY', n:'GOOG', p:17.26},
+            {d:'03/03/2026', t:'BUY', n:'AMZN', p:19.19}, {d:'04/03/2026', t:'BUY', n:'AAPL', p:13.41},
+            {d:'05/03/2026', t:'BUY', n:'MSFT', p:22.04}, {d:'06/03/2026', t:'BUY', n:'JAJ', p:14.38},
+            {d:'07/03/2026', t:'BUY', n:'BAC', p:9.58}, {d:'08/03/2026', t:'BUY', n:'BAC', p:31.65},
+            {d:'09/03/2026', t:'BUY', n:'PEP', p:15.62}, {d:'10/03/2026', t:'BUY', n:'BAC', p:93.75},
+            {d:'11/03/2026', t:'BUY', n:'BAC', p:80.2}, {d:'15/03/2026', t:'BUY', n:'PEP', p:30.33},
+            {d:'16/03/2026', t:'BUY', n:'AAPL', p:20.65}, {d:'17/03/2026', t:'BUY', n:'MSFT', p:61.05},
+            {d:'18/03/2026', t:'BUY', n:'GOOG', p:30.38}, {d:'19/03/2026', t:'BUY', n:'AAPL', p:38.52},
+            {d:'20/03/2026', t:'BUY', n:'MSFT', p:91.24}, {d:'02/04/2026', t:'BUY', n:'AAPL', p:30.53},
+            {d:'03/04/2026', t:'BUY', n:'JNJ', p:15.41}, {d:'04/04/2026', t:'BUY', n:'JNJ', p:15.2}
+        ];
+
+        let newAssets = new Set(stockAssetList);
+
+        legacyTransactions.forEach((item, index) => {
+            let parts = item.d.split('/');
+            let month = parts[1];
+            let year = parts[2];
+            let name = item.n.toUpperCase();
+            
+            stockData.push({
+                id: 'legacy_' + index,
+                year: year,
+                month: month,
+                name: name,
+                type: item.t,
+                price: item.p,
+                currency: 'USD'
+            });
+            newAssets.add(name);
+        });
+
+        stockAssetList = Array.from(newAssets);
+        saveData();
+        refreshAll();
+        populateCategoryDropdowns();
+        renderCategoryManagers();
+        
+        closeBackupModal();
+        showNotification("🔥 จัดไปไอ้เหี้ยโร๊ะ! ข้อมูลหุ้นมึงเข้ามาครบแล้ว!", "success");
+    }
 
     function showNotification(message, type = "success") {
         const container = document.getElementById('toast-container');
@@ -935,7 +1208,7 @@
 
     function openBackupModal() { document.getElementById('backup-modal').classList.remove('hidden'); }
     function closeBackupModal() { document.getElementById('backup-modal').classList.add('hidden'); }
-    function getAllDataAsObject() { return { incomeData, meeDebtData, otherDebtData, personalExpenseData, stockData, jobCategories, otherJobCategories, stockAssetList }; }
+    function getAllDataAsObject() { return { incomeData, meeDebtData, otherDebtData, personalExpenseData, stockData, jobCategories, otherJobCategories, stockAssetList, autoInvestedMonths }; }
 
     function downloadBackupJSON() {
         const dataStr = JSON.stringify(getAllDataAsObject());
@@ -951,7 +1224,7 @@
         reader.onload = function(e) {
             try {
                 const parsed = JSON.parse(e.target.result);
-                if(parsed.incomeData) incomeData = parsed.incomeData; if(parsed.meeDebtData) meeDebtData = parsed.meeDebtData; if(parsed.otherDebtData) otherDebtData = parsed.otherDebtData; if(parsed.personalExpenseData) personalExpenseData = parsed.personalExpenseData; if(parsed.stockData) stockData = parsed.stockData; if(parsed.jobCategories) jobCategories = parsed.jobCategories; if(parsed.otherJobCategories) otherJobCategories = parsed.otherJobCategories; if(parsed.stockAssetList) stockAssetList = parsed.stockAssetList;
+                if(parsed.incomeData) incomeData = parsed.incomeData; if(parsed.meeDebtData) meeDebtData = parsed.meeDebtData; if(parsed.otherDebtData) otherDebtData = parsed.otherDebtData; if(parsed.personalExpenseData) personalExpenseData = parsed.personalExpenseData; if(parsed.stockData) stockData = parsed.stockData; if(parsed.jobCategories) jobCategories = parsed.jobCategories; if(parsed.otherJobCategories) otherJobCategories = parsed.otherJobCategories; if(parsed.stockAssetList) stockAssetList = parsed.stockAssetList; if(parsed.autoInvestedMonths) autoInvestedMonths = parsed.autoInvestedMonths;
                 saveData(); refreshAll(); closeBackupModal(); showNotification("📤 กู้คืนข้อมูลจากไฟล์สำเร็จเว้ย!");
             } catch(err) { showNotification("⚠️ ไฟล์พังหรือฟอร์แมตผิดมั้งไอ้สัส ลองใหม่", "error"); }
         };
@@ -1027,7 +1300,7 @@
             showNotification("⚠️ ติดต่อชีตไม่ได้ เช็คสิทธิ์ 'สิทธิ์การเข้าถึง: ทุกคน' ในหน้าสคริปต์ด่วนๆ", "error"); 
             console.error(err); 
         } finally { 
-            btn.innerHTML = `<span>☁️ ⬆️</span> ดันขึ้น Sheet (Manual)`; 
+            btn.innerHTML = `<span>☁️ ⬆️</span> ดันขึ้น Sheet`; 
             btn.disabled = false; 
         }
     }
@@ -1062,6 +1335,7 @@
                     if(parsed.jobCategories) jobCategories = parsed.jobCategories; 
                     if(parsed.otherJobCategories) otherJobCategories = parsed.otherJobCategories; 
                     if(parsed.stockAssetList) stockAssetList = parsed.stockAssetList;
+                    if(parsed.autoInvestedMonths) autoInvestedMonths = parsed.autoInvestedMonths;
                     
                     // Don't auto-sync back immediately on a pull
                     localStorage.setItem('roh_incomeData', JSON.stringify(incomeData));
@@ -1072,6 +1346,7 @@
                     localStorage.setItem('roh_jobCategories', JSON.stringify(jobCategories));
                     localStorage.setItem('roh_otherJobCategories', JSON.stringify(otherJobCategories));
                     localStorage.setItem('roh_stockAssetList', JSON.stringify(stockAssetList));
+                    localStorage.setItem('roh_autoInvestedMonths', JSON.stringify(autoInvestedMonths));
                     
                     refreshAll(); 
                     closeBackupModal(); 
@@ -1244,7 +1519,6 @@
         if (evt && evt.currentTarget) { 
             evt.currentTarget.classList.remove('bg-transparent', 'text-slate-500');
             evt.currentTarget.classList.add('bg-slate-900', 'text-white', 'shadow-md', 'shadow-slate-900/20');
-            // Scroll tab into view on mobile
             evt.currentTarget.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
         }
         refreshAll();
@@ -1258,7 +1532,6 @@
 
     function refreshAll() {
         const selYear = document.getElementById('global-year').value; const selMonth = document.getElementById('global-month').value;
-        const monthsThai = { '01': 'ม.ค.', '02': 'ก.พ.', '03': 'มี.ค.', '04': 'เม.ย.', '05': 'พ.ค.', '06': 'มิ.ย.', '07': 'ก.ค.', '08': 'ส.ค.', '09': 'ก.ย.', '10': 'ต.ค.', '11': 'พ.ย.', '12': 'ธ.ค.' };
         safeSetText('t1-year-display', `พ.ศ. ${parseInt(selYear)+543}`); 
 
         let manualIncomes = incomeData.filter(d => d.year === selYear && d.month === selMonth);
@@ -1293,7 +1566,7 @@
         loadPersonalExpenseForm(selYear, selMonth);
         let currentExp = personalExpenseData.find(d => d.year === selYear && d.month === selMonth);
         let calcStocks = calculateMonthlyStockInvestments(selYear, selMonth);
-        safeSetText('t4-month-expense', ((currentExp ? currentExp.eating+currentExp.creditCard+currentExp.rent+currentExp.personal : 0) + calcStocks).toLocaleString(undefined, {minimumFractionDigits: 0}));
+        safeSetText('t4-month-expense', ((currentExp ? currentExp.eating+currentExp.creditCard+currentExp.rent+currentExp.personal+(currentExp.others||0)+(currentExp.game||0) : 0) + calcStocks).toLocaleString(undefined, {minimumFractionDigits: 0}));
         safeSetText('t4-stock-investment-display', calcStocks.toLocaleString(undefined, {minimumFractionDigits: 0}));
         renderPersonalExpenseChart(selYear);
 
@@ -1302,7 +1575,7 @@
         safeSetText('t5-stock-count', filteredStocks.length + ' รายการ');
         renderStocksTable(filteredStocks);
 
-        renderTaxLedger(selYear, selMonth); 
+        renderTaxLedger(selYear); 
         renderYearlyProjectSummary(selYear); 
         
         renderPastelDashboard(selYear);
@@ -1315,11 +1588,15 @@
             document.getElementById('exp-card').value = record.creditCard || 0;
             document.getElementById('exp-rent').value = record.rent || 0;
             document.getElementById('exp-personal').value = record.personal || 0;
+            document.getElementById('exp-others').value = record.others || 0;
+            document.getElementById('exp-game').value = record.game || 0;
         } else {
             document.getElementById('exp-eating').value = 0;
             document.getElementById('exp-card').value = 0;
             document.getElementById('exp-rent').value = 0;
             document.getElementById('exp-personal').value = 0;
+            document.getElementById('exp-others').value = 0;
+            document.getElementById('exp-game').value = 0;
         }
         document.getElementById('exp-stocks-display').value = calculateMonthlyStockInvestments(year, month);
     }
@@ -1337,7 +1614,29 @@
     function changeOtherStep(id, val) { const item = otherDebtData.find(d => d.id === id.toString()); if (item) { item.step = val; saveData(); showNotification(`🔄 อัปเดตงานอื่นเป็น "${val}"`); } }
     function payOtherJob(id) { const item = otherDebtData.find(d => d.id === id.toString()); if (item) { item.paid = true; item.paidYear = document.getElementById('global-year').value; item.paidMonth = document.getElementById('global-month').value; item.paidDate = new Date().toLocaleDateString('th-TH'); saveData(); showNotification(`💸 ยืนยันชำระเงินเรียบร้อย!`); refreshAll(); } }
 
-    function saveMonthlyPersonalExpenses(e) { e.preventDefault(); const y = document.getElementById('global-year').value, m = document.getElementById('global-month').value; let record = personalExpenseData.find(d => d.year === y && d.month === m); const data = { year: y, month: m, eating: parseFloat(document.getElementById('exp-eating').value) || 0, creditCard: parseFloat(document.getElementById('exp-card').value) || 0, rent: parseFloat(document.getElementById('exp-rent').value) || 0, personal: parseFloat(document.getElementById('exp-personal').value) || 0, stocks: calculateMonthlyStockInvestments(y, m) }; if (record) { record.eating = data.eating; record.creditCard = data.creditCard; record.rent = data.rent; record.personal = data.personal; } else { personalExpenseData.push(data); } saveData(); showNotification("🛒 บันทึกรายจ่ายส่วนตัวเสร็จสิ้น!"); refreshAll(); }
+    function saveMonthlyPersonalExpenses(e) { 
+        e.preventDefault(); 
+        const y = document.getElementById('global-year').value, m = document.getElementById('global-month').value; 
+        let record = personalExpenseData.find(d => d.year === y && d.month === m); 
+        const data = { 
+            year: y, month: m, 
+            eating: parseFloat(document.getElementById('exp-eating').value) || 0, 
+            creditCard: parseFloat(document.getElementById('exp-card').value) || 0, 
+            rent: parseFloat(document.getElementById('exp-rent').value) || 0, 
+            personal: parseFloat(document.getElementById('exp-personal').value) || 0, 
+            others: parseFloat(document.getElementById('exp-others').value) || 0,
+            game: parseFloat(document.getElementById('exp-game').value) || 0,
+            stocks: calculateMonthlyStockInvestments(y, m) 
+        }; 
+        if (record) { 
+            record.eating = data.eating; record.creditCard = data.creditCard; record.rent = data.rent; record.personal = data.personal; record.others = data.others; record.game = data.game;
+        } else { 
+            personalExpenseData.push(data); 
+        } 
+        saveData(); 
+        showNotification("🛒 บันทึกรายจ่ายส่วนตัวเสร็จสิ้น!"); 
+        refreshAll(); 
+    }
 
     function addStockTransaction(e) { e.preventDefault(); stockData.push({ id: Date.now().toString(), year: document.getElementById('global-year').value, month: document.getElementById('global-month').value, name: document.getElementById('stock-name').value, type: document.getElementById('stock-type').value, price: parseFloat(document.getElementById('stock-price').value) || 0, currency: document.getElementById('stock-currency').value }); document.getElementById('stock-form').reset(); setStockCurrency('THB'); saveData(); showNotification("📈 บันทึกหุ้นเรียบร้อย!"); refreshAll(); }
 
@@ -1371,8 +1670,51 @@
     function renderMeePaid(data) {
         const tbody = document.getElementById('mee-paid-table-body'); if (!tbody) return; tbody.innerHTML = '';
         if (data.length === 0) { tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-slate-400 font-bold whitespace-nowrap">ไม่มีประวัติ</td></tr>`; return; }
+        
+        const grouped = {};
         data.forEach(item => {
-            tbody.innerHTML += `<tr><td class="text-slate-400 text-xs font-extrabold tracking-widest whitespace-nowrap">${item.paidDate || '-'}</td><td class="font-extrabold text-slate-700 wrap-text">${item.detail}</td><td class="text-right font-black text-[#2d8a5c] whitespace-nowrap">${item.amount.toLocaleString()}</td><td class="text-center whitespace-nowrap"><button class="text-slate-300 hover:text-[#d94b68] transition" onclick="deleteRegistryConfirm('${item.id}', 'mee')">🗑️</button></td></tr>`;
+            const key = `${item.paidYear || '0000'}-${item.paidMonth || '00'}`;
+            if(!grouped[key]) grouped[key] = [];
+            grouped[key].push(item);
+        });
+
+        const sortedKeys = Object.keys(grouped).sort((a,b) => b.localeCompare(a));
+
+        sortedKeys.forEach(key => {
+            const [y, m] = key.split('-');
+            const monthName = monthNamesFullTh[m] || 'ไม่ระบุ';
+            const yearStr = y !== '0000' ? ` ${parseInt(y)+543}` : '';
+            const groupId = `mee-grp-${key}`;
+            const iconId = `mee-icon-${key}`;
+
+            tbody.innerHTML += `<tr class="bg-slate-50 cursor-pointer hover:bg-slate-100 transition" onclick="toggleGroup('${groupId}', '${iconId}')"><td colspan="4" class="py-3 px-4 font-extrabold text-slate-700 text-xs md:text-sm border-b border-slate-200"><span id="${iconId}" class="inline-block w-4 text-[10px] text-[#5b5cce]">▼</span> 📅 ${monthName}${yearStr} <span class="text-[10px] text-slate-400 font-normal ml-1">(${grouped[key].length} รายการ)</span></td></tr>`;
+
+            grouped[key].forEach(item => {
+                if (editingMeeDateId === item.id) {
+                    let mOpts = getMonthOptions(item.paidMonth || document.getElementById('global-month').value);
+                    let yOpts = getYearOptions(item.paidYear || document.getElementById('global-year').value);
+
+                    tbody.innerHTML += `<tr class="${groupId} bg-[#f0f0ff] transition">
+                        <td class="whitespace-nowrap flex flex-wrap items-center gap-1 p-2 pl-4">
+                            <input type="text" id="edit-mee-date-${item.id}" value="${item.paidDate}" class="w-20 bg-white px-2 py-1 text-xs font-bold rounded border border-slate-200" placeholder="วันที่">
+                            <select id="edit-mee-month-${item.id}" class="bg-white px-2 py-1 text-xs font-bold rounded border border-slate-200">${mOpts}</select>
+                            <select id="edit-mee-year-${item.id}" class="bg-white px-2 py-1 text-xs font-bold rounded border border-slate-200">${yOpts}</select>
+                            <button onclick="saveMeeDate('${item.id}')" class="text-[#2d8a5c] px-1 bg-white rounded shadow-sm">✔️</button>
+                            <button onclick="cancelMeeDate()" class="text-[#d94b68] px-1 bg-white rounded shadow-sm">❌</button>
+                        </td>
+                        <td class="font-extrabold text-slate-700 wrap-text">${item.detail}</td>
+                        <td class="text-right font-black text-[#2d8a5c] whitespace-nowrap">${item.amount.toLocaleString()}</td>
+                        <td class="text-center whitespace-nowrap">-</td>
+                    </tr>`;
+                } else {
+                    tbody.innerHTML += `<tr class="${groupId} transition-all duration-200">
+                        <td class="text-slate-500 text-xs font-extrabold tracking-widest whitespace-nowrap flex items-center gap-2 pl-4">${item.paidDate || '-'} <button onclick="startEditMeeDate('${item.id}')" class="text-[9px] hover:text-[#5b5cce] bg-slate-100 hover:bg-slate-200 px-1.5 py-1 rounded transition">✏️</button></td>
+                        <td class="font-extrabold text-slate-700 wrap-text">${item.detail}</td>
+                        <td class="text-right font-black text-[#2d8a5c] whitespace-nowrap">${item.amount.toLocaleString()}</td>
+                        <td class="text-center pr-4 whitespace-nowrap"><button class="text-slate-300 hover:text-[#d94b68] transition" onclick="deleteRegistryConfirm('${item.id}', 'mee')">🗑️</button></td>
+                    </tr>`;
+                }
+            });
         });
     }
 
@@ -1381,15 +1723,58 @@
         if (data.length === 0) { tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-400 font-bold whitespace-nowrap">ไม่มีรายการค้างจ่าย</td></tr>`; return; }
         data.forEach(item => {
             let opts = ''; workSteps.forEach(s => { opts += `<option value="${s}" ${item.step === s ? 'selected':''}>${s}</option>`; });
-            tbody.innerHTML += `<tr><td class="whitespace-nowrap"><span class="px-2.5 py-1 badge-yellow text-[9px] font-black rounded-full uppercase tracking-wider">${item.category}</span></td><td class="font-extrabold text-slate-700 text-xs wrap-text">${item.detail}</td><td class="text-right font-black text-[#c28b27] whitespace-nowrap">${item.amount.toLocaleString(undefined, {minimumFractionDigits: 2})} ${item.taxDeducted ? `<span class="text-[9px] text-[#d94b68] block font-extrabold tracking-widest mt-0.5">หัก 3%</span>` : ''}</td><td class="text-center whitespace-nowrap"><button onclick="payOtherJob('${item.id}')" class="bg-[#1a1b1e] hover:bg-slate-700 text-white text-[10px] font-black uppercase tracking-wider py-1.5 sm:py-2 px-3 sm:px-4 rounded-full transition shadow-md">Pay</button></td><td class="text-center whitespace-nowrap"><button class="text-slate-400 hover:text-[#d94b68] bg-slate-50 hover:bg-[#fff0f4] p-2 rounded-full transition" onclick="deleteRegistryConfirm('${item.id}', 'oth')">🗑️</button></td></tr>`;
+            tbody.innerHTML += `<tr><td class="whitespace-nowrap"><span class="px-2.5 py-1 badge-yellow text-[9px] font-black rounded-full uppercase tracking-wider">${item.category}</span></td><td class="font-extrabold text-slate-700 text-xs wrap-text">${item.detail}</td><td class="text-right font-black text-[#c28b27] whitespace-nowrap">${item.amount.toLocaleString(undefined, {minimumFractionDigits: 2})} ${item.taxDeducted ? `<span class="text-[9px] text-[#d94b68] block font-extrabold tracking-widest mt-0.5">หัก 3%</span>` : ''}</td><td class="text-center whitespace-nowrap"><select onchange="changeOtherStep('${item.id}', this.value)" class="bg-[#f7f8fc] px-3 py-1.5 rounded-lg text-[10px] sm:text-[11px] font-extrabold cursor-pointer border border-transparent hover:border-slate-200 focus:bg-white">${opts}</select></td><td class="text-center whitespace-nowrap"><button onclick="payOtherJob('${item.id}')" class="bg-[#1a1b1e] hover:bg-slate-700 text-white text-[10px] font-black uppercase tracking-wider py-1.5 sm:py-2 px-3 sm:px-4 rounded-full transition shadow-md">Pay</button></td><td class="text-center whitespace-nowrap"><button class="text-slate-400 hover:text-[#d94b68] bg-slate-50 hover:bg-[#fff0f4] p-2 rounded-full transition" onclick="deleteRegistryConfirm('${item.id}', 'oth')">🗑️</button></td></tr>`;
         });
     }
 
     function renderOtherPaid(data) {
         const tbody = document.getElementById('other-paid-table-body'); if (!tbody) return; tbody.innerHTML = '';
         if (data.length === 0) { tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-slate-400 font-bold whitespace-nowrap">ไม่มีประวัติชำระ</td></tr>`; return; }
+        
+        const grouped = {};
         data.forEach(item => {
-            tbody.innerHTML += `<tr><td class="text-slate-400 text-xs font-extrabold tracking-widest whitespace-nowrap">${item.paidDate || '-'}</td><td class="font-extrabold text-slate-700 text-xs wrap-text">${item.detail}</td><td class="text-right font-black text-[#2d8a5c] whitespace-nowrap">${(item.taxDeducted ? item.amount * 0.97 : item.amount).toLocaleString(undefined, {minimumFractionDigits: 2})}</td><td class="text-center whitespace-nowrap"><button class="text-slate-300 hover:text-[#d94b68] transition" onclick="deleteRegistryConfirm('${item.id}', 'oth')">🗑️</button></td></tr>`;
+            const key = `${item.paidYear || '0000'}-${item.paidMonth || '00'}`;
+            if(!grouped[key]) grouped[key] = [];
+            grouped[key].push(item);
+        });
+
+        const sortedKeys = Object.keys(grouped).sort((a,b) => b.localeCompare(a));
+
+        sortedKeys.forEach(key => {
+            const [y, m] = key.split('-');
+            const monthName = monthNamesFullTh[m] || 'ไม่ระบุ';
+            const yearStr = y !== '0000' ? ` ${parseInt(y)+543}` : '';
+            const groupId = `oth-grp-${key}`;
+            const iconId = `oth-icon-${key}`;
+
+            tbody.innerHTML += `<tr class="bg-slate-50 cursor-pointer hover:bg-slate-100 transition" onclick="toggleGroup('${groupId}', '${iconId}')"><td colspan="4" class="py-3 px-4 font-extrabold text-slate-700 text-xs md:text-sm border-b border-slate-200"><span id="${iconId}" class="inline-block w-4 text-[10px] text-[#c28b27]">▼</span> 📂 ${monthName}${yearStr} <span class="text-[10px] text-slate-400 font-normal ml-1">(${grouped[key].length} รายการ)</span></td></tr>`;
+
+            grouped[key].forEach(item => {
+                if (editingOtherDateId === item.id) {
+                    let mOpts = getMonthOptions(item.paidMonth || document.getElementById('global-month').value);
+                    let yOpts = getYearOptions(item.paidYear || document.getElementById('global-year').value);
+
+                    tbody.innerHTML += `<tr class="${groupId} bg-[#fffaf0] transition">
+                        <td class="whitespace-nowrap flex flex-wrap items-center gap-1 p-2 pl-4">
+                            <input type="text" id="edit-other-date-${item.id}" value="${item.paidDate}" class="w-20 bg-white px-2 py-1 text-xs font-bold rounded border border-slate-200" placeholder="วันที่">
+                            <select id="edit-other-month-${item.id}" class="bg-white px-2 py-1 text-xs font-bold rounded border border-slate-200">${mOpts}</select>
+                            <select id="edit-other-year-${item.id}" class="bg-white px-2 py-1 text-xs font-bold rounded border border-slate-200">${yOpts}</select>
+                            <button onclick="saveOtherDate('${item.id}')" class="text-[#2d8a5c] px-1 bg-white rounded shadow-sm">✔️</button>
+                            <button onclick="cancelOtherDate()" class="text-[#d94b68] px-1 bg-white rounded shadow-sm">❌</button>
+                        </td>
+                        <td class="font-extrabold text-slate-700 text-xs wrap-text">${item.detail}</td>
+                        <td class="text-right font-black text-[#2d8a5c] whitespace-nowrap">${(item.taxDeducted ? item.amount * 0.97 : item.amount).toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+                        <td class="text-center whitespace-nowrap">-</td>
+                    </tr>`;
+                } else {
+                    tbody.innerHTML += `<tr class="${groupId} transition-all duration-200">
+                        <td class="text-slate-500 text-xs font-extrabold tracking-widest whitespace-nowrap flex items-center gap-2 pl-4">${item.paidDate || '-'} <button onclick="startEditOtherDate('${item.id}')" class="text-[9px] hover:text-[#c28b27] bg-slate-100 hover:bg-slate-200 px-1.5 py-1 rounded transition">✏️</button></td>
+                        <td class="font-extrabold text-slate-700 text-xs wrap-text">${item.detail}</td>
+                        <td class="text-right font-black text-[#2d8a5c] whitespace-nowrap">${(item.taxDeducted ? item.amount * 0.97 : item.amount).toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+                        <td class="text-center pr-4 whitespace-nowrap"><button class="text-slate-300 hover:text-[#d94b68] transition" onclick="deleteRegistryConfirm('${item.id}', 'oth')">🗑️</button></td>
+                    </tr>`;
+                }
+            });
         });
     }
 
@@ -1402,17 +1787,52 @@
         });
     }
 
-    function renderTaxLedger(year, month) {
+    function renderTaxLedger(year) {
         const tbody = document.getElementById('tax-table-body'); if (!tbody) return; tbody.innerHTML = '';
-        let taxItems = otherDebtData.filter(d => d.paid && d.taxDeducted && d.paidYear === year && d.paidMonth === month);
+        
+        let taxItemsYear = otherDebtData.filter(d => d.paid && d.taxDeducted && d.paidYear === year);
+        let taxItemsAllTime = otherDebtData.filter(d => d.paid && d.taxDeducted);
+
         let tGross = 0, tTax = 0, tNet = 0;
-        safeSetText('tax-items-count', `${taxItems.length} งวด`);
-        if (taxItems.length === 0) { tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-slate-400 font-bold whitespace-nowrap">ไม่มีรายการในรอบเดือนนี้</td></tr>`; safeSetText('tax-total-deducted', '0.00'); safeSetText('tax-total-net-payout', '0.00'); return; }
-        taxItems.forEach(item => {
-            const gross = item.amount, tax = gross * 0.03, net = gross - tax; tGross += gross; tTax += tax; tNet += net;
-            tbody.innerHTML += `<tr><td class="pl-2 md:pl-4 text-[10px] md:text-[11px] text-slate-400 font-extrabold tracking-widest whitespace-nowrap">${item.paidDate || '-'}</td><td class="text-slate-700 font-black text-xs wrap-text">${item.detail}</td><td class="text-right font-black text-[#d94b68] whitespace-nowrap">-${tax.toLocaleString(undefined, {minimumFractionDigits: 2})}</td><td class="text-right pr-2 md:pr-4 font-black text-[#2d8a5c] whitespace-nowrap">${net.toLocaleString(undefined, {minimumFractionDigits: 2})}</td></tr>`;
+        let totalTaxAllTime = 0;
+
+        taxItemsAllTime.forEach(i => { totalTaxAllTime += (i.amount * 0.03); });
+
+        safeSetText('tax-header-year', `พ.ศ. ${parseInt(year)+543}`);
+        safeSetText('tax-items-count', `${taxItemsYear.length} งวด`);
+        safeSetText('tax-total-all-time', totalTaxAllTime.toLocaleString(undefined, {minimumFractionDigits: 2}));
+
+        if (taxItemsYear.length === 0) { 
+            tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-slate-400 font-bold whitespace-nowrap">ไม่มีรายการในปี ${parseInt(year)+543}</td></tr>`; 
+            safeSetText('tax-total-deducted', '0.00'); 
+            safeSetText('tax-total-net-payout', '0.00'); 
+            return; 
+        }
+        
+        const grouped = {};
+        taxItemsYear.forEach(item => {
+            const m = item.paidMonth || '00';
+            if(!grouped[m]) grouped[m] = [];
+            grouped[m].push(item);
         });
-        safeSetText('tax-total-deducted', tTax.toLocaleString(undefined, {minimumFractionDigits: 2})); safeSetText('tax-total-net-payout', tNet.toLocaleString(undefined, {minimumFractionDigits: 2}));
+
+        const sortedMonths = Object.keys(grouped).sort((a,b) => b.localeCompare(a));
+
+        sortedMonths.forEach(m => {
+            const monthName = monthNamesFullTh[m] || 'ไม่ระบุเดือน';
+            const groupId = `tax-grp-${year}-${m}`;
+            const iconId = `tax-icon-${year}-${m}`;
+
+            tbody.innerHTML += `<tr class="bg-slate-50 cursor-pointer hover:bg-slate-100 transition" onclick="toggleGroup('${groupId}', '${iconId}')"><td colspan="4" class="py-3 pl-2 md:pl-4 font-extrabold text-slate-700 text-xs md:text-sm border-b border-slate-200"><span id="${iconId}" class="inline-block w-4 text-[10px] text-[#d94b68]">▼</span> 📑 ${monthName} <span class="text-[10px] text-slate-400 font-normal ml-1">(${grouped[m].length} รายการ)</span></td></tr>`;
+
+            grouped[m].forEach(item => {
+                const gross = item.amount, tax = gross * 0.03, net = gross - tax; tGross += gross; tTax += tax; tNet += net;
+                tbody.innerHTML += `<tr class="${groupId} transition-all duration-200"><td class="pl-2 md:pl-4 text-[10px] md:text-[11px] text-slate-400 font-extrabold tracking-widest whitespace-nowrap">${item.paidDate || '-'}</td><td class="text-slate-700 font-black text-xs wrap-text">${item.detail}</td><td class="text-right font-black text-[#d94b68] whitespace-nowrap">-${tax.toLocaleString(undefined, {minimumFractionDigits: 2})}</td><td class="text-right pr-2 md:pr-4 font-black text-[#2d8a5c] whitespace-nowrap">${net.toLocaleString(undefined, {minimumFractionDigits: 2})}</td></tr>`;
+            });
+        });
+        
+        safeSetText('tax-total-deducted', tTax.toLocaleString(undefined, {minimumFractionDigits: 2})); 
+        safeSetText('tax-total-net-payout', tNet.toLocaleString(undefined, {minimumFractionDigits: 2}));
     }
 
     function renderYearlyProjectSummary(year) {
@@ -1465,11 +1885,21 @@
         if (personalExpenseChartInstance) personalExpenseChartInstance.destroy();
         const months = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'];
         const labels = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
-        const eatingData = [], cardData = [], rentData = [], personalData = [], stocksData = [];
+        const eatingData = [], cardData = [], rentData = [], personalData = [], othersData = [], gameData = [], stocksData = [];
         months.forEach(m => {
             let rec = personalExpenseData.find(d => d.year === year && d.month === m), autoStocks = calculateMonthlyStockInvestments(year, m);
-            if (rec) { eatingData.push(rec.eating || 0); cardData.push(rec.creditCard || 0); rentData.push(rec.rent || 0); personalData.push(rec.personal || 0); stocksData.push(autoStocks); }
-            else { eatingData.push(0); cardData.push(0); rentData.push(0); personalData.push(0); stocksData.push(autoStocks); }
+            if (rec) { 
+                eatingData.push(rec.eating || 0); 
+                cardData.push(rec.creditCard || 0); 
+                rentData.push(rec.rent || 0); 
+                personalData.push(rec.personal || 0); 
+                othersData.push(rec.others || 0);
+                gameData.push(rec.game || 0);
+                stocksData.push(autoStocks); 
+            }
+            else { 
+                eatingData.push(0); cardData.push(0); rentData.push(0); personalData.push(0); othersData.push(0); gameData.push(0); stocksData.push(autoStocks); 
+            }
         });
         personalExpenseChartInstance = new Chart(ctx.getContext('2d'), { 
             type: 'bar', 
@@ -1478,6 +1908,8 @@
                 { label: 'เครดิต', data: cardData, backgroundColor: '#c28b27', borderRadius: 4, borderSkipped: false }, 
                 { label: 'ที่พัก', data: rentData, backgroundColor: '#3b7cce', borderRadius: 4, borderSkipped: false }, 
                 { label: 'ส่วนตัว', data: personalData, backgroundColor: '#5b5cce', borderRadius: 4, borderSkipped: false }, 
+                { label: 'อื่นๆ', data: othersData, backgroundColor: '#94a3b8', borderRadius: 4, borderSkipped: false }, 
+                { label: 'เกมอั๋น', data: gameData, backgroundColor: '#fbbf24', borderRadius: 4, borderSkipped: false }, 
                 { label: 'ลงทุน', data: stocksData, backgroundColor: '#2d8a5c', borderRadius: 4, borderSkipped: false } 
             ]}, 
             options: { 
@@ -1499,16 +1931,32 @@
         
         let incArr = [], expArr = [], investArr = [], stkBuyArr = [], stkSellArr = [];
         let totalInvestYear = 0, totalIncYear = 0, totalExpTotalYear = 0;
+        
+        let catIncomeMap = {};
 
         months.forEach(m => {
-            let manInc = incomeData.filter(d => d.year === selectedYear && d.month === m).reduce((s,i) => s + i.amount - (i.expense||0), 0);
-            let meeInc = meeDebtData.filter(d => d.paid && d.paidYear === selectedYear && d.paidMonth === m).reduce((s,i) => s + i.amount, 0);
-            let othInc = otherDebtData.filter(d => d.paid && d.paidYear === selectedYear && d.paidMonth === m).reduce((s,i) => s + (i.taxDeducted ? i.amount * 0.97 : i.amount), 0);
-            let netInc = manInc + meeInc + othInc;
+            let mInc = 0;
+            incomeData.filter(d => d.year === selectedYear && d.month === m).forEach(i => {
+                let net = i.amount - (i.expense||0); mInc += net;
+                catIncomeMap[i.type] = (catIncomeMap[i.type] || 0) + net;
+            });
+            let meeInc = 0;
+            meeDebtData.filter(d => d.paid && d.paidYear === selectedYear && d.paidMonth === m).forEach(i => {
+                meeInc += i.amount;
+                catIncomeMap['งานช่างมี้'] = (catIncomeMap['งานช่างมี้'] || 0) + i.amount;
+            });
+            let othInc = 0;
+            otherDebtData.filter(d => d.paid && d.paidYear === selectedYear && d.paidMonth === m).forEach(i => {
+                let net = i.taxDeducted ? i.amount * 0.97 : i.amount; othInc += net;
+                let cName = i.category || 'งานอื่น';
+                catIncomeMap[cName] = (catIncomeMap[cName] || 0) + net;
+            });
+
+            let netInc = mInc + meeInc + othInc;
             incArr.push(netInc); totalIncYear += netInc;
 
             let pExp = personalExpenseData.find(d => d.year === selectedYear && d.month === m);
-            let totalExp = pExp ? (pExp.eating + pExp.creditCard + pExp.rent + pExp.personal) : 0;
+            let totalExp = pExp ? (pExp.eating + pExp.creditCard + pExp.rent + pExp.personal + (pExp.others||0) + (pExp.game||0)) : 0;
             expArr.push(totalExp); totalExpTotalYear += totalExp;
 
             let stocksInMonth = stockData.filter(d => d.year === selectedYear && d.month === m);
@@ -1518,17 +1966,17 @@
             stkBuyArr.push(buy); stkSellArr.push(sell); totalInvestYear += buy;
         });
 
-        let activeExpRecords = personalExpenseData.filter(d => d.year === selectedYear && (d.eating > 0 || d.creditCard > 0 || d.rent > 0 || d.personal > 0));
+        let activeExpRecords = personalExpenseData.filter(d => d.year === selectedYear && (d.eating > 0 || d.creditCard > 0 || d.rent > 0 || d.personal > 0 || d.others > 0 || d.game > 0));
         let expMonthCount = activeExpRecords.length > 0 ? activeExpRecords.length : 1; 
         
-        let yEat = 0, yCard = 0, yRent = 0, yPers = 0;
-        activeExpRecords.forEach(d => { yEat += d.eating||0; yCard += d.creditCard||0; yRent += d.rent||0; yPers += d.personal||0; });
+        let yEat = 0, yCard = 0, yRent = 0, yPers = 0, yOthers = 0, yGame = 0;
+        activeExpRecords.forEach(d => { 
+            yEat += d.eating||0; yCard += d.creditCard||0; yRent += d.rent||0; yPers += d.personal||0; yOthers += d.others||0; yGame += d.game||0;
+        });
         
-        let avgEat = yEat / expMonthCount;
-        let avgCard = yCard / expMonthCount;
-        let avgRent = yRent / expMonthCount;
-        let avgPers = yPers / expMonthCount;
-        let totalAvgExp = avgEat + avgCard + avgRent + avgPers;
+        let avgEat = yEat / expMonthCount; let avgCard = yCard / expMonthCount; let avgRent = yRent / expMonthCount; let avgPers = yPers / expMonthCount;
+        let avgOthers = yOthers / expMonthCount; let avgGame = yGame / expMonthCount;
+        let totalAvgExp = avgEat + avgCard + avgRent + avgPers + avgOthers + avgGame;
 
         safeSetText('dash-overall-net', (totalIncYear - totalExpTotalYear).toLocaleString(undefined, {maximumFractionDigits: 0}) + ' ฿');
         safeSetText('dash-overall-invest', totalInvestYear.toLocaleString(undefined, {maximumFractionDigits: 0}) + ' ฿');
@@ -1556,16 +2004,44 @@
             });
         }
 
+        const ctxIncCat = document.getElementById('dashIncomeCatChart');
+        if(dashIncomeCatChartInst) dashIncomeCatChartInst.destroy();
+        if(ctxIncCat) {
+            let catLabels = Object.keys(catIncomeMap);
+            let catData = Object.values(catIncomeMap);
+            let sortedIndices = catData.map((v, i) => i).sort((a, b) => catData[b] - catData[a]);
+            catLabels = sortedIndices.map(i => catLabels[i]);
+            catData = sortedIndices.map(i => catData[i]);
+
+            dashIncomeCatChartInst = new Chart(ctxIncCat, {
+                type: 'bar',
+                data: {
+                    labels: catLabels,
+                    datasets: [{
+                        label: 'รายรับสุทธิ (฿)',
+                        data: catData,
+                        backgroundColor: '#3b7cce',
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    scales: { y: { grid: { color: '#f1f3f5' } }, x: { grid: { display: false }, ticks: { font: {size: window.innerWidth < 768 ? 9 : 11} } } },
+                    plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(c) { return c.parsed.y.toLocaleString() + ' ฿'; } } } }
+                }
+            });
+        }
+
         const ctxExp = document.getElementById('dashExpenseChart');
         if(dashExpenseChartInst) dashExpenseChartInst.destroy();
         if(ctxExp) {
             dashExpenseChartInst = new Chart(ctxExp, {
                 type: 'doughnut',
                 data: {
-                    labels: ['ค่ากิน', 'บัตร', 'ที่พัก', 'ส่วนตัว'],
+                    labels: ['ค่ากิน', 'บัตร', 'ที่พัก', 'ส่วนตัว', 'อื่นๆ', 'เกมอั๋น'],
                     datasets: [{
-                        data: [avgEat, avgCard, avgRent, avgPers],
-                        backgroundColor: ['#d94b68', '#c28b27', '#3b7cce', '#5b5cce'],
+                        data: [avgEat, avgCard, avgRent, avgPers, avgOthers, avgGame],
+                        backgroundColor: ['#d94b68', '#c28b27', '#3b7cce', '#5b5cce', '#94a3b8', '#fbbf24'],
                         borderWidth: 4, borderColor: '#ffffff', hoverOffset: 10
                     }]
                 },
@@ -1602,7 +2078,7 @@
         const tbodyYr = document.getElementById('dash-yearly-tbody');
         if(tbodyYr) {
             tbodyYr.innerHTML = '';
-            let yearsSet = new Set(['2024','2025','2026','2027']); 
+            let yearsSet = new Set(['2023','2024','2025','2026','2027','2028','2029','2030','2031','2032','2033','2034','2035','2036']); 
             incomeData.forEach(d=>yearsSet.add(d.year)); personalExpenseData.forEach(d=>yearsSet.add(d.year));
             let sortedYears = Array.from(yearsSet).sort().reverse(); 
             
@@ -1612,7 +2088,7 @@
                 let meeInc = meeDebtData.filter(d=>d.paid && d.paidYear===y).reduce((s,i)=>s+i.amount,0);
                 let othInc = otherDebtData.filter(d=>d.paid && d.paidYear===y).reduce((s,i)=>s+(i.taxDeducted?i.amount*0.97:i.amount),0);
                 yInc = mInc + meeInc + othInc;
-                personalExpenseData.filter(d=>d.year===y).forEach(d => { yExp += (d.eating||0)+(d.creditCard||0)+(d.rent||0)+(d.personal||0); });
+                personalExpenseData.filter(d=>d.year===y).forEach(d => { yExp += (d.eating||0)+(d.creditCard||0)+(d.rent||0)+(d.personal||0)+(d.others||0)+(d.game||0); });
 
                 let yNet = yInc - yExp;
                 let netColor = yNet >= 0 ? 'text-[#2d8a5c]' : 'text-[#d94b68]';
