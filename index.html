@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบบันทึกรายรับ-รายจ่าย & งวดงาน & หุ้น v9 (Roh Ultimate Auto DCA)</title>
+    <title>ระบบบันทึกรายรับ-รายจ่าย & งวดงาน & หุ้น v11 (Roh Ultimate Pro Max)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Sarabun', 'Inter', sans-serif; }
@@ -15,7 +16,6 @@
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
         .tab-panel { animation: fadeIn 0.3s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-        /* ซ่อนลูกศรขึ้นลงใน input number */
         input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
     </style>
 </head>
@@ -65,7 +65,7 @@
     <header class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-6 rounded-2xl shadow-lg mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
             <h1 class="text-2xl md:text-3xl font-bold tracking-tight">ระบบบันทึกรายรับ-รายจ่าย & งวดงาน & หุ้น 🚀</h1>
-            <p class="text-indigo-200 text-sm mt-1">รุ่นคัสตอม v9 สำหรับ "ไอ้เหี้ยโร๊ะ" โดย เจ มิ หนู๋ย - พร้อมออโต้ DCA หุ้นรายเดือน!</p>
+            <p class="text-indigo-200 text-sm mt-1">รุ่นคัสตอม v11 สำหรับ "ไอ้เหี้ยโร๊ะ" โดย เจ มิ หนู๋ย - อัปเกรดกราฟ + ระบบจัดการทรัพย์สิน!</p>
         </div>
         <div class="flex flex-wrap items-center gap-3">
             <button onclick="openBackupModal()" class="bg-indigo-500 hover:bg-indigo-400 text-white font-bold py-2 px-4 rounded-xl text-sm transition shadow-lg border border-indigo-400/50 flex items-center gap-2">☁️ แบ็คอัพ</button>
@@ -88,6 +88,7 @@
         <button class="tab-btn px-5 py-3 rounded-xl font-semibold text-sm whitespace-nowrap bg-white text-slate-600 hover:bg-slate-100 transition-all duration-200" onclick="switchTab(event, 'tab5')">5. หุ้น 📈</button>
         <button class="tab-btn px-5 py-3 rounded-xl font-semibold text-sm whitespace-nowrap bg-white text-slate-600 hover:bg-slate-100 transition-all duration-200" onclick="switchTab(event, 'tab6')">6. ภาษี 📄</button>
         <button class="tab-btn px-5 py-3 rounded-xl font-semibold text-sm whitespace-nowrap bg-white text-slate-600 hover:bg-slate-100 transition-all duration-200 border border-slate-200" onclick="switchTab(event, 'tab7')">7. แดชบอร์ด 📊</button>
+        <button class="tab-btn px-5 py-3 rounded-xl font-semibold text-sm whitespace-nowrap bg-white text-slate-600 hover:bg-slate-100 transition-all duration-200 border border-emerald-200" onclick="switchTab(event, 'tab8')">8. ทรัพย์สิน 🏠</button>
     </div>
 
     <div id="tab1" class="tab-panel block">
@@ -103,26 +104,33 @@
                 <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm h-fit">
                     <h2 class="text-lg font-bold text-slate-900 border-b border-slate-100 pb-3 mb-4">📝 บันทึกรายรับ-รายจ่ายงานเพิ่มเติม</h2>
                     <form id="income-form" onsubmit="addIncome(event)" class="space-y-4">
-                        <div><label class="block text-xs font-bold text-slate-500 mb-1.5">ประเภทงาน</label><select class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none" id="inc-type"></select></div>
-                        <div><label class="block text-xs font-bold text-slate-500 mb-1.5">รายละเอียดงาน</label><input type="text" class="w-full bg-slate-50 border rounded-xl px-4 py-2.5 text-sm" id="inc-detail" required></div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 mb-1.5 flex justify-between">
+                                <span>ประเภทงาน (จิ้มเลือกเลยมึง)</span>
+                                <button type="button" onclick="toggleEditIncomeCat()" class="text-[10px] text-indigo-500 font-bold hover:underline" id="btn-edit-inc-cat">✏️ แก้ไข/ลบ</button>
+                            </label>
+                            <input type="hidden" id="inc-category-select" required>
+                            <div id="inc-cat-tags" class="flex flex-wrap gap-1.5 mb-2 transition-all"></div>
+                            <div class="flex gap-1.5 mt-2">
+                                <input type="text" id="new-inc-cat-input" class="flex-1 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-indigo-400" placeholder="พิมพ์ชื่อประเภทใหม่...">
+                                <button type="button" onclick="addIncomeCategory()" class="bg-indigo-500 text-white font-bold px-3 py-1.5 rounded-lg text-xs hover:bg-indigo-600 transition">➕</button>
+                            </div>
+                        </div>
+                        <div><label class="block text-xs font-bold text-slate-500 mb-1.5">รายละเอียดงาน</label><input type="text" class="w-full bg-slate-50 border rounded-xl px-4 py-2.5 text-sm outline-none focus:border-indigo-500" id="inc-detail" required></div>
                         <div class="grid grid-cols-2 gap-3">
-                            <div><label class="block text-xs font-bold text-slate-500 mb-1.5">รายรับ (บาท)</label><input type="number" step="0.01" class="w-full bg-slate-50 border rounded-xl px-4 py-2.5 text-sm" id="inc-amount" value="0" required></div>
-                            <div><label class="block text-xs font-bold text-rose-500 mb-1.5">ต้นทุนงาน (บาท)</label><input type="number" step="0.01" class="w-full bg-rose-50 border-rose-200 rounded-xl px-4 py-2.5 text-sm text-rose-700 font-bold" id="inc-expense" value="0" required></div>
+                            <div><label class="block text-xs font-bold text-slate-500 mb-1.5">รายรับ (บาท)</label><input type="number" step="0.01" class="w-full bg-slate-50 border rounded-xl px-4 py-2.5 text-sm outline-none focus:border-indigo-500" id="inc-amount" value="0" required></div>
+                            <div><label class="block text-xs font-bold text-rose-500 mb-1.5">ต้นทุนงาน (บาท)</label><input type="number" step="0.01" class="w-full bg-rose-50 border-rose-200 rounded-xl px-4 py-2.5 text-sm text-rose-700 font-bold outline-none focus:border-rose-500" id="inc-expense" value="0" required></div>
                         </div>
                         <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl transition">บันทึกรายการ 💾</button>
                     </form>
                 </div>
-                <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm h-fit">
-                    <h2 class="text-lg font-bold text-slate-900 border-b border-slate-100 pb-3 mb-4 flex items-center justify-between"><span>⚙️ จัดการประเภทงานหน้าแรก</span><span class="text-xs bg-indigo-100 text-indigo-700 py-0.5 px-2 rounded-full font-semibold" id="cat-count-badge">0</span></h2>
-                    <div class="flex gap-2 mb-4"><input type="text" id="new-cat-input" placeholder="ประเภทใหม่..." class="flex-1 bg-slate-50 border rounded-xl px-3 py-2 text-sm"><button onclick="addJobCategory()" class="bg-indigo-600 text-white font-bold text-xs px-4 py-2 rounded-xl">เพิ่ม</button></div>
-                    <div class="max-h-52 overflow-y-auto space-y-1.5 pr-1" id="category-list-container"></div>
-                </div>
             </div>
+            
             <div class="lg:col-span-2 space-y-6">
                 <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-                    <h2 class="text-lg font-bold text-slate-900 mb-4 border-b border-slate-100 pb-3">ตารางรายรับจากงานประจำเดือน</h2>
+                    <h2 class="text-lg font-bold text-slate-900 mb-4 border-b border-slate-100 pb-3">ตารางรายรับจากงานประจำเดือน <span class="text-xs font-normal text-slate-500 ml-2">(ดึงข้อมูลจากหน้า 2 และ 3 ที่ชำระแล้วมาให้ด้วย)</span></h2>
                     <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse min-w-[600px]">
+                        <table class="w-full text-left border-collapse min-w-[700px]">
                             <thead><tr class="bg-slate-50 text-slate-400 text-xs uppercase tracking-wider"><th class="p-3 font-semibold">โครงการ</th><th class="p-3 font-semibold">ประเภท</th><th class="p-3 font-semibold">รายละเอียด</th><th class="p-3 font-semibold text-right">รายรับ</th><th class="p-3 font-semibold text-right text-rose-500">ต้นทุน</th><th class="p-3 font-semibold text-center">จัดการ</th></tr></thead>
                             <tbody id="income-table-body" class="text-sm divide-y divide-slate-100"></tbody>
                         </table>
@@ -138,10 +146,10 @@
                 <div>
                     <h2 class="text-lg font-bold text-slate-900 border-b border-slate-100 pb-3 mb-4">👷‍♂️ บันทึกงวดงานช่างมี้</h2>
                     <form id="mee-form" onsubmit="addMeeDebt(event)" class="space-y-4">
-                        <div><label class="block text-xs font-bold text-slate-500 mb-1.5">ชื่อแปลง / รายละเอียด</label><input type="text" class="w-full bg-slate-50 border rounded-xl px-4 py-2.5 text-sm" id="mee-detail" required></div>
+                        <div><label class="block text-xs font-bold text-slate-500 mb-1.5">ชื่อแปลง / รายละเอียด</label><input type="text" class="w-full bg-slate-50 border rounded-xl px-4 py-2.5 text-sm outline-none focus:border-indigo-500" id="mee-detail" required></div>
                         <div class="grid grid-cols-2 gap-3">
-                            <div><label class="block text-xs font-bold text-slate-500 mb-1.5">พื้นที่ (ไร่)</label><input type="number" step="0.1" class="w-full bg-indigo-50 border-indigo-200 rounded-xl px-4 py-2.5 text-sm" id="mee-rai" oninput="calculateMeePriceFromRai()" required></div>
-                            <div><label class="block text-xs font-bold text-slate-500 mb-1.5">งวดเงิน (บาท)</label><input type="number" step="1" class="w-full bg-slate-50 border rounded-xl px-4 py-2.5 text-sm font-bold" id="mee-amount" required></div>
+                            <div><label class="block text-xs font-bold text-slate-500 mb-1.5">พื้นที่ (ไร่)</label><input type="number" step="0.1" class="w-full bg-indigo-50 border-indigo-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-indigo-500" id="mee-rai" oninput="calculateMeePriceFromRai()" required></div>
+                            <div><label class="block text-xs font-bold text-slate-500 mb-1.5">งวดเงิน (บาท)</label><input type="number" step="1" class="w-full bg-slate-50 border rounded-xl px-4 py-2.5 text-sm font-bold outline-none focus:border-indigo-500" id="mee-amount" required></div>
                         </div>
                         <button type="submit" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-xl transition">บันทึกงวด 💾</button>
                     </form>
@@ -149,9 +157,18 @@
             </div>
             <div class="lg:col-span-2 space-y-6">
                 <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-                    <h2 class="text-lg font-bold text-slate-900 mb-4">🕒 งวดงานค้างจ่ายปัจจุบัน</h2>
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-lg font-bold text-slate-900">🕒 งวดงานค้างจ่ายปัจจุบัน</h2>
+                        <span class="bg-rose-100 text-rose-700 px-3 py-1 rounded-lg text-sm font-bold" id="mee-active-total">รวม 0 ฿</span>
+                    </div>
                     <div class="overflow-x-auto"><table class="w-full text-left border-collapse min-w-[600px]"><thead><tr class="bg-slate-50 text-slate-400 text-xs uppercase tracking-wider"><th class="p-3 font-semibold">รายละเอียดงาน</th><th class="p-3 font-semibold text-center">ไร่</th><th class="p-3 font-semibold text-right">จำนวนเงิน</th><th class="p-3 font-semibold text-center">ขั้นตอน</th><th class="p-3 font-semibold text-center">ชำระเงิน</th></tr></thead><tbody id="mee-active-table-body" class="text-sm divide-y divide-slate-100"></tbody></table></div>
                 </div>
+                
+                <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+                    <h2 class="text-lg font-bold text-slate-900 mb-4 border-b border-slate-100 pb-3">📊 สัดส่วนและมูลค่างานช่างมี้ตามขนาดพื้นที่ (ไร่)</h2>
+                    <div class="relative w-full h-[250px]"><canvas id="meeAreaChart"></canvas></div>
+                </div>
+
                 <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
                     <h2 class="text-lg font-bold text-slate-900 mb-4">✅ ประวัติที่ชำระแล้ว</h2>
                     <div class="overflow-x-auto max-h-[400px] overflow-y-auto"><table class="w-full text-left border-collapse min-w-[600px]"><thead><tr class="bg-slate-50 text-slate-400 text-xs uppercase tracking-wider sticky top-0"><th class="p-3 font-semibold">วันที่ชำระ</th><th class="p-3 font-semibold">รายละเอียดงาน</th><th class="p-3 font-semibold text-center">ไร่</th><th class="p-3 font-semibold text-right">ยอดเงิน</th><th class="p-3 font-semibold text-center">จัดการ</th></tr></thead><tbody id="mee-paid-table-body" class="text-sm divide-y divide-slate-100"></tbody></table></div>
@@ -178,9 +195,9 @@
                                 <button type="button" onclick="addOtherCategory()" class="bg-amber-500 text-white font-bold px-3 py-1.5 rounded-lg text-xs hover:bg-amber-600 transition">➕</button>
                             </div>
                         </div>
-                        <div><label class="block text-xs font-bold text-slate-500 mb-1.5">ชื่องาน</label><input type="text" class="w-full bg-slate-50 border rounded-xl px-4 py-2.5 text-sm" id="other-detail" required></div>
+                        <div><label class="block text-xs font-bold text-slate-500 mb-1.5">ชื่องาน</label><input type="text" class="w-full bg-slate-50 border rounded-xl px-4 py-2.5 text-sm outline-none focus:border-indigo-500" id="other-detail" required></div>
                         <div class="grid grid-cols-2 gap-3 items-center">
-                            <div><label class="block text-xs font-bold text-slate-500 mb-1.5">งวด</label><input type="number" min="1" max="12" id="other-installments-count" oninput="generateInstallmentInputs()" class="w-full bg-indigo-50 border-indigo-200 rounded-xl px-4 py-2.5 text-sm" value="1" required></div>
+                            <div><label class="block text-xs font-bold text-slate-500 mb-1.5">งวด</label><input type="number" min="1" max="12" id="other-installments-count" oninput="generateInstallmentInputs()" class="w-full bg-indigo-50 border-indigo-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-indigo-500" value="1" required></div>
                             <div class="flex items-center gap-2 pt-6"><input type="checkbox" id="other-withholding-tax" onchange="generateInstallmentInputs()" class="w-4 h-4 text-amber-600 rounded"><label for="other-withholding-tax" class="text-xs font-bold text-slate-600">หัก 3%</label></div>
                         </div>
                         <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-3" id="installment-inputs-wrapper"><div id="installment-fields-container" class="space-y-3"></div></div>
@@ -190,9 +207,18 @@
             </div>
             <div class="lg:col-span-2 space-y-6">
                 <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-                    <h2 class="text-lg font-bold text-slate-900 mb-4">🕒 รายการค้างจ่ายอื่นปัจจุบัน</h2>
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-lg font-bold text-slate-900">🕒 รายการค้างจ่ายอื่นปัจจุบัน</h2>
+                        <span class="bg-rose-100 text-rose-700 px-3 py-1 rounded-lg text-sm font-bold" id="oth-active-total">รวม 0 ฿</span>
+                    </div>
                     <div class="overflow-x-auto"><table class="w-full text-left border-collapse min-w-[700px]"><thead><tr class="bg-slate-50 text-slate-400 text-xs uppercase tracking-wider"><th class="p-3 font-semibold">ประเภท</th><th class="p-3 font-semibold">ชื่องาน</th><th class="p-3 font-semibold text-right">จำนวนเงิน</th><th class="p-3 font-semibold text-center">หัก 3%</th><th class="p-3 font-semibold text-center">ขั้นตอน</th><th class="p-3 font-semibold text-center">ชำระ</th></tr></thead><tbody id="other-active-table-body" class="text-sm divide-y divide-slate-100"></tbody></table></div>
                 </div>
+
+                <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+                    <h2 class="text-lg font-bold text-slate-900 mb-4 border-b border-slate-100 pb-3">📊 สัดส่วนและมูลค่างานอื่นตามประเภท</h2>
+                    <div class="relative w-full h-[250px]"><canvas id="othCatChart"></canvas></div>
+                </div>
+
                 <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
                     <h2 class="text-lg font-bold text-slate-900 mb-4">✅ ประวัติชำระหมดแล้ว</h2>
                     <div class="overflow-x-auto max-h-[400px] overflow-y-auto"><table class="w-full text-left border-collapse min-w-[700px]"><thead><tr class="bg-slate-50 text-slate-400 text-xs uppercase tracking-wider sticky top-0"><th class="p-3 font-semibold">วันที่ชำระ</th><th class="p-3 font-semibold">ประเภทงาน</th><th class="p-3 font-semibold">ชื่องาน</th><th class="p-3 font-semibold text-right">ยอดจ่าย</th><th class="p-3 font-semibold text-center">จัดการ</th></tr></thead><tbody id="other-paid-table-body" class="text-sm divide-y divide-slate-100"></tbody></table></div>
@@ -231,10 +257,6 @@
     <div id="tab5" class="tab-panel hidden">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
             <div class="bg-gradient-to-br from-indigo-500 to-blue-600 text-white p-6 rounded-2xl shadow-sm"><span class="text-xs font-bold uppercase tracking-wider opacity-80">มูลค่าธุรกรรมรวมทั้งหมดเดือนนี้</span><div class="text-3xl font-bold mt-1" id="t5-month-stock-turnover">0.00 บาท</div></div>
-            <div class="bg-white border border-slate-100 p-6 rounded-2xl shadow-sm flex items-center justify-between">
-                <div><span class="text-xs font-bold text-slate-400 uppercase tracking-wider">จัดการข้อมูลพอร์ต</span><div class="text-sm font-bold text-slate-800 mt-1">ล้างข้อมูลหุ้นทิ้งทั้งหมด</div></div>
-                <button type="button" onclick="clearAllStocks()" class="bg-rose-100 text-rose-700 hover:bg-rose-600 hover:text-white font-bold py-2.5 px-4 rounded-xl text-xs transition border border-rose-200">🗑️ ล้างข้อมูลหุ้นทั้งหมด</button>
-            </div>
         </div>
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm h-fit">
@@ -326,9 +348,11 @@
 
     <div id="tab7" class="tab-panel hidden">
         <div class="flex flex-wrap gap-4 justify-around bg-white p-4 rounded-2xl mb-6 border border-slate-100 shadow-sm">
-            <div class="text-center w-full md:w-auto"><div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">รายรับเฉลี่ย / เดือน (ปีนี้)</div><div class="text-2xl font-black text-emerald-600" id="dash-avg-inc">0 ฿</div></div>
+            <div class="text-center w-full md:w-auto"><div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">รายรับเฉลี่ย / เดือน</div><div class="text-2xl font-black text-emerald-600" id="dash-avg-inc">0 ฿</div></div>
             <div class="hidden md:block w-px bg-slate-200"></div>
-            <div class="text-center w-full md:w-auto"><div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">รายจ่ายเฉลี่ย / เดือน (ปีนี้)</div><div class="text-2xl font-black text-rose-600" id="dash-avg-exp">0 ฿</div></div>
+            <div class="text-center w-full md:w-auto"><div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">รายจ่ายเฉลี่ย / เดือน</div><div class="text-2xl font-black text-rose-600" id="dash-avg-exp">0 ฿</div></div>
+            <div class="hidden md:block w-px bg-slate-200"></div>
+            <div class="text-center w-full md:w-auto"><div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">ลงทุนเฉลี่ย / เดือน</div><div class="text-2xl font-black text-indigo-600" id="dash-avg-inv">0 ฿</div></div>
         </div>
 
         <h2 class="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2"><span>💸</span> 1. หมวดภาพรวมกระแสเงินสดปีนี้</h2>
@@ -365,12 +389,12 @@
             <div>
                 <h2 class="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2"><span>📈</span> 4. วิเคราะห์พอร์ตลงทุน (หุ้น & กองทุน)</h2>
                 <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm mb-4">
-                    <h3 class="text-xs font-bold text-slate-500 mb-2 uppercase text-center">Volume ซื้อ VS ขาย รายเดือน</h3>
-                    <div class="relative w-full h-[120px]"><canvas id="dashStockVolChart"></canvas></div>
+                    <h3 class="text-xs font-bold text-slate-500 mb-2 uppercase text-center">สัดส่วนการลงทุน หุ้นไทย vs หุ้นอเมริกา vs กองทุน</h3>
+                    <div class="relative w-full h-[120px]"><canvas id="dashAssetTypeChart"></canvas></div>
                 </div>
                 <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
-                    <h3 class="text-xs font-bold text-slate-500 mb-2 uppercase text-center">Top 5 สินทรัพย์ที่ทำธุรกรรมเยอะสุด</h3>
-                    <div class="relative w-full h-[120px]"><canvas id="dashTopAssetChart"></canvas></div>
+                    <h3 class="text-xs font-bold text-slate-500 mb-2 uppercase text-center">อัตราการเติบโตของพอร์ต (MoM % Growth)</h3>
+                    <div class="relative w-full h-[120px]"><canvas id="dashGrowthChart"></canvas></div>
                 </div>
             </div>
         </div>
@@ -378,55 +402,77 @@
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
             <div>
                 <h2 class="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2"><span>⏳</span> 5. สถานะเงินจม VS เงินเคลียร์แล้ว</h2>
-                <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-center h-[250px]">
+                <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-center h-[280px]">
                     <div id="gauge-container" class="space-y-4">
-                        <div class="flex justify-between text-xs font-bold">
+                        <div class="flex justify-between text-xs font-bold mb-2">
                             <span class="text-rose-600" id="gauge-pending-text">เงินจมค้างจ่าย: 0 ฿</span>
                             <span class="text-emerald-600" id="gauge-cleared-text">เคลียร์แล้วสะสม: 0 ฿</span>
                         </div>
-                        <div class="w-full bg-slate-100 h-8 rounded-full overflow-hidden flex border border-slate-200 shadow-inner">
-                            <div id="gauge-pending-bar" class="bg-gradient-to-r from-rose-500 to-red-500 h-full transition-all duration-500" style="width: 50%"></div>
-                            <div id="gauge-cleared-bar" class="bg-gradient-to-r from-emerald-400 to-teal-500 h-full transition-all duration-500" style="width: 50%"></div>
-                        </div>
+                        <div class="relative w-full h-[180px]"><canvas id="dashDebtChart"></canvas></div>
                     </div>
                 </div>
             </div>
             <div>
                 <h2 class="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2"><span>🚀</span> 6. เปรียบเทียบการเติบโตรายปี (YoY)</h2>
-                <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm h-[250px]">
+                <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm h-[280px]">
                     <h3 class="text-xs font-bold text-slate-500 mb-2 uppercase text-center" id="dash-yoy-title">ปีนี้ VS ปีก่อน</h3>
-                    <div class="relative w-full h-[180px]"><canvas id="dashYoYChart"></canvas></div>
+                    <div class="relative w-full h-[200px]"><canvas id="dashYoYChart"></canvas></div>
                 </div>
             </div>
         </div>
     </div>
+
+    <div id="tab8" class="tab-panel hidden">
+        <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3 mb-6">
+                <h2 class="text-xl font-bold text-slate-900">🏠 บันทึกมูลค่าทรัพย์สินส่วนตัว (รายไตรมาส)</h2>
+            </div>
+            
+            <div class="flex gap-3 mb-6 bg-emerald-50 p-4 rounded-xl border border-emerald-100">
+                <input type="text" id="new-asset-name" placeholder="ระบุชื่อทรัพย์สิน (เช่น เงินสำรอง, กองทุน, หุ้น)..." class="flex-1 bg-white border border-emerald-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-emerald-500 font-bold text-emerald-900">
+                <button onclick="addNewAsset()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-2.5 rounded-xl transition shadow-sm">➕ เพิ่มทรัพย์สิน</button>
+            </div>
+
+            <div class="overflow-x-auto rounded-xl border border-slate-200">
+                <table class="w-full text-left border-collapse min-w-[800px]">
+                    <thead id="asset-table-head"></thead>
+                    <tbody id="asset-table-body" class="text-sm divide-y divide-slate-200"></tbody>
+                    <tfoot id="asset-table-foot"></tfoot>
+                </table>
+            </div>
+            
+            <p class="text-[10px] text-slate-400 mt-4 text-center">* ระบบจะแสดงคอลัมน์เดือน มี.ค., มิ.ย., ก.ย., และ ธ.ค. อัตโนมัติเมื่อถึงเดือนนั้นตามปฏิทินจริง</p>
+        </div>
+    </div>
+
 </div>
 
 <script>
+    Chart.register(ChartDataLabels);
+    Chart.defaults.set('plugins.datalabels', { display: false }); 
+
     const USD_TO_THB = 35;
-    let incomeData = [], meeDebtData = [], otherDebtData = [], personalExpenseData = [], stockData = [];
+    let incomeData = [], meeDebtData = [], otherDebtData = [], personalExpenseData = [], stockData = [], assetData = [];
     let jobCategories = ["งานฝั่ง", "Fastwork", "งานช่างมี้", "งานอื่น"];
     let otherJobCategories = ["งานออกแบบสถาปัตย์", "งานเขียนแบบ 2D", "งานโมเดล 3D", "งานประสานงาน", "งานอื่นๆ"];
     const workSteps = ["ยังไม่เริ่มงาน", "ขั้นทำแปลน", "ขั้นโมเดล", "ขั้นวีดีโอ", "งานสำเร็จ"];
     
     const tagColors = ['bg-rose-100 text-rose-700 border-rose-200', 'bg-blue-100 text-blue-700 border-blue-200', 'bg-emerald-100 text-emerald-700 border-emerald-200', 'bg-amber-100 text-amber-700 border-amber-200', 'bg-purple-100 text-purple-700 border-purple-200', 'bg-pink-100 text-pink-700 border-pink-200'];
+    
+    let isEditingIncomeCat = false; let currentSelectedIncomeCat = '';
     let isEditingOtherCat = false; let currentSelectedOtherCat = '';
 
-    // Stocks Categories (Dynamic)
-    let stockQuickList = {
-        th: ["LH", "PTT", "AOT", "CPALL", "ADVANC"],
-        us: ["MSFT", "AAPL", "GOOGL", "TSLA", "NVDA"],
-        fund: ["K-GINFRA-A(D)", "K-INDIA-A(A)", "SCBSET50"]
-    };
+    let stockQuickList = { th: ["LH", "TTB", "TRUE"], us: ["BAC", "JNJ", "AAPL", "GOOG", "AMZN", "MSFT"], fund: ["BGOLD", "BASIA"] };
     let isEditingStockTags = false;
 
     let personalExpenseChartInstance = null;
-    let dashCashflowChart = null, dashCumulativeChart = null, dashIncomeTypeChart = null, dashTopProjectChart = null, dashExpensePieChart = null, dashStockVolChart = null, dashTopAssetChart = null, dashYoYChart = null;
+    let dashCashflowChart = null, dashCumulativeChart = null, dashIncomeTypeChart = null, dashTopProjectChart = null, dashExpensePieChart = null, dashAssetTypeChart = null, dashGrowthChart = null, dashYoYChart = null, dashDebtChart = null;
+    let meeAreaChart = null, othCatChart = null;
     let editingIncomeId = null, editingStockId = null, editingMeePaidId = null, editingOtherPaidId = null;
 
     // --- CORE & BACKUP FUNCTIONS ---
     function saveData() { 
-        localStorage.setItem('roh_incomeData', JSON.stringify(incomeData)); localStorage.setItem('roh_meeDebtData', JSON.stringify(meeDebtData)); localStorage.setItem('roh_otherDebtData', JSON.stringify(otherDebtData)); localStorage.setItem('roh_personalExpenseData', JSON.stringify(personalExpenseData)); localStorage.setItem('roh_stockData', JSON.stringify(stockData)); localStorage.setItem('roh_jobCategories', JSON.stringify(jobCategories)); localStorage.setItem('roh_otherJobCategories', JSON.stringify(otherJobCategories)); localStorage.setItem('roh_stockQuickList', JSON.stringify(stockQuickList)); 
+        localStorage.setItem('roh_incomeData', JSON.stringify(incomeData)); localStorage.setItem('roh_meeDebtData', JSON.stringify(meeDebtData)); localStorage.setItem('roh_otherDebtData', JSON.stringify(otherDebtData)); localStorage.setItem('roh_personalExpenseData', JSON.stringify(personalExpenseData)); localStorage.setItem('roh_stockData', JSON.stringify(stockData)); localStorage.setItem('roh_jobCategories', JSON.stringify(jobCategories)); localStorage.setItem('roh_otherJobCategories', JSON.stringify(otherJobCategories)); localStorage.setItem('roh_stockQuickList', JSON.stringify(stockQuickList)); localStorage.setItem('roh_assetData', JSON.stringify(assetData));
     }
     function loadData() {
         if(localStorage.getItem('roh_incomeData')) incomeData = JSON.parse(localStorage.getItem('roh_incomeData'));
@@ -434,49 +480,36 @@
         if(localStorage.getItem('roh_otherDebtData')) otherDebtData = JSON.parse(localStorage.getItem('roh_otherDebtData'));
         if(localStorage.getItem('roh_personalExpenseData')) personalExpenseData = JSON.parse(localStorage.getItem('roh_personalExpenseData'));
         if(localStorage.getItem('roh_stockData')) stockData = JSON.parse(localStorage.getItem('roh_stockData'));
+        if(localStorage.getItem('roh_assetData')) assetData = JSON.parse(localStorage.getItem('roh_assetData'));
         if(localStorage.getItem('roh_jobCategories')) jobCategories = JSON.parse(localStorage.getItem('roh_jobCategories'));
         if(localStorage.getItem('roh_otherJobCategories')) otherJobCategories = JSON.parse(localStorage.getItem('roh_otherJobCategories'));
         if(localStorage.getItem('roh_stockQuickList')) stockQuickList = JSON.parse(localStorage.getItem('roh_stockQuickList'));
         if(localStorage.getItem('roh_gas_url')) document.getElementById('gas-url-input').value = localStorage.getItem('roh_gas_url');
     }
 
-    // --- AUTO DCA LOGIC ---
     function checkAndRunAutoDCA() {
-        const now = new Date();
-        const currentY = now.getFullYear().toString();
-        const currentM = String(now.getMonth() + 1).padStart(2, '0');
-        const dcaKey = `${currentY}-${currentM}`;
-        let lastDCA = localStorage.getItem('roh_lastAutoDCAMonth');
-        
+        const now = new Date(); const currentY = now.getFullYear().toString(); const currentM = String(now.getMonth() + 1).padStart(2, '0'); const dcaKey = `${currentY}-${currentM}`; let lastDCA = localStorage.getItem('roh_lastAutoDCAMonth');
         if (lastDCA !== dcaKey) {
             const dcaPlan = [ {name: 'BAC', price: 300}, {name: 'JNJ', price: 450}, {name: 'AAPL', price: 420}, {name: 'GOOG', price: 540}, {name: 'AMZN', price: 600}, {name: 'MSFT', price: 690}, {name: 'BGOLD', price: 500}, {name: 'BASIA', price: 500} ];
-            let addedCount = 0;
-            dcaPlan.forEach((s, i) => {
-                stockData.push({ id: Date.now().toString() + i, year: currentY, month: currentM, name: s.name, type: 'BUY', price: s.price, currency: 'THB' });
-                addedCount++;
-            });
-            localStorage.setItem('roh_lastAutoDCAMonth', dcaKey);
-            saveData();
-            showNotification(`💸 ออโต้ DCA ของเดือน ${currentM}/${currentY} เข้าพอร์ตแล้วเว้ย!`);
+            dcaPlan.forEach((s, i) => { stockData.push({ id: Date.now().toString() + i, year: currentY, month: currentM, name: s.name, type: 'BUY', price: s.price, currency: 'THB' }); });
+            localStorage.setItem('roh_lastAutoDCAMonth', dcaKey); saveData(); showNotification(`💸 ออโต้ DCA ของเดือน ${currentM}/${currentY} เข้าพอร์ตแล้วเว้ย!`);
         }
     }
 
     function openBackupModal() { document.getElementById('backup-modal').classList.remove('hidden'); }
     function closeBackupModal() { document.getElementById('backup-modal').classList.add('hidden'); }
-    function getAllDataAsObject() { return { incomeData, meeDebtData, otherDebtData, personalExpenseData, stockData, jobCategories, otherJobCategories, stockQuickList }; }
+    function getAllDataAsObject() { return { incomeData, meeDebtData, otherDebtData, personalExpenseData, stockData, assetData, jobCategories, otherJobCategories, stockQuickList }; }
     function downloadBackupJSON() { const dataStr = JSON.stringify(getAllDataAsObject()); const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr); let linkElement = document.createElement('a'); linkElement.setAttribute('href', dataUri); linkElement.setAttribute('download', 'roh_backup_' + new Date().toISOString().split('T')[0] + '.json'); linkElement.click(); showNotification("📥 โหลดไฟล์ Backup เรียบร้อย!"); }
-    function uploadBackupJSON(event) { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = function(e) { try { const parsed = JSON.parse(e.target.result); if(parsed.incomeData) incomeData = parsed.incomeData; if(parsed.meeDebtData) meeDebtData = parsed.meeDebtData; if(parsed.otherDebtData) otherDebtData = parsed.otherDebtData; if(parsed.personalExpenseData) personalExpenseData = parsed.personalExpenseData; if(parsed.stockData) stockData = parsed.stockData; if(parsed.jobCategories) jobCategories = parsed.jobCategories; if(parsed.otherJobCategories) otherJobCategories = parsed.otherJobCategories; if(parsed.stockQuickList) stockQuickList = parsed.stockQuickList; saveData(); refreshAll(); closeBackupModal(); showNotification("📤 กู้คืนข้อมูลสำเร็จ!"); } catch(err) { showNotification("⚠️ ไฟล์พังหรือผิดฟอร์แมต", "error"); } }; reader.readAsText(file); event.target.value = ''; }
+    function uploadBackupJSON(event) { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = function(e) { try { const parsed = JSON.parse(e.target.result); if(parsed.incomeData) incomeData = parsed.incomeData; if(parsed.meeDebtData) meeDebtData = parsed.meeDebtData; if(parsed.otherDebtData) otherDebtData = parsed.otherDebtData; if(parsed.personalExpenseData) personalExpenseData = parsed.personalExpenseData; if(parsed.stockData) stockData = parsed.stockData; if(parsed.assetData) assetData = parsed.assetData; if(parsed.jobCategories) jobCategories = parsed.jobCategories; if(parsed.otherJobCategories) otherJobCategories = parsed.otherJobCategories; if(parsed.stockQuickList) stockQuickList = parsed.stockQuickList; saveData(); refreshAll(); closeBackupModal(); showNotification("📤 กู้คืนข้อมูลสำเร็จ!"); } catch(err) { showNotification("⚠️ ไฟล์พังหรือผิดฟอร์แมต", "error"); } }; reader.readAsText(file); event.target.value = ''; }
     function saveGasUrl() { const url = document.getElementById('gas-url-input').value.trim(); if(url) { localStorage.setItem('roh_gas_url', url); showNotification("✅ เซฟ URL เรียบร้อย"); } }
     async function pushToGoogleSheets() { const url = localStorage.getItem('roh_gas_url'); if(!url) { showNotification("⚠️ ใส่ Web App URL ก่อนดิ", "error"); return; } const btn = document.getElementById('btn-push-sheet'); btn.innerHTML = `⏳ กำลังดัน...`; btn.disabled = true; try { const payload = { action: 'backup', data: getAllDataAsObject() }; const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) }); const result = await res.json(); if(result.status === 'success') showNotification("☁️ แบ็คอัพขึ้น Sheet สำเร็จ!"); else showNotification("⚠️ Error: " + result.message, "error"); } catch(err) { showNotification("⚠️ ติดต่อ Sheet ไม่ได้", "error"); } finally { btn.innerHTML = `☁️ ⬆️ ดันขึ้น`; btn.disabled = false; } }
-    async function pullFromGoogleSheets() { const url = localStorage.getItem('roh_gas_url'); if(!url) { showNotification("⚠️ ใส่ Web App URL ก่อนดิ", "error"); return; } if(!confirm("⚠️ ยืนยันดึงข้อมูลมาทับ? ข้อมูลใหม่ที่ยังไม่ดันขึ้นจะหายนะ")) return; const btn = document.getElementById('btn-pull-sheet'); btn.innerHTML = `⏳ กำลังดึง...`; btn.disabled = true; try { const res = await fetch(url + '?action=restore'); const result = await res.json(); if(result.status === 'success' && result.data) { const parsed = result.data; if(parsed.incomeData) incomeData = parsed.incomeData; if(parsed.meeDebtData) meeDebtData = parsed.meeDebtData; if(parsed.otherDebtData) otherDebtData = parsed.otherDebtData; if(parsed.personalExpenseData) personalExpenseData = parsed.personalExpenseData; if(parsed.stockData) stockData = parsed.stockData; if(parsed.jobCategories) jobCategories = parsed.jobCategories; if(parsed.otherJobCategories) otherJobCategories = parsed.otherJobCategories; if(parsed.stockQuickList) stockQuickList = parsed.stockQuickList; saveData(); refreshAll(); closeBackupModal(); showNotification("☁️ กู้คืนจาก Sheet สำเร็จ!"); } else showNotification("⚠️ ดึงไม่สำเร็จ", "error"); } catch(err) { showNotification("⚠️ ดึงข้อมูลไม่ได้", "error"); } finally { btn.innerHTML = `☁️ ⬇️ ดึงมาทับ`; btn.disabled = false; } }
+    async function pullFromGoogleSheets() { const url = localStorage.getItem('roh_gas_url'); if(!url) { showNotification("⚠️ ใส่ Web App URL ก่อนดิ", "error"); return; } if(!confirm("⚠️ ยืนยันดึงข้อมูลมาทับ? ข้อมูลใหม่ที่ยังไม่ดันขึ้นจะหายนะ")) return; const btn = document.getElementById('btn-pull-sheet'); btn.innerHTML = `⏳ กำลังดึง...`; btn.disabled = true; try { const res = await fetch(url + '?action=restore'); const result = await res.json(); if(result.status === 'success' && result.data) { const parsed = result.data; if(parsed.incomeData) incomeData = parsed.incomeData; if(parsed.meeDebtData) meeDebtData = parsed.meeDebtData; if(parsed.otherDebtData) otherDebtData = parsed.otherDebtData; if(parsed.personalExpenseData) personalExpenseData = parsed.personalExpenseData; if(parsed.stockData) stockData = parsed.stockData; if(parsed.assetData) assetData = parsed.assetData; if(parsed.jobCategories) jobCategories = parsed.jobCategories; if(parsed.otherJobCategories) otherJobCategories = parsed.otherJobCategories; if(parsed.stockQuickList) stockQuickList = parsed.stockQuickList; saveData(); refreshAll(); closeBackupModal(); showNotification("☁️ กู้คืนจาก Sheet สำเร็จ!"); } else showNotification("⚠️ ดึงไม่สำเร็จ", "error"); } catch(err) { showNotification("⚠️ ดึงข้อมูลไม่ได้", "error"); } finally { btn.innerHTML = `☁️ ⬇️ ดึงมาทับ`; btn.disabled = false; } }
 
     window.onload = function() {
         const yearSelect = document.getElementById('global-year'); yearSelect.innerHTML = ''; const currentYear = new Date().getFullYear();
         for(let y=2023; y<=currentYear; y++){ yearSelect.innerHTML += `<option value="${y}">${y+543} (${y})</option>`; }
         const now = new Date(); document.getElementById('global-year').value = now.getFullYear().toString(); document.getElementById('global-month').value = String(now.getMonth() + 1).padStart(2, '0');
-        loadData(); 
-        checkAndRunAutoDCA(); // Auto DCA Check
-        populateCategoryDropdowns(); renderCategoryManagers(); renderOtherCategoryTags(); generateInstallmentInputs(); refreshAll();
+        loadData(); checkAndRunAutoDCA(); renderIncomeCategoryTags(); renderOtherCategoryTags(); generateInstallmentInputs(); refreshAll();
     };
 
     function showNotification(message, type = "success") { const c = document.getElementById('toast-container'); const t = document.createElement('div'); t.className = `p-4 rounded-xl shadow-lg border text-sm font-semibold transition-all duration-300 transform translate-y-2 opacity-0 flex items-center gap-2 bg-white`; if(type==="error") t.classList.add('border-rose-100', 'text-rose-700'); else t.classList.add('border-emerald-100', 'text-emerald-700'); t.innerHTML = `<span>${type==="error"?'⚠️':'✅'}</span> <span>${message}</span>`; c.appendChild(t); setTimeout(()=> t.classList.remove('translate-y-2', 'opacity-0'), 10); setTimeout(()=> { t.classList.add('translate-y-2', 'opacity-0'); setTimeout(()=>t.remove(),300); }, 3000); }
@@ -486,67 +519,56 @@
     document.getElementById('confirm-ok-btn').onclick = ()=> { document.getElementById('custom-confirm-modal').classList.add('hidden'); if(confirmCallback) confirmCallback(); };
 
     function safeSetText(id, val) { const el=document.getElementById(id); if(el) el.innerText=val; }
-    function switchTab(evt, tabId) { document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden')); document.querySelectorAll('.tab-btn').forEach(t => { t.classList.remove('bg-indigo-600', 'text-white', 'shadow-md'); t.classList.add('bg-white', 'text-slate-600'); }); document.getElementById(tabId).classList.remove('hidden'); if(evt) { evt.currentTarget.classList.add('bg-indigo-600', 'text-white'); evt.currentTarget.classList.remove('bg-white', 'text-slate-600'); } if(tabId === 'tab7') renderDashboard(document.getElementById('global-year').value); refreshAll(); }
+    function switchTab(evt, tabId) { document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden')); document.querySelectorAll('.tab-btn').forEach(t => { t.classList.remove('bg-indigo-600', 'text-white', 'shadow-md', 'border-transparent'); t.classList.add('bg-white', 'text-slate-600'); }); document.getElementById(tabId).classList.remove('hidden'); if(evt) { evt.currentTarget.classList.add('bg-indigo-600', 'text-white'); evt.currentTarget.classList.remove('bg-white', 'text-slate-600'); } if(tabId === 'tab7') renderDashboard(document.getElementById('global-year').value); refreshAll(); }
     function onGlobalFilterChange() { refreshAll(); }
     function getProjectFromDetail(detail) { if (!detail) return 'งานทั่วไป'; if (detail.includes(' - ')) return detail.split(' - ')[0].trim(); if (detail.includes('-')) return detail.split('-')[0].trim(); if (detail.includes(' : ')) return detail.split(' : ')[0].trim(); const parts = detail.split(/\s+/); if (parts.length > 1 && (parts[0].includes('โครงการ') || parts[0].match(/^\d+/))) return parts[0] + ' ' + parts[1]; return parts[0] || 'งานทั่วไป'; }
 
-    // --- OTHER CATEGORY TAGS (TAB 3) ---
+    // --- TAB 1 TAGS ---
+    function renderIncomeCategoryTags() { const c = document.getElementById('inc-cat-tags'); if(!c) return; c.innerHTML = ''; if(!currentSelectedIncomeCat && jobCategories.length > 0) { currentSelectedIncomeCat = jobCategories[0]; document.getElementById('inc-category-select').value = currentSelectedIncomeCat; } jobCategories.forEach((cat, idx) => { let colorClass = tagColors[idx % tagColors.length]; let isSel = (cat === currentSelectedIncomeCat) && !isEditingIncomeCat; let baseStyle = `px-3 py-1.5 rounded-xl text-xs font-bold border cursor-pointer transition-all ${colorClass}`; if(isSel) baseStyle += ` ring-2 ring-offset-1 opacity-100`; else baseStyle += ` opacity-60 hover:opacity-100`; if(isEditingIncomeCat) { c.innerHTML += `<div class="${baseStyle} flex items-center gap-1 group"><span class="line-through group-hover:no-underline">${cat}</span><button type="button" onclick="deleteIncomeCategory(${idx})" class="bg-white/50 rounded-full w-4 h-4 flex items-center justify-center text-[8px] hover:bg-rose-500 hover:text-white">✕</button></div>`; } else { c.innerHTML += `<div onclick="selectIncomeCategory('${cat}')" class="${baseStyle}">${cat}</div>`; } }); document.getElementById('btn-edit-inc-cat').innerText = isEditingIncomeCat ? '✅ เสร็จสิ้น' : '✏️ แก้ไข/ลบ'; document.getElementById('inc-category-select').value = currentSelectedIncomeCat; }
+    function selectIncomeCategory(cat) { currentSelectedIncomeCat = cat; renderIncomeCategoryTags(); }
+    function toggleEditIncomeCat() { isEditingIncomeCat = !isEditingIncomeCat; renderIncomeCategoryTags(); }
+    function addIncomeCategory() { const val = document.getElementById('new-inc-cat-input').value.trim(); if(!val) return; if(jobCategories.includes(val)){ showNotification("ซ้ำว่ะ", "error"); return; } jobCategories.push(val); document.getElementById('new-inc-cat-input').value = ''; saveData(); currentSelectedIncomeCat = val; isEditingIncomeCat = false; renderIncomeCategoryTags(); showNotification("เพิ่มประเภทใหม่ละ!"); refreshAll(); }
+    function deleteIncomeCategory(idx) { jobCategories.splice(idx, 1); saveData(); if(currentSelectedIncomeCat === jobCategories[idx] || !jobCategories.includes(currentSelectedIncomeCat)) { currentSelectedIncomeCat = jobCategories[0] || ''; } renderIncomeCategoryTags(); refreshAll(); }
+
+    // --- TAB 3 TAGS ---
     function renderOtherCategoryTags() { const c = document.getElementById('other-cat-tags'); if(!c) return; c.innerHTML = ''; if(!currentSelectedOtherCat && otherJobCategories.length > 0) { currentSelectedOtherCat = otherJobCategories[0]; document.getElementById('other-category-select').value = currentSelectedOtherCat; } otherJobCategories.forEach((cat, idx) => { let colorClass = tagColors[idx % tagColors.length]; let isSel = (cat === currentSelectedOtherCat) && !isEditingOtherCat; let baseStyle = `px-3 py-1.5 rounded-xl text-xs font-bold border cursor-pointer transition-all ${colorClass}`; if(isSel) baseStyle += ` ring-2 ring-offset-1 opacity-100`; else baseStyle += ` opacity-60 hover:opacity-100`; if(isEditingOtherCat) { c.innerHTML += `<div class="${baseStyle} flex items-center gap-1 group"><span class="line-through group-hover:no-underline">${cat}</span><button type="button" onclick="deleteOtherCategory(${idx})" class="bg-white/50 rounded-full w-4 h-4 flex items-center justify-center text-[8px] hover:bg-rose-500 hover:text-white">✕</button></div>`; } else { c.innerHTML += `<div onclick="selectOtherCategory('${cat}')" class="${baseStyle}">${cat}</div>`; } }); document.getElementById('btn-edit-other-cat').innerText = isEditingOtherCat ? '✅ เสร็จสิ้น' : '✏️ แก้ไข/ลบ'; document.getElementById('other-category-select').value = currentSelectedOtherCat; }
     function selectOtherCategory(cat) { currentSelectedOtherCat = cat; renderOtherCategoryTags(); }
     function toggleEditOtherCat() { isEditingOtherCat = !isEditingOtherCat; renderOtherCategoryTags(); }
     function addOtherCategory() { const val = document.getElementById('new-other-cat-input').value.trim(); if(!val) return; if(otherJobCategories.includes(val)){ showNotification("ซ้ำว่ะ", "error"); return; } otherJobCategories.push(val); document.getElementById('new-other-cat-input').value = ''; saveData(); currentSelectedOtherCat = val; isEditingOtherCat = false; renderOtherCategoryTags(); showNotification("เพิ่มประเภทใหม่ละ!"); refreshAll(); }
     function deleteOtherCategory(idx) { otherJobCategories.splice(idx, 1); saveData(); if(currentSelectedOtherCat === otherJobCategories[idx] || !otherJobCategories.includes(currentSelectedOtherCat)) { currentSelectedOtherCat = otherJobCategories[0] || ''; } renderOtherCategoryTags(); refreshAll(); }
 
-    // --- STOCK QUICK SELECT (3 หมวด) Editable ---
+    // --- TAB 5 TAGS ---
     function toggleEditStockTags() { isEditingStockTags = !isEditingStockTags; document.getElementById('btn-edit-stock-tags').innerText = isEditingStockTags ? '✅ เสร็จสิ้น' : '✏️ แก้ไข/ลบ'; document.getElementById('edit-stock-tag-controls').classList.toggle('hidden'); renderStockQuickSelect(); }
     function addStockTag() { const cat = document.getElementById('new-stock-tag-cat').value; const val = document.getElementById('new-stock-tag-input').value.trim().toUpperCase(); if(!val) return; if(stockQuickList[cat].includes(val)) { showNotification("ซ้ำว่ะ", "error"); return; } stockQuickList[cat].push(val); document.getElementById('new-stock-tag-input').value = ''; saveData(); renderStockQuickSelect(); showNotification("เพิ่มหุ้นสำเร็จ!"); }
     function deleteStockTag(cat, idx) { stockQuickList[cat].splice(idx, 1); saveData(); renderStockQuickSelect(); }
-
     function renderStockQuickSelect() {
         const usedStocks = Array.from(new Set(stockData.map(s => s.name)));
-        
-        const btnHtml = (s, cat, idx) => {
-            if (isEditingStockTags && cat) {
-                return `<div class="bg-indigo-50 border border-indigo-200 text-indigo-700 px-2.5 py-1 rounded-md text-[10px] font-bold flex items-center gap-1 group"><span class="line-through group-hover:no-underline">${s}</span><button type="button" onclick="deleteStockTag('${cat}', ${idx})" class="bg-rose-500 rounded-full w-4 h-4 flex items-center justify-center text-[8px] hover:bg-rose-700 text-white shadow-sm">✕</button></div>`;
-            } else {
-                return `<button type="button" onclick="document.getElementById('stock-name').value='${s}'" class="bg-white border border-slate-200 text-slate-700 hover:bg-indigo-600 hover:text-white hover:border-indigo-600 px-2.5 py-1 rounded-md text-[10px] font-bold transition-all shadow-sm">${s}</button>`;
-            }
-        };
-        
-        document.getElementById('quick-stock-th').innerHTML = stockQuickList.th.map((s,i) => btnHtml(s, 'th', i)).join('');
-        document.getElementById('quick-stock-us').innerHTML = stockQuickList.us.map((s,i) => btnHtml(s, 'us', i)).join('');
-        document.getElementById('quick-stock-fund').innerHTML = stockQuickList.fund.map((s,i) => btnHtml(s, 'fund', i)).join('');
-        
-        const allDefaults = [...stockQuickList.th, ...stockQuickList.us, ...stockQuickList.fund];
-        const others = usedStocks.filter(s => !allDefaults.includes(s));
-        const otherContainer = document.getElementById('quick-stock-other-container');
-        if(others.length > 0 && !isEditingStockTags) {
-            otherContainer.classList.remove('hidden'); document.getElementById('quick-stock-other').innerHTML = others.map(s => btnHtml(s, null, -1)).join('');
-        } else {
-            otherContainer.classList.add('hidden');
-        }
+        const btnHtml = (s, cat, idx) => { if (isEditingStockTags && cat) { return `<div class="bg-indigo-50 border border-indigo-200 text-indigo-700 px-2.5 py-1 rounded-md text-[10px] font-bold flex items-center gap-1 group"><span class="line-through group-hover:no-underline">${s}</span><button type="button" onclick="deleteStockTag('${cat}', ${idx})" class="bg-rose-500 rounded-full w-4 h-4 flex items-center justify-center text-[8px] hover:bg-rose-700 text-white shadow-sm">✕</button></div>`; } else { return `<button type="button" onclick="document.getElementById('stock-name').value='${s}'" class="bg-white border border-slate-200 text-slate-700 hover:bg-indigo-600 hover:text-white hover:border-indigo-600 px-2.5 py-1 rounded-md text-[10px] font-bold transition-all shadow-sm">${s}</button>`; } };
+        document.getElementById('quick-stock-th').innerHTML = stockQuickList.th.map((s,i) => btnHtml(s, 'th', i)).join(''); document.getElementById('quick-stock-us').innerHTML = stockQuickList.us.map((s,i) => btnHtml(s, 'us', i)).join(''); document.getElementById('quick-stock-fund').innerHTML = stockQuickList.fund.map((s,i) => btnHtml(s, 'fund', i)).join('');
+        const allDefaults = [...stockQuickList.th, ...stockQuickList.us, ...stockQuickList.fund]; const others = usedStocks.filter(s => !allDefaults.includes(s)); const otherContainer = document.getElementById('quick-stock-other-container');
+        if(others.length > 0 && !isEditingStockTags) { otherContainer.classList.remove('hidden'); document.getElementById('quick-stock-other').innerHTML = others.map(s => btnHtml(s, null, -1)).join(''); } else { otherContainer.classList.add('hidden'); }
     }
 
     function calculateMeePriceFromRai() { const rai = parseFloat(document.getElementById('mee-rai').value) || 0; let p = 0; if(rai>=1 && rai<=5) p=5000; else if(rai>=6 && rai<=10) p=6000; else if(rai>=11 && rai<=20) p=7500; else if(rai>=21 && rai<=30) p=11000; else if(rai>30) p=15000; document.getElementById('mee-amount').value = p; }
     function generateInstallmentInputs() { const c = document.getElementById('installment-fields-container'); c.innerHTML=''; const count = Math.max(1, parseInt(document.getElementById('other-installments-count').value)||1); for(let i=1; i<=count; i++){ c.innerHTML += `<div class="bg-white p-2 border rounded-lg"><span class="text-xs font-bold text-slate-500">งวดที่ ${i}/${count}</span><input type="number" step="0.01" id="installment-amount-${i}" class="w-full bg-slate-50 border rounded px-2 py-1 text-xs mt-1" required></div>`; } }
     function setStockCurrency(curr) { document.getElementById('stock-currency').value = curr; if(curr==='USD'){ document.getElementById('stock-curr-usd').className="flex-1 py-2 text-xs font-extrabold rounded-lg bg-white text-indigo-950 shadow-sm border border-slate-200"; document.getElementById('stock-curr-thb').className="flex-1 py-2 text-xs font-extrabold rounded-lg text-slate-500"; }else{ document.getElementById('stock-curr-thb').className="flex-1 py-2 text-xs font-extrabold rounded-lg bg-white text-indigo-950 shadow-sm border border-slate-200"; document.getElementById('stock-curr-usd').className="flex-1 py-2 text-xs font-extrabold rounded-lg text-slate-500"; } }
-    function populateCategoryDropdowns() { let sc1=document.getElementById('inc-type'); if(sc1) { sc1.innerHTML=''; jobCategories.forEach(c=> sc1.innerHTML+=`<option value="${c}">${c}</option>`); } }
-    function renderCategoryManagers() { let c1=document.getElementById('category-list-container'); if(c1) { c1.innerHTML=''; safeSetText('cat-count-badge', jobCategories.length); jobCategories.forEach((cat,i)=> c1.innerHTML+=`<div class="flex justify-between p-2 bg-slate-50 border rounded text-xs"><span class="font-bold">${cat}</span><button onclick="deleteJobCategory(${i})" class="text-rose-500">🗑️</button></div>`); } }
-    function addJobCategory() { const val = document.getElementById('new-cat-input').value.trim(); if(!val) return; jobCategories.push(val); document.getElementById('new-cat-input').value=''; saveData(); populateCategoryDropdowns(); renderCategoryManagers(); refreshAll(); }
-    function deleteJobCategory(i) { jobCategories.splice(i,1); saveData(); populateCategoryDropdowns(); renderCategoryManagers(); refreshAll(); }
 
     function refreshAll() {
         const y = document.getElementById('global-year').value, m = document.getElementById('global-month').value; const monthsThai = {'01':'ม.ค.','02':'ก.พ.','03':'มี.ค.','04':'เม.ย.','05':'พ.ค.','06':'มิ.ย.','07':'ก.ค.','08':'ส.ค.','09':'ก.ย.','10':'ต.ค.','11':'พ.ย.','12':'ธ.ค.'}; safeSetText('t1-year-display', `พ.ศ. ${parseInt(y)+543}`); safeSetText('t1-month-info', `เดือน ${monthsThai[m]} พ.ศ. ${parseInt(y)+543}`);
 
-        let mInc = incomeData.filter(d=> d.year===y && d.month===m), pMee = meeDebtData.filter(d=> d.paid && d.paidYear===y && d.paidMonth===m), pOth = otherDebtData.filter(d=> d.paid && d.paidYear===y && d.paidMonth===m); renderIncome(mInc);
+        let mInc = incomeData.filter(d=> d.year===y && d.month===m), pMee = meeDebtData.filter(d=> d.paid && d.paidYear===y && d.paidMonth===m), pOth = otherDebtData.filter(d=> d.paid && d.paidYear===y && d.paidMonth===m); renderIncome(mInc, pMee, pOth);
         let tInc = mInc.reduce((s,i)=>s+i.amount,0) + pMee.reduce((s,i)=>s+i.amount,0) + pOth.reduce((s,i)=>s+(i.taxDeducted?i.amount*0.97:i.amount),0); let tExp = mInc.reduce((s,i)=>s+(i.expense||0),0);
         safeSetText('t1-month-income', tInc.toLocaleString(undefined, {minimumFractionDigits: 2})+' บาท'); safeSetText('t1-month-job-expense', tExp.toLocaleString(undefined, {minimumFractionDigits: 2})+' บาท'); safeSetText('t1-month-net-income', (tInc-tExp).toLocaleString(undefined, {minimumFractionDigits: 2})+' บาท');
         
         let yInc = incomeData.filter(d=>d.year===y).reduce((s,i)=>s+i.amount,0) + meeDebtData.filter(d=>d.paid && d.paidYear===y).reduce((s,i)=>s+i.amount,0) + otherDebtData.filter(d=>d.paid && d.paidYear===y).reduce((s,i)=>s+(i.taxDeducted?i.amount*0.97:i.amount),0); let yExp = incomeData.filter(d=>d.year===y).reduce((s,i)=>s+(i.expense||0),0);
         safeSetText('t1-year-net-accumulated', (yInc-yExp).toLocaleString(undefined, {minimumFractionDigits: 2})+' บาท');
 
-        renderMeeActive(meeDebtData.filter(d=> !d.paid)); renderMeePaid(meeDebtData.filter(d=> d.paid)); renderOtherActive(otherDebtData.filter(d=> !d.paid)); renderOtherPaid(otherDebtData.filter(d=> d.paid));
+        let unMee = meeDebtData.filter(d=> !d.paid); renderMeeActive(unMee); renderMeePaid(meeDebtData.filter(d=> d.paid)); renderMeeChart(y);
+        let unOth = otherDebtData.filter(d=> !d.paid); renderOtherActive(unOth); renderOtherPaid(otherDebtData.filter(d=> d.paid)); renderOthChart(y);
         
+        safeSetText('mee-active-total', 'รวมเงินค้าง: ' + unMee.reduce((s,i)=>s+i.amount,0).toLocaleString() + ' ฿');
+        safeSetText('oth-active-total', 'รวมเงินค้าง: ' + unOth.reduce((s,i)=>s+i.amount,0).toLocaleString() + ' ฿');
+
         loadPersonalExpenseForm(y, m);
         let px = personalExpenseData.find(d=> d.year===y && d.month===m) || {};
         let t4Net = (px.eating||0) + (px.creditCard||0) + (px.rent||0) + (px.personal||0) + (px.stocks||0) + (px.gameAun||0) + (px.otherExt||0);
@@ -555,13 +577,15 @@
 
         let stks = stockData.filter(d=> d.year===y && d.month===m); safeSetText('t5-month-stock-turnover', stks.reduce((s,i)=>s+(i.currency==='USD'?i.price*USD_TO_THB:i.price),0).toLocaleString(undefined, {minimumFractionDigits: 2})+' บาท'); renderStockQuickSelect(); renderStocksTable(stockData);
         renderTaxLedger(y, m);
+        renderAssets();
+
         if(document.getElementById('tab7').classList.contains('block')) { renderDashboard(y); }
     }
 
     // --- DASHBOARD RENDERING ---
     function renderDashboard(y) {
         Chart.defaults.font.family = 'Sarabun'; const labels = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
-        let incArr = Array(12).fill(0), expArr = Array(12).fill(0), netCumArr = []; let cumSum = 0; let totalIncY=0, totalExpY=0;
+        let incArr = Array(12).fill(0), expArr = Array(12).fill(0), netCumArr = []; let cumSum = 0; let totalIncY=0, totalExpY=0, totalInvY=0;
         let currentMonthInt = parseInt(document.getElementById('global-month').value) || 1;
         
         for(let m=1; m<=12; m++) {
@@ -569,12 +593,15 @@
             let mi = incomeData.filter(d=>d.year===y && d.month===mStr).reduce((s,i)=>s+i.amount,0) + meeDebtData.filter(d=>d.paid && d.paidYear===y && d.paidMonth===mStr).reduce((s,i)=>s+i.amount,0) + otherDebtData.filter(d=>d.paid && d.paidYear===y && d.paidMonth===mStr).reduce((s,i)=>s+(i.taxDeducted?i.amount*0.97:i.amount),0);
             let me = incomeData.filter(d=>d.year===y && d.month===mStr).reduce((s,i)=>s+(i.expense||0),0);
             let px = personalExpenseData.find(d=> d.year===y && d.month===mStr) || {}; let pe = (px.eating||0)+(px.creditCard||0)+(px.rent||0)+(px.personal||0)+(px.stocks||0)+(px.gameAun||0)+(px.otherExt||0);
+            let minv = stockData.filter(s=>s.year===y && s.month===mStr && s.type==='BUY').reduce((s,i)=>s+(i.currency==='USD'?i.price*USD_TO_THB:i.price),0);
+            
             incArr[m-1] = mi; expArr[m-1] = me + pe; cumSum += (mi - (me + pe)); netCumArr.push(cumSum);
-            if(m <= currentMonthInt) { totalIncY += mi; totalExpY += (me+pe); }
+            if(m <= currentMonthInt) { totalIncY += mi; totalExpY += (me+pe); totalInvY += minv; }
         }
         
         safeSetText('dash-avg-inc', (totalIncY/currentMonthInt).toLocaleString(undefined, {maximumFractionDigits:0}) + ' ฿');
         safeSetText('dash-avg-exp', (totalExpY/currentMonthInt).toLocaleString(undefined, {maximumFractionDigits:0}) + ' ฿');
+        safeSetText('dash-avg-inv', (totalInvY/currentMonthInt).toLocaleString(undefined, {maximumFractionDigits:0}) + ' ฿');
 
         if(dashCashflowChart) dashCashflowChart.destroy(); dashCashflowChart = new Chart(document.getElementById('dashCashflowChart'), { type: 'line', data: { labels, datasets: [{label: 'รายรับ', data: incArr, borderColor: '#10b981', backgroundColor: '#10b981', tension: 0.3}, {label: 'รายจ่าย', data: expArr, borderColor: '#f43f5e', backgroundColor: '#f43f5e', tension: 0.3}] }, options: {responsive:true, maintainAspectRatio:false} });
         if(dashCumulativeChart) dashCumulativeChart.destroy(); dashCumulativeChart = new Chart(document.getElementById('dashCumulativeChart'), { type: 'line', data: { labels, datasets: [{label: 'กำไรสะสมสุทธิ', data: netCumArr, borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.2)', fill: true, tension: 0.3}] }, options: {responsive:true, maintainAspectRatio:false} });
@@ -583,37 +610,96 @@
         incomeData.filter(d=>d.year===y).forEach(i=> { typeSums[i.type] = (typeSums[i.type]||0)+i.amount; let p = getProjectFromDetail(i.detail); projSums[p] = (projSums[p]||0)+(i.amount-(i.expense||0)); });
         meeDebtData.filter(d=>d.paid && d.paidYear===y).forEach(i=> { typeSums['ช่างมี้'] = (typeSums['ช่างมี้']||0)+i.amount; let p = getProjectFromDetail(i.detail); projSums[p] = (projSums[p]||0)+i.amount; });
         otherDebtData.filter(d=>d.paid && d.paidYear===y).forEach(i=> { typeSums[i.category||'งานอื่น'] = (typeSums[i.category||'งานอื่น']||0)+(i.taxDeducted?i.amount*0.97:i.amount); let p = getProjectFromDetail(i.detail); projSums[p] = (projSums[p]||0)+(i.taxDeducted?i.amount*0.97:i.amount); });
-        if(dashIncomeTypeChart) dashIncomeTypeChart.destroy(); dashIncomeTypeChart = new Chart(document.getElementById('dashIncomeTypeChart'), { type: 'doughnut', data: { labels: Object.keys(typeSums), datasets: [{data: Object.values(typeSums), backgroundColor: ['#6366f1','#10b981','#f59e0b','#ef4444','#8b5cf6']}] }, options: {responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'right'}}} });
+        if(dashIncomeTypeChart) dashIncomeTypeChart.destroy(); dashIncomeTypeChart = new Chart(document.getElementById('dashIncomeTypeChart'), { type: 'doughnut', data: { labels: Object.keys(typeSums), datasets: [{data: Object.values(typeSums), backgroundColor: ['#6366f1','#10b981','#f59e0b','#ef4444','#8b5cf6']}] }, options: {responsive:true, maintainAspectRatio:false, plugins:{ datalabels: { display: true, color: '#fff', font: {family: 'Sarabun', weight: 'bold'}, formatter: (value, ctx) => { let sum = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0); if(sum===0||value===0) return ''; return (value*100/sum).toFixed(1)+'%'; } }, legend:{position:'right'}}} });
         let sortedProj = Object.entries(projSums).sort((a,b)=>b[1]-a[1]).slice(0,10); if(dashTopProjectChart) dashTopProjectChart.destroy(); dashTopProjectChart = new Chart(document.getElementById('dashTopProjectChart'), { type: 'bar', data: { labels: sortedProj.map(p=>p[0]), datasets: [{label: 'กำไรสุทธิ', data: sortedProj.map(p=>p[1]), backgroundColor: '#8b5cf6'}] }, options: {indexAxis: 'y', responsive:true, maintainAspectRatio:false} });
 
         let exTot = {eating:0, creditCard:0, rent:0, personal:0, stocks:0, gameAun:0, otherExt:0};
         personalExpenseData.filter(d=>d.year===y).forEach(p=>{ exTot.eating+=p.eating||0; exTot.creditCard+=p.creditCard||0; exTot.rent+=p.rent||0; exTot.personal+=p.personal||0; exTot.stocks+=p.stocks||0; exTot.gameAun+=p.gameAun||0; exTot.otherExt+=p.otherExt||0; });
-        if(dashExpensePieChart) dashExpensePieChart.destroy(); dashExpensePieChart = new Chart(document.getElementById('dashExpensePieChart'), { type: 'pie', data: { labels: ['ค่ากิน', 'บัตรเครดิต', 'หอพัก', 'ส่วนตัว', 'หุ้น', 'เกม+อั๋น', 'อื่นๆ'], datasets: [{data: [exTot.eating, exTot.creditCard, exTot.rent, exTot.personal, exTot.stocks, exTot.gameAun, exTot.otherExt], backgroundColor: ['#f43f5e','#fbbf24','#3b82f6','#ec4899','#10b981','#6366f1','#f97316']}] }, options: {responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'right'}}} });
+        if(dashExpensePieChart) dashExpensePieChart.destroy(); dashExpensePieChart = new Chart(document.getElementById('dashExpensePieChart'), { type: 'pie', data: { labels: ['ค่ากิน', 'บัตรเครดิต', 'หอพัก', 'ส่วนตัว', 'หุ้น', 'เกม+อั๋น', 'อื่นๆ'], datasets: [{data: [exTot.eating, exTot.creditCard, exTot.rent, exTot.personal, exTot.stocks, exTot.gameAun, exTot.otherExt], backgroundColor: ['#f43f5e','#fbbf24','#3b82f6','#ec4899','#10b981','#6366f1','#f97316']}] }, options: {responsive:true, maintainAspectRatio:false, plugins:{ datalabels: { display: true, color: '#fff', font: {family: 'Sarabun', weight: 'bold'}, formatter: (value, ctx) => { let sum = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0); if(sum===0||value===0) return ''; return (value*100/sum).toFixed(1)+'%'; } }, legend:{position:'right'}}} });
 
-        let buyArr=Array(12).fill(0), sellArr=Array(12).fill(0), assetVols={};
-        stockData.filter(d=>d.year===y).forEach(s=>{ let v = s.currency==='USD'?s.price*USD_TO_THB:s.price; let m = parseInt(s.month)-1; if(s.type==='BUY') buyArr[m]+=v; else if(s.type==='SELL') sellArr[m]+=v; assetVols[s.name] = (assetVols[s.name]||0) + v; });
-        if(dashStockVolChart) dashStockVolChart.destroy(); dashStockVolChart = new Chart(document.getElementById('dashStockVolChart'), { type: 'bar', data: { labels, datasets: [{label:'ซื้อ', data:buyArr, backgroundColor:'#10b981'}, {label:'ขาย', data:sellArr, backgroundColor:'#f43f5e'}] }, options: {responsive:true, maintainAspectRatio:false, scales:{x:{stacked:false}, y:{stacked:false}}, plugins:{legend:{display:false}}} });
-        let sortedAssets = Object.entries(assetVols).sort((a,b)=>b[1]-a[1]).slice(0,5); if(dashTopAssetChart) dashTopAssetChart.destroy(); dashTopAssetChart = new Chart(document.getElementById('dashTopAssetChart'), { type: 'bar', data: { labels: sortedAssets.map(a=>a[0]), datasets: [{label:'Volume', data:sortedAssets.map(a=>a[1]), backgroundColor:'#3b82f6'}] }, options: {responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}} });
+        let typeVols = { th: 0, us: 0, fund: 0 };
+        stockData.filter(d=>d.year===y).forEach(s => { let v = s.currency==='USD'?s.price*USD_TO_THB:s.price; if(stockQuickList.th.includes(s.name)) typeVols.th += v; else if(stockQuickList.us.includes(s.name)) typeVols.us += v; else if(stockQuickList.fund.includes(s.name)) typeVols.fund += v; });
+        if(dashAssetTypeChart) dashAssetTypeChart.destroy(); dashAssetTypeChart = new Chart(document.getElementById('dashAssetTypeChart'), { type: 'bar', data: { labels: ['หุ้นไทย', 'หุ้นอเมริกา', 'กองทุน'], datasets: [{label:'มูลค่าลงทุนสะสม (ปีนี้)', data:[typeVols.th, typeVols.us, typeVols.fund], backgroundColor:['#f59e0b', '#3b82f6', '#10b981']}] }, options: {responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}} });
 
-        let pendingTot = meeDebtData.filter(d=>!d.paid).reduce((s,i)=>s+i.amount,0) + otherDebtData.filter(d=>!d.paid).reduce((s,i)=>s+i.amount,0); let clearedTot = meeDebtData.filter(d=>d.paid).reduce((s,i)=>s+i.amount,0) + otherDebtData.filter(d=>d.paid).reduce((s,i)=>s+i.amount,0); let gaugeTotal = pendingTot + clearedTot;
-        document.getElementById('gauge-pending-text').innerText = `เงินจม: ${pendingTot.toLocaleString()} ฿`; document.getElementById('gauge-cleared-text').innerText = `เคลียร์แล้ว: ${clearedTot.toLocaleString()} ฿`;
-        document.getElementById('gauge-pending-bar').style.width = `${gaugeTotal===0?0:(pendingTot/gaugeTotal)*100}%`; document.getElementById('gauge-cleared-bar').style.width = `${gaugeTotal===0?0:(clearedTot/gaugeTotal)*100}%`;
+        let cumValue = 0; stockData.filter(s => parseInt(s.year) < parseInt(y)).forEach(s => { let v = s.currency==='USD'?s.price*USD_TO_THB:s.price; if(s.type==='BUY') cumValue += v; if(s.type==='SELL') cumValue -= v; });
+        let growthPctArr = []; let prevVal = cumValue;
+        for(let m=1; m<=12; m++){ let mStr = String(m).padStart(2,'0'); let mFlow = 0; stockData.filter(s => s.year===y && s.month===mStr).forEach(s => { let v = s.currency==='USD'?s.price*USD_TO_THB:s.price; if(s.type==='BUY') mFlow += v; if(s.type==='SELL') mFlow -= v; }); let curVal = prevVal + mFlow; let pct = prevVal === 0 ? 0 : ((curVal - prevVal) / prevVal) * 100; growthPctArr.push(pct); prevVal = curVal; }
+        if(dashGrowthChart) dashGrowthChart.destroy(); dashGrowthChart = new Chart(document.getElementById('dashGrowthChart'), { type: 'line', data: { labels, datasets: [{label:'% เติบโตจากเดือนก่อน', data:growthPctArr, borderColor:'#8b5cf6', backgroundColor:'rgba(139,92,246,0.2)', fill:true, tension:0.3}] }, options: {responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}} });
+
+        let pendingTot = meeDebtData.filter(d=>!d.paid).reduce((s,i)=>s+i.amount,0) + otherDebtData.filter(d=>!d.paid).reduce((s,i)=>s+i.amount,0); let clearedTot = meeDebtData.filter(d=>d.paid).reduce((s,i)=>s+i.amount,0) + otherDebtData.filter(d=>d.paid).reduce((s,i)=>s+i.amount,0);
+        document.getElementById('gauge-pending-text').innerText = `เงินจม (ค้างจ่าย): ${pendingTot.toLocaleString()} ฿`; document.getElementById('gauge-cleared-text').innerText = `เคลียร์แล้วสะสม: ${clearedTot.toLocaleString()} ฿`;
+        if(dashDebtChart) dashDebtChart.destroy(); dashDebtChart = new Chart(document.getElementById('dashDebtChart'), { type: 'doughnut', data: { labels: ['เงินจมค้างจ่าย', 'เคลียร์แล้ว'], datasets: [{ data: [pendingTot, clearedTot], backgroundColor: ['#f43f5e', '#10b981'] }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { datalabels: { display: true, color: '#fff', font: {family: 'Sarabun', weight: 'bold'}, formatter: (value, ctx) => { let sum = pendingTot + clearedTot; if(sum===0||value===0) return ''; return (value*100/sum).toFixed(1)+'%'; } }, legend: { position: 'bottom' } } } });
 
         let prevY = (parseInt(y)-1).toString(); let incCur = 0, expCur = 0, incPrev = 0, expPrev = 0;
-        function calcYearSums(yr) {
-            let totalI = incomeData.filter(d=>d.year===yr).reduce((s,i)=>s+i.amount,0) + meeDebtData.filter(d=>d.paid && d.paidYear===yr).reduce((s,i)=>s+i.amount,0) + otherDebtData.filter(d=>d.paid && d.paidYear===yr).reduce((s,i)=>s+(i.taxDeducted?i.amount*0.97:i.amount),0);
-            let totalE = incomeData.filter(d=>d.year===yr).reduce((s,i)=>s+(i.expense||0),0);
-            personalExpenseData.filter(d=>d.year===yr).forEach(p=>{ totalE += (p.eating||0)+(p.creditCard||0)+(p.rent||0)+(p.personal||0)+(p.stocks||0)+(p.gameAun||0)+(p.otherExt||0); });
-            return {i: totalI, e: totalE};
-        }
+        function calcYearSums(yr) { let totalI = incomeData.filter(d=>d.year===yr).reduce((s,i)=>s+i.amount,0) + meeDebtData.filter(d=>d.paid && d.paidYear===yr).reduce((s,i)=>s+i.amount,0) + otherDebtData.filter(d=>d.paid && d.paidYear===yr).reduce((s,i)=>s+(i.taxDeducted?i.amount*0.97:i.amount),0); let totalE = incomeData.filter(d=>d.year===yr).reduce((s,i)=>s+(i.expense||0),0); personalExpenseData.filter(d=>d.year===yr).forEach(p=>{ totalE += (p.eating||0)+(p.creditCard||0)+(p.rent||0)+(p.personal||0)+(p.stocks||0)+(p.gameAun||0)+(p.otherExt||0); }); return {i: totalI, e: totalE}; }
         let sumsCur = calcYearSums(y); incCur = sumsCur.i; expCur = sumsCur.e; let sumsPrev = calcYearSums(prevY); incPrev = sumsPrev.i; expPrev = sumsPrev.e;
         safeSetText('dash-yoy-title', `ปี ${parseInt(y)+543} VS ปี ${parseInt(prevY)+543}`);
         if(dashYoYChart) dashYoYChart.destroy(); dashYoYChart = new Chart(document.getElementById('dashYoYChart'), { type: 'bar', data: { labels: ['รายรับรวม', 'รายจ่ายรวม', 'กำไรสุทธิ'], datasets: [ {label:`ปี ${parseInt(prevY)+543}`, data:[incPrev, expPrev, incPrev-expPrev], backgroundColor:'#cbd5e1'}, {label:`ปี ${parseInt(y)+543}`, data:[incCur, expCur, incCur-expCur], backgroundColor:'#8b5cf6'} ] }, options: {responsive:true, maintainAspectRatio:false} });
     }
 
+    // --- MEE & OTH CHARTS ---
+    function renderMeeChart(y) {
+        let grps = {'1-5':{c:0,v:0}, '6-10':{c:0,v:0}, '11-20':{c:0,v:0}, '21-30':{c:0,v:0}, '>30':{c:0,v:0}};
+        meeDebtData.forEach(d => { let k = '>30'; if(d.rai<=5) k='1-5'; else if(d.rai<=10) k='6-10'; else if(d.rai<=20) k='11-20'; else if(d.rai<=30) k='21-30'; grps[k].c++; grps[k].v+=d.amount; });
+        if(meeAreaChart) meeAreaChart.destroy();
+        meeAreaChart = new Chart(document.getElementById('meeAreaChart'), { type: 'bar', data: { labels: Object.keys(grps), datasets: [{type:'bar', label:'มูลค่างาน (บาท)', data:Object.values(grps).map(x=>x.v), backgroundColor:'#10b981', yAxisID:'y'}, {type:'line', label:'จำนวนแปลง', data:Object.values(grps).map(x=>x.c), borderColor:'#f59e0b', backgroundColor:'#f59e0b', yAxisID:'y1'}] }, options: {responsive:true, maintainAspectRatio:false, scales:{y:{type:'linear', position:'left'}, y1:{type:'linear', position:'right', grid:{drawOnChartArea:false}}}} });
+    }
+    function renderOthChart(y) {
+        let grps = {}; otherJobCategories.forEach(c=> grps[c]={c:0,v:0});
+        otherDebtData.forEach(d => { if(!grps[d.category]) grps[d.category]={c:0,v:0}; grps[d.category].c++; grps[d.category].v+=d.amount; });
+        if(othCatChart) othCatChart.destroy();
+        othCatChart = new Chart(document.getElementById('othCatChart'), { type: 'bar', data: { labels: Object.keys(grps), datasets: [{type:'bar', label:'มูลค่างาน (บาท)', data:Object.values(grps).map(x=>x.v), backgroundColor:'#8b5cf6', yAxisID:'y'}, {type:'line', label:'จำนวนงาน', data:Object.values(grps).map(x=>x.c), borderColor:'#f43f5e', backgroundColor:'#f43f5e', yAxisID:'y1'}] }, options: {responsive:true, maintainAspectRatio:false, scales:{y:{type:'linear', position:'left'}, y1:{type:'linear', position:'right', grid:{drawOnChartArea:false}}}} });
+    }
+
+    // --- ASSETS TAB 8 LOGIC ---
+    function getValidPeriods() {
+        const periods = []; const startYear = 2024; const currentYear = new Date().getFullYear(); const currentMonth = new Date().getMonth() + 1; const targetMonths = [3, 6, 9, 12]; const monthNames = {3: 'มี.ค.', 6: 'มิ.ย.', 9: 'ก.ย.', 12: 'ธ.ค.'};
+        for (let y = startYear; y <= currentYear; y++) { for (let m of targetMonths) { if (y === 2024 && m < 12) continue; if (y < currentYear || (y === currentYear && currentMonth >= m)) { periods.push({ key: `${y}-${String(m).padStart(2, '0')}`, label: `${monthNames[m]}`, year: y, month: m }); } } }
+        return periods;
+    }
+    function addNewAsset() {
+        const name = document.getElementById('new-asset-name').value.trim(); if (!name) return;
+        assetData.forEach(a => { if (!a.values) a.values = {}; });
+        if (assetData.some(a => a.name === name)) { showNotification("⚠️ ชื่อซ้ำดิไอ้สัส เปลี่ยนชื่อหน่อย", "error"); return; }
+        assetData.push({ id: Date.now().toString(), name: name, values: {} }); document.getElementById('new-asset-name').value = ''; saveData(); renderAssets(); showNotification("✅ เพิ่มทรัพย์สินใหม่แล้วเว้ย!");
+    }
+    function deleteAsset(id) { showCustomConfirm("⚠️ ยืนยันลบ?", "ลบรายการทรัพย์สินนี้ทิ้งเลยป่าวมึง?", () => { assetData = assetData.filter(a => a.id !== id); saveData(); renderAssets(); showNotification("🗑️ ลบทิ้งเรียบร้อย!"); }); }
+    function updateAssetValue(id, periodKey, val) { let asset = assetData.find(a => a.id === id); if (asset) { if (!asset.values) asset.values = {}; asset.values[periodKey] = parseFloat(val) || 0; saveData(); renderAssetFooter(); } }
+    function updateAssetName(id, newName) { let asset = assetData.find(a => a.id === id); if (asset && newName.trim() !== '') { asset.name = newName.trim(); saveData(); } }
+    function renderAssets() {
+        const periods = getValidPeriods(); const thead = document.getElementById('asset-table-head'); const tbody = document.getElementById('asset-table-body');
+        assetData.forEach(a => { if (!a.values) a.values = {}; });
+
+        let yearHeaders = `<th class="p-3 bg-emerald-100 text-emerald-900 border border-emerald-200 w-64" rowspan="2">รายการทรัพย์สิน</th>`; let monthHeaders = ''; let currentY = null; let colspanCount = 0;
+        periods.forEach((p, idx) => {
+            if (p.year !== currentY) { if (currentY !== null) { yearHeaders += `<th class="p-2 bg-emerald-200 text-emerald-900 text-center font-black border border-emerald-300" colspan="${colspanCount}">ปี ${currentY + 543}</th>`; } currentY = p.year; colspanCount = 1; } else { colspanCount++; }
+            monthHeaders += `<th class="p-2 bg-emerald-50 text-emerald-800 text-center font-bold border border-emerald-200 whitespace-nowrap min-w-[120px]">${p.label}</th>`;
+            if (idx === periods.length - 1) { yearHeaders += `<th class="p-2 bg-emerald-200 text-emerald-900 text-center font-black border border-emerald-300" colspan="${colspanCount}">ปี ${currentY + 543}</th>`; }
+        });
+        yearHeaders += `<th class="p-3 bg-emerald-100 text-emerald-900 border border-emerald-200 text-center w-12" rowspan="2">ลบ</th>`;
+        thead.innerHTML = `<tr>${yearHeaders}</tr><tr>${monthHeaders}</tr>`;
+
+        tbody.innerHTML = '';
+        if (assetData.length === 0) { tbody.innerHTML = `<tr><td colspan="${periods.length + 2}" class="p-6 text-center text-slate-400 font-bold">ยังไม่มีรายการทรัพย์สิน ไปพิมพ์เพิ่มด้านบนเลยมึง</td></tr>`; } 
+        else {
+            assetData.forEach(asset => {
+                let rowHtml = `<tr><td class="p-2 border border-slate-200 bg-slate-50 font-bold text-slate-700"><input type="text" value="${asset.name}" onchange="updateAssetName('${asset.id}', this.value)" class="w-full bg-transparent outline-none focus:bg-white focus:ring-2 focus:ring-emerald-400 rounded px-2 py-1 transition"></td>`;
+                periods.forEach(p => { let val = asset.values[p.key] || ''; rowHtml += `<td class="p-1.5 border border-slate-200 bg-white hover:bg-emerald-50/50 transition"><input type="number" step="0.01" value="${val}" onchange="updateAssetValue('${asset.id}', '${p.key}', this.value)" class="w-full text-right bg-transparent outline-none focus:bg-white focus:ring-2 focus:ring-emerald-500 rounded px-2 py-1 font-semibold text-slate-700"></td>`; });
+                rowHtml += `<td class="p-2 border border-slate-200 text-center bg-slate-50"><button onclick="deleteAsset('${asset.id}')" class="text-rose-500 hover:bg-rose-100 p-1.5 rounded-lg transition">🗑️</button></td></tr>`; tbody.innerHTML += rowHtml;
+            });
+        }
+        renderAssetFooter(periods);
+    }
+    function renderAssetFooter(periods = getValidPeriods()) {
+        const tfoot = document.getElementById('asset-table-foot'); if (assetData.length === 0) { tfoot.innerHTML = ''; return; }
+        let footHtml = `<tr class="bg-emerald-800 text-white font-bold"><td class="p-3 border border-emerald-900 text-right uppercase tracking-wider">รวมทั้งหมดของโร๊ะ (บาท)</td>`;
+        periods.forEach(p => { let total = assetData.reduce((sum, asset) => sum + (parseFloat(asset.values[p.key]) || 0), 0); footHtml += `<td class="p-3 border border-emerald-900 text-right text-emerald-300 font-extrabold">${total.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>`; });
+        footHtml += `<td class="border border-emerald-900 bg-emerald-800"></td></tr>`; tfoot.innerHTML = footHtml;
+    }
+
     // --- CRUD WRAPPERS ---
-    function addIncome(e) { e.preventDefault(); incomeData.push({ id: Date.now().toString(), year: document.getElementById('global-year').value, month: document.getElementById('global-month').value, type: document.getElementById('inc-type').value, detail: document.getElementById('inc-detail').value.trim(), amount: parseFloat(document.getElementById('inc-amount').value)||0, expense: parseFloat(document.getElementById('inc-expense').value)||0 }); document.getElementById('income-form').reset(); saveData(); showNotification("บันทึกสำเร็จ!"); refreshAll(); }
-    function renderIncome(data) { let tb=document.getElementById('income-table-body'); tb.innerHTML=''; if(!data.length) { tb.innerHTML=`<tr><td colspan="6" class="p-4 text-center">ไม่มีข้อมูล</td></tr>`; return; } data.forEach(i=> { if(editingIncomeId===i.id) { tb.innerHTML+=`<tr class="bg-indigo-50"><td colspan="2" class="p-2"><input id="ei-type-${i.id}" value="${i.type}" class="border px-2 py-1 w-full text-xs"></td><td class="p-2"><input id="ei-det-${i.id}" value="${i.detail}" class="border px-2 py-1 w-full text-xs"></td><td class="p-2"><input type="number" id="ei-amt-${i.id}" value="${i.amount}" class="border px-2 py-1 w-20 text-xs text-right"></td><td class="p-2"><input type="number" id="ei-exp-${i.id}" value="${i.expense||0}" class="border px-2 py-1 w-20 text-xs text-right"></td><td class="p-2 text-center"><button onclick="saveEditIncome('${i.id}')" class="text-emerald-500 mr-2">💾</button><button onclick="editingIncomeId=null; refreshAll()" class="text-slate-400">❌</button></td></tr>`; } else { tb.innerHTML+=`<tr><td class="p-3 font-bold">${i.detail.split(' ')[0]}</td><td class="p-3"><span class="px-2 py-1 bg-indigo-50 text-indigo-700 text-[10px] rounded">${i.type}</span></td><td class="p-3 text-xs">${i.detail}</td><td class="p-3 text-right text-emerald-600 font-bold">${i.amount.toLocaleString()}</td><td class="p-3 text-right text-rose-600">${i.expense||0}</td><td class="p-3 text-center"><button onclick="editingIncomeId='${i.id}'; refreshAll()" class="text-indigo-500 mr-2">✏️</button><button onclick="deleteData('${i.id}','inc')" class="text-rose-500">🗑️</button></td></tr>`; } }); }
+    function addIncome(e) { e.preventDefault(); incomeData.push({ id: Date.now().toString(), year: document.getElementById('global-year').value, month: document.getElementById('global-month').value, type: document.getElementById('inc-category-select').value, detail: document.getElementById('inc-detail').value.trim(), amount: parseFloat(document.getElementById('inc-amount').value)||0, expense: parseFloat(document.getElementById('inc-expense').value)||0 }); document.getElementById('income-form').reset(); saveData(); showNotification("บันทึกสำเร็จ!"); refreshAll(); }
+    function renderIncome(manual, pMee, pOth) { let tb=document.getElementById('income-table-body'); tb.innerHTML=''; if(!manual.length && !pMee.length && !pOth.length) { tb.innerHTML=`<tr><td colspan="6" class="p-4 text-center">ไม่มีข้อมูล</td></tr>`; return; } manual.forEach(i=> { if(editingIncomeId===i.id) { tb.innerHTML+=`<tr class="bg-indigo-50"><td colspan="2" class="p-2"><input id="ei-type-${i.id}" value="${i.type}" class="border px-2 py-1 w-full text-xs"></td><td class="p-2"><input id="ei-det-${i.id}" value="${i.detail}" class="border px-2 py-1 w-full text-xs"></td><td class="p-2"><input type="number" id="ei-amt-${i.id}" value="${i.amount}" class="border px-2 py-1 w-20 text-xs text-right"></td><td class="p-2"><input type="number" id="ei-exp-${i.id}" value="${i.expense||0}" class="border px-2 py-1 w-20 text-xs text-right"></td><td class="p-2 text-center"><button onclick="saveEditIncome('${i.id}')" class="text-emerald-500 mr-2">💾</button><button onclick="editingIncomeId=null; refreshAll()" class="text-slate-400">❌</button></td></tr>`; } else { tb.innerHTML+=`<tr><td class="p-3 font-bold">${i.detail.split(' ')[0]}</td><td class="p-3"><span class="px-2 py-1 bg-indigo-50 text-indigo-700 text-[10px] rounded">${i.type}</span></td><td class="p-3 text-xs">${i.detail}</td><td class="p-3 text-right text-emerald-600 font-bold">${i.amount.toLocaleString()}</td><td class="p-3 text-right text-rose-600">${i.expense||0}</td><td class="p-3 text-center"><button onclick="editingIncomeId='${i.id}'; refreshAll()" class="text-indigo-500 mr-2">✏️</button><button onclick="deleteData('${i.id}','inc')" class="text-rose-500">🗑️</button></td></tr>`; } }); pMee.forEach(i=> { tb.innerHTML+=`<tr class="bg-emerald-50/50"><td class="p-3 font-bold text-slate-700">${i.detail.split(' ')[0]}</td><td class="p-3"><span class="px-2 py-1 bg-emerald-100 text-emerald-800 text-[10px] rounded">ช่างมี้</span></td><td class="p-3 text-xs text-slate-600">${i.detail} <span class="text-[9px] text-emerald-600 font-bold ml-1">👉 ดึงจากหน้าช่างมี้ (จ่ายแล้ว)</span></td><td class="p-3 text-right text-emerald-600 font-bold">${i.amount.toLocaleString()}</td><td class="p-3 text-right text-slate-300">-</td><td class="p-3 text-center text-[10px] text-slate-400 italic">แท็บ 2</td></tr>`; }); pOth.forEach(i=> { let netAmt = i.taxDeducted ? i.amount*0.97 : i.amount; tb.innerHTML+=`<tr class="bg-amber-50/50"><td class="p-3 font-bold text-slate-700">${i.detail.split(' ')[0]}</td><td class="p-3"><span class="px-2 py-1 bg-amber-100 text-amber-800 text-[10px] rounded">${i.category}</span></td><td class="p-3 text-xs text-slate-600">${i.detail} <span class="text-[9px] text-amber-600 font-bold ml-1">👉 ดึงจากหน้างานอื่น (จ่ายแล้ว)</span></td><td class="p-3 text-right text-emerald-600 font-bold">${netAmt.toLocaleString()}</td><td class="p-3 text-right text-slate-300">-</td><td class="p-3 text-center text-[10px] text-slate-400 italic">แท็บ 3</td></tr>`; }); }
     function saveEditIncome(id) { let r=incomeData.find(x=>x.id===id); if(r){ r.type=document.getElementById(`ei-type-${id}`).value; r.detail=document.getElementById(`ei-det-${id}`).value; r.amount=parseFloat(document.getElementById(`ei-amt-${id}`).value)||0; r.expense=parseFloat(document.getElementById(`ei-exp-${id}`).value)||0; } editingIncomeId=null; saveData(); refreshAll(); }
 
     function addMeeDebt(e) { e.preventDefault(); meeDebtData.push({ id: Date.now().toString(), detail: document.getElementById('mee-detail').value, rai: parseFloat(document.getElementById('mee-rai').value)||0, amount: parseFloat(document.getElementById('mee-amount').value)||0, step: 'ยังไม่เริ่มงาน', paid: false, paidYear:'', paidMonth:'', paidDate:'' }); document.getElementById('mee-form').reset(); saveData(); showNotification("สำเร็จ!"); refreshAll(); }
@@ -629,46 +715,13 @@
     function changeStep(id, type, val) { let d = type==='mee'?meeDebtData:otherDebtData; let r = d.find(x=>x.id===id); if(r){ r.step=val; saveData(); } }
     function payJob(id, type) { let d = type==='mee'?meeDebtData:otherDebtData; let r = d.find(x=>x.id===id); if(r){ r.paid=true; r.paidYear=document.getElementById('global-year').value; r.paidMonth=document.getElementById('global-month').value; r.paidDate=new Date().toLocaleDateString('th-TH'); saveData(); refreshAll(); } }
 
-    function saveMonthlyPersonalExpenses(e) {
-        e.preventDefault(); const y=document.getElementById('global-year').value, m=document.getElementById('global-month').value;
-        let r = personalExpenseData.find(d=> d.year===y && d.month===m);
-        const nD = { year:y, month:m, eating:parseFloat(document.getElementById('exp-eating').value)||0, creditCard:parseFloat(document.getElementById('exp-card').value)||0, rent:parseFloat(document.getElementById('exp-rent').value)||0, personal:parseFloat(document.getElementById('exp-personal').value)||0, stocks:parseFloat(document.getElementById('exp-stocks').value)||0, gameAun:parseFloat(document.getElementById('exp-game-aun').value)||0, otherExt:parseFloat(document.getElementById('exp-other-ext').value)||0 };
-        if(r) Object.assign(r, nD); else personalExpenseData.push(nD); saveData(); showNotification("บันทึกรายจ่ายสำเร็จ!"); refreshAll();
-    }
+    function saveMonthlyPersonalExpenses(e) { e.preventDefault(); const y=document.getElementById('global-year').value, m=document.getElementById('global-month').value; let r = personalExpenseData.find(d=> d.year===y && d.month===m); const nD = { year:y, month:m, eating:parseFloat(document.getElementById('exp-eating').value)||0, creditCard:parseFloat(document.getElementById('exp-card').value)||0, rent:parseFloat(document.getElementById('exp-rent').value)||0, personal:parseFloat(document.getElementById('exp-personal').value)||0, stocks:parseFloat(document.getElementById('exp-stocks').value)||0, gameAun:parseFloat(document.getElementById('exp-game-aun').value)||0, otherExt:parseFloat(document.getElementById('exp-other-ext').value)||0 }; if(r) Object.assign(r, nD); else personalExpenseData.push(nD); saveData(); showNotification("บันทึกรายจ่ายสำเร็จ!"); refreshAll(); }
     
-    function loadPersonalExpenseForm(y, m) {
-        let r = personalExpenseData.find(d=> d.year===y && d.month===m) || {};
-        document.getElementById('exp-eating').value = r.eating || 0;
-        document.getElementById('exp-card').value = r.creditCard || 0;
-        document.getElementById('exp-rent').value = r.rent || 0;
-        document.getElementById('exp-personal').value = r.personal || 0;
-        document.getElementById('exp-stocks').value = r.stocks || 0;
-        document.getElementById('exp-game-aun').value = r.gameAun || 0;
-        document.getElementById('exp-other-ext').value = r.otherExt || 0;
-    }
-
-    function renderPersonalExpenseChart(y) {
-        if(personalExpenseChartInstance) personalExpenseChartInstance.destroy();
-        let eat=[], crd=[], rnt=[], per=[], stk=[], gm=[], oth=[];
-        for(let m=1;m<=12;m++){
-            let px = personalExpenseData.find(d=> d.year===y && d.month===String(m).padStart(2,'0')) || {};
-            eat.push(px.eating||0); crd.push(px.creditCard||0); rnt.push(px.rent||0); per.push(px.personal||0); stk.push(px.stocks||0); gm.push(px.gameAun||0); oth.push(px.otherExt||0);
-        }
-        personalExpenseChartInstance = new Chart(document.getElementById('personalExpenseChart'), { type: 'bar', data: { labels: ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'], datasets: [{label:'ค่ากิน', data:eat, backgroundColor:'#f43f5e'}, {label:'บัตรเครดิต', data:crd, backgroundColor:'#fbbf24'}, {label:'ที่พัก', data:rnt, backgroundColor:'#3b82f6'}, {label:'ส่วนตัว', data:per, backgroundColor:'#ec4899'}, {label:'หุ้น', data:stk, backgroundColor:'#10b981'}, {label:'เกม+อั๋น', data:gm, backgroundColor:'#6366f1'}, {label:'อื่นๆ', data:oth, backgroundColor:'#f97316'}] }, options:{responsive:true, maintainAspectRatio:false, scales:{x:{stacked:true}, y:{stacked:true}}} });
-    }
-
-    function addStockTransaction(e) {
-        e.preventDefault();
-        stockData.push({ id:Date.now().toString(), year:document.getElementById('global-year').value, month:document.getElementById('global-month').value, name:document.getElementById('stock-name').value.toUpperCase(), type:document.getElementById('stock-type').value, price:parseFloat(document.getElementById('stock-price').value)||0, currency:document.getElementById('stock-currency').value });
-        document.getElementById('stock-form').reset(); document.querySelectorAll('input[name="stock-type-radio"]')[0].checked = true; document.getElementById('stock-type').value = 'BUY'; document.getElementById('stock-currency').value = 'THB'; setStockCurrency('THB'); saveData(); refreshAll();
-    }
+    function addStockTransaction(e) { e.preventDefault(); stockData.push({ id:Date.now().toString(), year:document.getElementById('global-year').value, month:document.getElementById('global-month').value, name:document.getElementById('stock-name').value.toUpperCase(), type:document.getElementById('stock-type').value, price:parseFloat(document.getElementById('stock-price').value)||0, currency:document.getElementById('stock-currency').value }); document.getElementById('stock-form').reset(); document.querySelectorAll('input[name="stock-type-radio"]')[0].checked = true; document.getElementById('stock-type').value = 'BUY'; document.getElementById('stock-currency').value = 'THB'; setStockCurrency('THB'); saveData(); refreshAll(); }
     function renderStocksTable(data) { let tb=document.getElementById('stock-table-body'); tb.innerHTML=''; data.sort((a,b)=> (b.year+b.month).localeCompare(a.year+a.month)); let curGrp = ''; data.forEach(i=> { let grp = `${i.year}-${i.month}`; if(grp !== curGrp) { tb.innerHTML+=`<tr class="bg-slate-200/60"><td colspan="5" class="p-2 text-xs font-bold text-slate-700">ปี ${parseInt(i.year)+543} เดือน ${i.month}</td></tr>`; curGrp=grp; } if(editingStockId===i.id) { tb.innerHTML+=`<tr class="bg-indigo-50"><td class="p-2 font-bold">${i.name}</td><td class="p-2 flex gap-1"><select id="es-m-${i.id}" class="w-16 text-xs border"><option value="01">01</option><option value="02">02</option><option value="03">03</option><option value="04">04</option><option value="05">05</option><option value="06">06</option><option value="07">07</option><option value="08">08</option><option value="09">09</option><option value="10">10</option><option value="11">11</option><option value="12">12</option></select><input id="es-y-${i.id}" value="${i.year}" class="w-16 text-xs border p-1"></td><td class="p-2 text-center text-xs font-bold">${i.type}</td><td class="p-2 text-right"><input type="number" id="es-p-${i.id}" value="${i.price}" class="w-24 text-xs border p-1 text-right"></td><td class="p-2 text-center"><button onclick="saveEditStock('${i.id}')" class="text-emerald-500 mr-2">💾</button><button onclick="editingStockId=null; refreshAll()" class="text-slate-400">❌</button></td></tr>`; setTimeout(()=>document.getElementById(`es-m-${i.id}`).value=i.month, 10); } else { let v = i.currency==='USD'?i.price*USD_TO_THB:i.price; let tColor = i.type==='BUY'?'text-emerald-600':(i.type==='SELL'?'text-rose-600':'text-blue-600'); tb.innerHTML+=`<tr><td class="p-3 font-bold text-xs">${i.name}</td><td class="p-3 text-center text-[10px]">${i.month}/${i.year}</td><td class="p-3 text-center text-[10px] font-bold ${tColor}">${i.type}</td><td class="p-3 text-right font-extrabold text-xs">${v.toLocaleString(undefined, {minimumFractionDigits: 2})}</td><td class="p-3 text-center"><button onclick="editingStockId='${i.id}'; refreshAll()" class="text-indigo-500 mr-2 text-[10px]">✏️</button><button onclick="deleteData('${i.id}','stk')" class="text-rose-500 text-[10px]">🗑️</button></td></tr>`; } }); }
     function saveEditStock(id) { let r=stockData.find(x=>x.id===id); if(r){ r.month=document.getElementById(`es-m-${id}`).value; r.year=document.getElementById(`es-y-${id}`).value; r.price=parseFloat(document.getElementById(`es-p-${id}`).value)||0; } editingStockId=null; saveData(); refreshAll(); }
-    function clearAllStocks() { showCustomConfirm("ลบหุ้นเกลี้ยง?", "ข้อมูลประวัติซื้อขายหุ้นมึงจะหายหมดเลยนะ ยืนยันป่าว?", () => { stockData = []; saveData(); showNotification("🗑️ ลบข้อมูลหุ้นหมดแล้ว!"); refreshAll(); }); }
-
+    
     function deleteData(id, target) { showCustomConfirm("ลบจริง?", "ลบแล้วหายเลยนะเว้ย", ()=>{ if(target==='inc') incomeData=incomeData.filter(x=>x.id!==id); if(target==='mee') meeDebtData=meeDebtData.filter(x=>x.id!==id); if(target==='oth') otherDebtData=otherDebtData.filter(x=>x.id!==id); if(target==='stk') stockData=stockData.filter(x=>x.id!==id); saveData(); refreshAll(); });}
-
-    function renderTaxLedger(y,m) { let tb = document.getElementById('tax-table-body'); tb.innerHTML=''; let itemsM = otherDebtData.filter(d=> d.paid && d.taxDeducted && d.paidYear===y && d.paidMonth===m); let itemsY = otherDebtData.filter(d=> d.paid && d.taxDeducted && d.paidYear===y); let tTM=0; let tTY=0; itemsY.forEach(i=>{ tTY += i.amount*0.03; }); itemsM.forEach(i=> { let g=i.amount, t=g*0.03, n=g-t; tTM+=t; tb.innerHTML+=`<tr><td class="p-4 text-[10px]">${i.paidDate||'-'}</td><td class="p-4 text-xs font-bold">${i.detail}</td><td class="p-4 text-right text-xs">${g.toLocaleString(undefined, {minimumFractionDigits: 2})}</td><td class="p-4 text-right text-rose-500 font-bold text-xs">-${t.toLocaleString(undefined, {minimumFractionDigits: 2})}</td><td class="p-4 text-right text-emerald-600 font-bold text-xs">${n.toLocaleString(undefined, {minimumFractionDigits: 2})}</td></tr>`; }); safeSetText('tax-total-deducted', tTM.toLocaleString(undefined, {minimumFractionDigits: 2})+' บาท'); safeSetText('tax-yearly-deducted', tTY.toLocaleString(undefined, {minimumFractionDigits: 2})+' บาท'); }
 </script>
 </body>
 </html>
