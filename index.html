@@ -401,14 +401,13 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
             <div>
-                <h2 class="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2"><span>⏳</span> 5. สถานะเงินจม VS เงินเคลียร์แล้ว</h2>
+                <h2 class="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2"><span>🔵</span> 5. สรุปเงินปันผลจากหุ้นปีนี้</h2>
                 <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-center h-[280px]">
-                    <div id="gauge-container" class="space-y-4">
+                    <div class="space-y-4">
                         <div class="flex justify-between text-xs font-bold mb-2">
-                            <span class="text-rose-600" id="gauge-pending-text">เงินจมค้างจ่าย: 0 ฿</span>
-                            <span class="text-emerald-600" id="gauge-cleared-text">เคลียร์แล้วสะสม: 0 ฿</span>
+                            <span class="text-blue-600" id="dash-dividend-text">ปันผลรวม: 0 ฿</span>
                         </div>
-                        <div class="relative w-full h-[180px]"><canvas id="dashDebtChart"></canvas></div>
+                        <div class="relative w-full h-[180px]"><canvas id="dashDividendChart"></canvas></div>
                     </div>
                 </div>
             </div>
@@ -418,6 +417,13 @@
                     <h3 class="text-xs font-bold text-slate-500 mb-2 uppercase text-center" id="dash-yoy-title">ปีนี้ VS ปีก่อน</h3>
                     <div class="relative w-full h-[200px]"><canvas id="dashYoYChart"></canvas></div>
                 </div>
+            </div>
+        </div>
+
+        <div class="mb-8">
+            <h2 class="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2"><span>📊</span> 7. รายรับเปรียบเทียบรายปี (ตั้งแต่ปี 66 - ปัจจุบัน)</h2>
+            <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm h-[300px]">
+                <div class="relative w-full h-[250px]"><canvas id="dashYearlyIncomeChart"></canvas></div>
             </div>
         </div>
     </div>
@@ -484,11 +490,11 @@
     let isEditingStockTags = false;
 
     let personalExpenseChartInstance = null;
-    let dashCashflowChart = null, dashCumulativeChart = null, dashIncomeTypeChart = null, dashTopProjectChart = null, dashExpensePieChart = null, dashAssetTypeChart = null, dashGrowthChart = null, dashYoYChart = null, dashDebtChart = null;
+    // อัปเดตตัวแปรสำหรับกราฟใหม่
+    let dashCashflowChart = null, dashCumulativeChart = null, dashIncomeTypeChart = null, dashTopProjectChart = null, dashExpensePieChart = null, dashAssetTypeChart = null, dashGrowthChart = null, dashYoYChart = null, dashDividendChart = null, dashYearlyIncomeChart = null;
     let meeAreaChart = null, othCatChart = null, assetProportionChartInstance = null;
     let editingIncomeId = null, editingStockId = null, editingMeePaidId = null, editingOtherPaidId = null;
 
-    // --- GLOBAL HELPER (The missing function that caused bugs in v11!) ---
     function calculateMonthlyStockInvestments(year, month) {
         return stockData.filter(s => s.year === year && s.month === month && s.type === 'BUY').reduce((sum, s) => sum + (s.currency === 'USD' ? s.price * USD_TO_THB : s.price || 0), 0);
     }
@@ -592,10 +598,9 @@
         safeSetText('mee-active-total', 'รวมเงินค้าง: ' + unMee.reduce((s,i)=>s+i.amount,0).toLocaleString() + ' ฿');
         safeSetText('oth-active-total', 'รวมเงินค้าง: ' + unOth.reduce((s,i)=>s+i.amount,0).toLocaleString() + ' ฿');
 
-        // ฟังก์ชันโหลดรายจ่ายและหุ้นที่เคยบั๊กได้รับการแก้ไขแล้ว
         loadPersonalExpenseForm(y, m);
         let px = personalExpenseData.find(d=> d.year===y && d.month===m) || {};
-        let calcStocks = calculateMonthlyStockInvestments(y, m); // ใช้ออโต้ดึงลงทุนมาบวก
+        let calcStocks = calculateMonthlyStockInvestments(y, m); 
         let t4Net = (px.eating||0) + (px.creditCard||0) + (px.rent||0) + (px.personal||0) + calcStocks + (px.gameAun||0) + (px.otherExt||0);
         safeSetText('t4-month-expense', t4Net.toLocaleString(undefined, {minimumFractionDigits: 2})+' บ.');
         renderPersonalExpenseChart(y);
@@ -653,15 +658,53 @@
         for(let m=1; m<=12; m++){ let mStr = String(m).padStart(2,'0'); let mFlow = 0; stockData.filter(s => s.year===y && s.month===mStr).forEach(s => { let v = s.currency==='USD'?s.price*USD_TO_THB:s.price; if(s.type==='BUY') mFlow += v; if(s.type==='SELL') mFlow -= v; }); let curVal = prevVal + mFlow; let pct = prevVal === 0 ? 0 : ((curVal - prevVal) / prevVal) * 100; growthPctArr.push(pct); prevVal = curVal; }
         if(dashGrowthChart) dashGrowthChart.destroy(); dashGrowthChart = new Chart(document.getElementById('dashGrowthChart'), { type: 'line', data: { labels, datasets: [{label:'% เติบโตจากเดือนก่อน', data:growthPctArr, borderColor:'#8b5cf6', backgroundColor:'rgba(139,92,246,0.2)', fill:true, tension:0.3}] }, options: {responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}} });
 
-        let pendingTot = meeDebtData.filter(d=>!d.paid).reduce((s,i)=>s+i.amount,0) + otherDebtData.filter(d=>!d.paid).reduce((s,i)=>s+i.amount,0); let clearedTot = meeDebtData.filter(d=>d.paid).reduce((s,i)=>s+i.amount,0) + otherDebtData.filter(d=>d.paid).reduce((s,i)=>s+i.amount,0);
-        document.getElementById('gauge-pending-text').innerText = `เงินจม (ค้างจ่าย): ${pendingTot.toLocaleString()} ฿`; document.getElementById('gauge-cleared-text').innerText = `เคลียร์แล้วสะสม: ${clearedTot.toLocaleString()} ฿`;
-        if(dashDebtChart) dashDebtChart.destroy(); dashDebtChart = new Chart(document.getElementById('dashDebtChart'), { type: 'doughnut', data: { labels: ['เงินจมค้างจ่าย', 'เคลียร์แล้ว'], datasets: [{ data: [pendingTot, clearedTot], backgroundColor: ['#f43f5e', '#10b981'] }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { datalabels: { display: true, color: '#fff', font: {family: 'Sarabun', weight: 'bold'}, formatter: (value, ctx) => { let sum = pendingTot + clearedTot; if(sum===0||value===0) return ''; return (value*100/sum).toFixed(1)+'%'; } }, legend: { position: 'bottom' } } } });
+        // ===== อัปเดต: สรุปปันผลหุ้น (แทนที่เงินจม) =====
+        let divArr = Array(12).fill(0);
+        let totalDiv = 0;
+        stockData.filter(s => s.year === y && s.type === 'DIVIDEND').forEach(s => {
+            let mIdx = parseInt(s.month) - 1;
+            let v = s.currency === 'USD' ? s.price * USD_TO_THB : s.price;
+            divArr[mIdx] += v;
+            totalDiv += v;
+        });
+        document.getElementById('dash-dividend-text').innerText = `ปันผลรวมปีนี้: ${totalDiv.toLocaleString(undefined, {minimumFractionDigits: 2})} ฿`;
+        if(dashDividendChart) dashDividendChart.destroy(); 
+        dashDividendChart = new Chart(document.getElementById('dashDividendChart'), { 
+            type: 'bar', 
+            data: { labels, datasets: [{label: 'ปันผล (บาท)', data: divArr, backgroundColor: '#3b82f6'}] }, 
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } } 
+        });
 
+        // 6. เปรียบเทียบ YoY
         let prevY = (parseInt(y)-1).toString(); let incCur = 0, expCur = 0, incPrev = 0, expPrev = 0;
         function calcYearSums(yr) { let totalI = incomeData.filter(d=>d.year===yr).reduce((s,i)=>s+i.amount,0) + meeDebtData.filter(d=>d.paid && d.paidYear===yr).reduce((s,i)=>s+i.amount,0) + otherDebtData.filter(d=>d.paid && d.paidYear===yr).reduce((s,i)=>s+(i.taxDeducted?i.amount*0.97:i.amount),0); let totalE = incomeData.filter(d=>d.year===yr).reduce((s,i)=>s+(i.expense||0),0); personalExpenseData.filter(d=>d.year===yr).forEach(p=>{ totalE += (p.eating||0)+(p.creditCard||0)+(p.rent||0)+(p.personal||0)+(calculateMonthlyStockInvestments(yr, p.month))+(p.gameAun||0)+(p.otherExt||0); }); return {i: totalI, e: totalE}; }
         let sumsCur = calcYearSums(y); incCur = sumsCur.i; expCur = sumsCur.e; let sumsPrev = calcYearSums(prevY); incPrev = sumsPrev.i; expPrev = sumsPrev.e;
         safeSetText('dash-yoy-title', `ปี ${parseInt(y)+543} VS ปี ${parseInt(prevY)+543}`);
         if(dashYoYChart) dashYoYChart.destroy(); dashYoYChart = new Chart(document.getElementById('dashYoYChart'), { type: 'bar', data: { labels: ['รายรับรวม', 'รายจ่ายรวม', 'กำไรสุทธิ'], datasets: [ {label:`ปี ${parseInt(prevY)+543}`, data:[incPrev, expPrev, incPrev-expPrev], backgroundColor:'#cbd5e1'}, {label:`ปี ${parseInt(y)+543}`, data:[incCur, expCur, incCur-expCur], backgroundColor:'#8b5cf6'} ] }, options: {responsive:true, maintainAspectRatio:false} });
+
+        // ===== อัปเดต: 7. รายรับรายปี 66 - ปัจจุบัน =====
+        let startYearNum = 2023; // ปี 66
+        let curYearNum = new Date().getFullYear();
+        let yearLabels = [];
+        let yearlyIncData = [];
+        for(let yr = startYearNum; yr <= curYearNum; yr++) {
+            let yrStr = yr.toString();
+            yearLabels.push('ปี ' + (yr + 543));
+            let totalI = incomeData.filter(d=>d.year===yrStr).reduce((s,i)=>s+i.amount,0) + meeDebtData.filter(d=>d.paid && d.paidYear===yrStr).reduce((s,i)=>s+i.amount,0) + otherDebtData.filter(d=>d.paid && d.paidYear===yrStr).reduce((s,i)=>s+(i.taxDeducted?i.amount*0.97:i.amount),0);
+            yearlyIncData.push(totalI);
+        }
+        if(dashYearlyIncomeChart) dashYearlyIncomeChart.destroy(); 
+        dashYearlyIncomeChart = new Chart(document.getElementById('dashYearlyIncomeChart'), { 
+            type: 'bar', 
+            data: { labels: yearLabels, datasets: [{label: 'รายรับรวม (บาท)', data: yearlyIncData, backgroundColor: '#10b981'}] }, 
+            options: { 
+                responsive: true, maintainAspectRatio: false, 
+                plugins: { 
+                    datalabels: { display: true, color: '#fff', font: {family: 'Sarabun', weight: 'bold'}, formatter: (value) => value > 0 ? value.toLocaleString(undefined, {maximumFractionDigits:0}) : '' },
+                    legend: { display: false }
+                } 
+            } 
+        });
     }
 
     // --- MEE & OTH CHARTS ---
@@ -691,32 +734,45 @@
         assetData.push({ id: Date.now().toString(), name: name, values: {} }); document.getElementById('new-asset-name').value = ''; saveData(); renderAssets(); showNotification("✅ เพิ่มทรัพย์สินใหม่แล้วเว้ย!");
     }
     function deleteAsset(id) { showCustomConfirm("⚠️ ยืนยันลบ?", "ลบรายการทรัพย์สินนี้ทิ้งเลยป่าวมึง?", () => { assetData = assetData.filter(a => a.id !== id); saveData(); renderAssets(); showNotification("🗑️ ลบทิ้งเรียบร้อย!"); }); }
-    function updateAssetValue(id, periodKey, val) { let asset = assetData.find(a => a.id === id); if (asset) { if (!asset.values) asset.values = {}; asset.values[periodKey] = parseFloat(val) || 0; saveData(); renderAssets(); } }
+    function updateAssetValue(id, periodKey, val) { 
+        let asset = assetData.find(a => a.id === id); 
+        if (asset) { 
+            if (!asset.values) asset.values = {}; 
+            let cleanVal = String(val).replace(/,/g, ''); 
+            asset.values[periodKey] = parseFloat(cleanVal) || 0; 
+            saveData(); 
+            renderAssets(); 
+        } 
+    }
     function updateAssetName(id, newName) { let asset = assetData.find(a => a.id === id); if (asset && newName.trim() !== '') { asset.name = newName.trim(); saveData(); } }
     function renderAssets() {
         const periods = getValidPeriods(); const thead = document.getElementById('asset-table-head'); const tbody = document.getElementById('asset-table-body');
         assetData.forEach(a => { if (!a.values) a.values = {}; });
 
-        let yearHeaders = `<th class="p-3 bg-emerald-100 text-emerald-900 border border-emerald-200 w-64" rowspan="2">รายการทรัพย์สิน</th>`; let monthHeaders = ''; let currentY = null; let colspanCount = 0;
+        let yearHeaders = `<th class="p-3 bg-emerald-100 text-emerald-900 border border-emerald-200 min-w-[250px] sticky left-0 z-20 shadow-[2px_0_5px_rgba(0,0,0,0.05)]" rowspan="2">รายการทรัพย์สิน</th>`; let monthHeaders = ''; let currentY = null; let colspanCount = 0;
         periods.forEach((p, idx) => {
-            if (p.year !== currentY) { if (currentY !== null) { yearHeaders += `<th class="p-2 bg-emerald-200 text-emerald-900 text-center font-black border border-emerald-300" colspan="${colspanCount}">ปี ${currentY + 543}</th>`; } currentY = p.year; colspanCount = 1; } else { colspanCount++; }
-            monthHeaders += `<th class="p-2 bg-emerald-50 text-emerald-800 text-center font-bold border border-emerald-200 whitespace-nowrap min-w-[120px]">${p.label}</th>`;
-            if (idx === periods.length - 1) { yearHeaders += `<th class="p-2 bg-emerald-200 text-emerald-900 text-center font-black border border-emerald-300" colspan="${colspanCount}">ปี ${currentY + 543}</th>`; }
+            if (p.year !== currentY) { if (currentY !== null) { yearHeaders += `<th class="p-2 bg-emerald-200 text-emerald-900 text-center font-black border border-emerald-300 min-w-[140px]" colspan="${colspanCount}">ปี ${currentY + 543}</th>`; } currentY = p.year; colspanCount = 1; } else { colspanCount++; }
+            monthHeaders += `<th class="p-2 bg-emerald-50 text-emerald-800 text-center font-bold border border-emerald-200 whitespace-nowrap min-w-[140px]">${p.label}</th>`;
+            if (idx === periods.length - 1) { yearHeaders += `<th class="p-2 bg-emerald-200 text-emerald-900 text-center font-black border border-emerald-300 min-w-[140px]" colspan="${colspanCount}">ปี ${currentY + 543}</th>`; }
         });
-        yearHeaders += `<th class="p-3 bg-emerald-100 text-emerald-900 border border-emerald-200 text-center w-12" rowspan="2">ลบ</th>`;
+        yearHeaders += `<th class="p-3 bg-emerald-100 text-emerald-900 border border-emerald-200 text-center w-12 sticky right-0 z-20 shadow-[-2px_0_5px_rgba(0,0,0,0.05)]" rowspan="2">ลบ</th>`;
         thead.innerHTML = `<tr>${yearHeaders}</tr><tr>${monthHeaders}</tr>`;
 
         tbody.innerHTML = '';
         if (assetData.length === 0) { tbody.innerHTML = `<tr><td colspan="${periods.length + 2}" class="p-6 text-center text-slate-400 font-bold">ยังไม่มีรายการทรัพย์สิน ไปพิมพ์เพิ่มด้านบนเลยมึง</td></tr>`; } 
         else {
             assetData.forEach(asset => {
-                let rowHtml = `<tr><td class="p-2 border border-slate-200 bg-slate-50 font-bold text-slate-700"><input type="text" value="${asset.name}" onchange="updateAssetName('${asset.id}', this.value)" class="w-full bg-transparent outline-none focus:bg-white focus:ring-2 focus:ring-emerald-400 rounded px-2 py-1 transition"></td>`;
-                periods.forEach(p => { let val = asset.values[p.key] || ''; rowHtml += `<td class="p-1.5 border border-slate-200 bg-white hover:bg-emerald-50/50 transition"><input type="number" step="0.01" value="${val}" onchange="updateAssetValue('${asset.id}', '${p.key}', this.value)" class="w-full text-right bg-transparent outline-none focus:bg-white focus:ring-2 focus:ring-emerald-500 rounded px-2 py-1 font-semibold text-slate-700"></td>`; });
-                rowHtml += `<td class="p-2 border border-slate-200 text-center bg-slate-50"><button onclick="deleteAsset('${asset.id}')" class="text-rose-500 hover:bg-rose-100 p-1.5 rounded-lg transition">🗑️</button></td></tr>`; tbody.innerHTML += rowHtml;
+                let rowHtml = `<tr><td class="p-2 border border-slate-200 bg-slate-50 font-bold text-slate-700 sticky left-0 z-10 shadow-[2px_0_5px_rgba(0,0,0,0.05)] min-w-[250px]"><input type="text" value="${asset.name}" onchange="updateAssetName('${asset.id}', this.value)" class="w-full bg-transparent outline-none focus:bg-white focus:ring-2 focus:ring-emerald-400 rounded px-2 py-1 transition"></td>`;
+                periods.forEach(p => { 
+                    let rawVal = asset.values[p.key]; 
+                    let displayVal = (rawVal !== undefined && rawVal !== null && rawVal !== '') ? Number(rawVal).toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 2}) : ''; 
+                    rowHtml += `<td class="p-2 border border-slate-200 bg-white hover:bg-emerald-50/50 transition"><input type="text" inputmode="decimal" value="${displayVal}" onchange="updateAssetValue('${asset.id}', '${p.key}', this.value)" class="w-full text-right bg-transparent outline-none focus:bg-emerald-100 focus:ring-2 focus:ring-emerald-500 rounded px-2 py-1.5 font-bold text-slate-700 text-base"></td>`; 
+                });
+                rowHtml += `<td class="p-2 border border-slate-200 text-center bg-slate-50 sticky right-0 z-10 shadow-[-2px_0_5px_rgba(0,0,0,0.05)]"><button onclick="deleteAsset('${asset.id}')" class="text-rose-500 hover:bg-rose-100 p-1.5 rounded-lg transition">🗑️</button></td></tr>`; 
+                tbody.innerHTML += rowHtml;
             });
         }
         
-        // Calculate Growth and render Pie Chart
         if(periods.length > 0) {
             let currentP = periods[periods.length - 1]; let prevP = periods.length > 1 ? periods[periods.length - 2] : null;
             let curTotal = 0, prevTotal = 0; let assetLabels = [], assetValues = [];
@@ -748,11 +804,15 @@
         }
         renderAssetFooter(periods);
     }
+    
     function renderAssetFooter(periods = getValidPeriods()) {
         const tfoot = document.getElementById('asset-table-foot'); if (assetData.length === 0) { tfoot.innerHTML = ''; return; }
-        let footHtml = `<tr class="bg-emerald-800 text-white font-bold"><td class="p-3 border border-emerald-900 text-right uppercase tracking-wider">รวมทั้งหมดของโร๊ะ (บาท)</td>`;
-        periods.forEach(p => { let total = assetData.reduce((sum, asset) => sum + (parseFloat(asset.values[p.key]) || 0), 0); footHtml += `<td class="p-3 border border-emerald-900 text-right text-emerald-300 font-extrabold">${total.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>`; });
-        footHtml += `<td class="border border-emerald-900 bg-emerald-800"></td></tr>`; tfoot.innerHTML = footHtml;
+        let footHtml = `<tr class="bg-emerald-800 text-white font-bold"><td class="p-3 border border-emerald-900 text-right uppercase tracking-wider sticky left-0 z-10 shadow-[2px_0_5px_rgba(0,0,0,0.05)]">รวมทั้งหมดของโร๊ะ (บาท)</td>`;
+        periods.forEach(p => { 
+            let total = assetData.reduce((sum, asset) => sum + (parseFloat(asset.values[p.key]) || 0), 0); 
+            footHtml += `<td class="p-3 border border-emerald-900 text-right text-emerald-300 font-extrabold text-base">${total.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>`; 
+        });
+        footHtml += `<td class="border border-emerald-900 bg-emerald-800 sticky right-0 z-10 shadow-[-2px_0_5px_rgba(0,0,0,0.05)]"></td></tr>`; tfoot.innerHTML = footHtml;
     }
 
     // --- CRUD WRAPPERS ---
