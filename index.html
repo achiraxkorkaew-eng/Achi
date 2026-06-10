@@ -61,11 +61,32 @@
     </div>
 </div>
 
+<div id="dca-modal" class="hidden fixed inset-0 bg-slate-900/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+    <div class="bg-white p-6 rounded-3xl max-w-lg w-full shadow-2xl border border-slate-100 relative max-h-[90vh] flex flex-col">
+        <button onclick="closeDcaModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-full w-8 h-8 flex items-center justify-center transition">✕</button>
+        <h2 class="text-xl font-bold text-slate-900 mb-1 flex items-center gap-2">⚙️ ตั้งค่าระบบลงทุนอัตโนมัติ (DCA)</h2>
+        <p class="text-xs text-slate-500 mb-4 border-b border-slate-100 pb-4">ระบบจะบันทึกซื้อให้อัตโนมัติทุกครั้งที่ขึ้นเดือนใหม่ในปฏิทิน ถ้ายอดไหนอยากเพิ่มลดก็แก้ตรงนี้ได้เลย พอเปลี่ยนปุ๊บมันจะมีผลกับการลงออโต้เดือนต่อๆไปเว้ย</p>
+
+        <div class="flex gap-2 mb-4">
+            <input type="text" id="new-dca-name" class="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none uppercase font-bold text-indigo-900" placeholder="ชื่อหุ้น (เช่น MSFT, BGOLD)">
+            <input type="number" id="new-dca-amount" class="w-32 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none font-bold" placeholder="ยอด (บาท)">
+            <button onclick="addDcaItem()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 rounded-xl transition shadow-sm">➕</button>
+        </div>
+
+        <div class="overflow-y-auto flex-1 bg-slate-50 rounded-xl border border-slate-200 p-2 min-h-[250px]">
+            <table class="w-full text-left border-collapse">
+                <thead><tr class="text-slate-400 text-xs uppercase tracking-wider sticky top-0 bg-slate-50"><th class="p-2">ชื่อหุ้น</th><th class="p-2 text-right">ยอด DCA/เดือน (฿)</th><th class="p-2 text-center">จัดการ</th></tr></thead>
+                <tbody id="dca-table-body" class="text-sm divide-y divide-slate-200"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
 <div class="container mx-auto px-4 py-6 max-w-7xl font-sarabun">
     <header class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-6 rounded-2xl shadow-lg mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
             <h1 class="text-2xl md:text-3xl font-bold tracking-tight">ระบบบันทึกรายรับ-รายจ่าย & งวดงาน & หุ้น 🚀</h1>
-            <p class="text-indigo-200 text-sm mt-1">รุ่นคัสตอม v12 สำหรับ "ไอ้เหี้ยโร๊ะ" โดย เจ มิ หนู๋ย - แก้บั๊กเนียนกริบ + อัปเกรดหน้าทรัพย์สิน!</p>
+            <p class="text-indigo-200 text-sm mt-1">รุ่นคัสตอม v12 สำหรับ "ไอ้เหี้ยโร๊ะ" โดย เจ มิ หนู๋ย - เพิ่มระบบจัดการตั้งค่า DCA!</p>
         </div>
         <div class="flex flex-wrap items-center gap-3">
             <button onclick="openBackupModal()" class="bg-indigo-500 hover:bg-indigo-400 text-white font-bold py-2 px-4 rounded-xl text-sm transition shadow-lg border border-indigo-400/50 flex items-center gap-2">☁️ แบ็คอัพ</button>
@@ -260,7 +281,10 @@
         </div>
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm h-fit">
-                <h2 class="text-lg font-bold text-slate-900 border-b border-slate-100 pb-3 mb-4">บันทึกธุรกรรมการลงทุน</h2>
+                <div class="flex justify-between items-center border-b border-slate-100 pb-3 mb-4">
+                    <h2 class="text-lg font-bold text-slate-900">บันทึกธุรกรรมการลงทุน</h2>
+                    <button type="button" onclick="openDcaModal()" class="bg-indigo-100 text-indigo-700 hover:bg-indigo-200 text-[10px] font-bold px-3 py-1.5 rounded-lg transition flex items-center gap-1 shadow-sm">⚙️ ตั้งค่า DCA อัตโนมัติ</button>
+                </div>
                 <form id="stock-form" onsubmit="addStockTransaction(event)" class="space-y-4">
                     <div>
                         <label class="block text-xs font-bold text-slate-500 mb-1.5 flex justify-between">
@@ -477,6 +501,8 @@
 
     const USD_TO_THB = 35;
     let incomeData = [], meeDebtData = [], otherDebtData = [], personalExpenseData = [], stockData = [], assetData = [];
+    let dcaConfigData = []; // เพิ่มตัวแปรเก็บการตั้งค่า DCA
+    
     let jobCategories = ["งานฝั่ง", "Fastwork", "งานช่างมี้", "งานอื่น"];
     let otherJobCategories = ["งานออกแบบสถาปัตย์", "งานเขียนแบบ 2D", "งานโมเดล 3D", "งานประสานงาน", "งานอื่นๆ"];
     const workSteps = ["ยังไม่เริ่มงาน", "ขั้นทำแปลน", "ขั้นโมเดล", "ขั้นวีดีโอ", "งานสำเร็จ"];
@@ -490,7 +516,6 @@
     let isEditingStockTags = false;
 
     let personalExpenseChartInstance = null;
-    // อัปเดตตัวแปรสำหรับกราฟใหม่
     let dashCashflowChart = null, dashCumulativeChart = null, dashIncomeTypeChart = null, dashTopProjectChart = null, dashExpensePieChart = null, dashAssetTypeChart = null, dashGrowthChart = null, dashYoYChart = null, dashDividendChart = null, dashYearlyIncomeChart = null;
     let meeAreaChart = null, othCatChart = null, assetProportionChartInstance = null;
     let editingIncomeId = null, editingStockId = null, editingMeePaidId = null, editingOtherPaidId = null;
@@ -501,7 +526,7 @@
 
     // --- CORE & BACKUP FUNCTIONS ---
     function saveData() { 
-        localStorage.setItem('roh_incomeData', JSON.stringify(incomeData)); localStorage.setItem('roh_meeDebtData', JSON.stringify(meeDebtData)); localStorage.setItem('roh_otherDebtData', JSON.stringify(otherDebtData)); localStorage.setItem('roh_personalExpenseData', JSON.stringify(personalExpenseData)); localStorage.setItem('roh_stockData', JSON.stringify(stockData)); localStorage.setItem('roh_jobCategories', JSON.stringify(jobCategories)); localStorage.setItem('roh_otherJobCategories', JSON.stringify(otherJobCategories)); localStorage.setItem('roh_stockQuickList', JSON.stringify(stockQuickList)); localStorage.setItem('roh_assetData', JSON.stringify(assetData));
+        localStorage.setItem('roh_incomeData', JSON.stringify(incomeData)); localStorage.setItem('roh_meeDebtData', JSON.stringify(meeDebtData)); localStorage.setItem('roh_otherDebtData', JSON.stringify(otherDebtData)); localStorage.setItem('roh_personalExpenseData', JSON.stringify(personalExpenseData)); localStorage.setItem('roh_stockData', JSON.stringify(stockData)); localStorage.setItem('roh_jobCategories', JSON.stringify(jobCategories)); localStorage.setItem('roh_otherJobCategories', JSON.stringify(otherJobCategories)); localStorage.setItem('roh_stockQuickList', JSON.stringify(stockQuickList)); localStorage.setItem('roh_assetData', JSON.stringify(assetData)); localStorage.setItem('roh_dcaConfigData', JSON.stringify(dcaConfigData));
     }
     function loadData() {
         if(localStorage.getItem('roh_incomeData')) incomeData = JSON.parse(localStorage.getItem('roh_incomeData'));
@@ -513,26 +538,38 @@
         if(localStorage.getItem('roh_jobCategories')) jobCategories = JSON.parse(localStorage.getItem('roh_jobCategories'));
         if(localStorage.getItem('roh_otherJobCategories')) otherJobCategories = JSON.parse(localStorage.getItem('roh_otherJobCategories'));
         if(localStorage.getItem('roh_stockQuickList')) stockQuickList = JSON.parse(localStorage.getItem('roh_stockQuickList'));
+        if(localStorage.getItem('roh_dcaConfigData')) {
+            dcaConfigData = JSON.parse(localStorage.getItem('roh_dcaConfigData'));
+        } else {
+            // ค่าเริ่มต้น ถ้ายังไม่เคยตั้ง DCA เลย
+            dcaConfigData = [ {name: 'BAC', amount: 300}, {name: 'JNJ', amount: 450}, {name: 'AAPL', amount: 420}, {name: 'GOOG', amount: 540}, {name: 'AMZN', amount: 600}, {name: 'MSFT', amount: 690}, {name: 'BGOLD', amount: 500}, {name: 'BASIA', amount: 500} ];
+        }
         if(localStorage.getItem('roh_gas_url')) document.getElementById('gas-url-input').value = localStorage.getItem('roh_gas_url');
     }
 
+    // ฟังก์ชันรัน DCA แบบใหม่ (ดึงค่าตั้งต้นจาก dcaConfigData แทน)
     function checkAndRunAutoDCA() {
         const now = new Date(); const currentY = now.getFullYear().toString(); const currentM = String(now.getMonth() + 1).padStart(2, '0'); const dcaKey = `${currentY}-${currentM}`; let lastDCA = localStorage.getItem('roh_lastAutoDCAMonth');
         if (lastDCA !== dcaKey) {
-            const dcaPlan = [ {name: 'BAC', price: 300}, {name: 'JNJ', price: 450}, {name: 'AAPL', price: 420}, {name: 'GOOG', price: 540}, {name: 'AMZN', price: 600}, {name: 'MSFT', price: 690}, {name: 'BGOLD', price: 500}, {name: 'BASIA', price: 500} ];
-            dcaPlan.forEach((s, i) => { stockData.push({ id: Date.now().toString() + i, year: currentY, month: currentM, name: s.name, type: 'BUY', price: s.price, currency: 'THB' }); });
-            localStorage.setItem('roh_lastAutoDCAMonth', dcaKey); saveData(); showNotification(`💸 ออโต้ DCA ของเดือน ${currentM}/${currentY} เข้าพอร์ตแล้วเว้ย!`);
+            if(dcaConfigData.length > 0) {
+                dcaConfigData.forEach((s, i) => {
+                    stockData.push({ id: Date.now().toString() + i, year: currentY, month: currentM, name: s.name, type: 'BUY', price: s.amount, currency: 'THB' });
+                });
+                localStorage.setItem('roh_lastAutoDCAMonth', dcaKey); saveData(); showNotification(`💸 ออโต้ DCA ของเดือน ${currentM}/${currentY} เข้าพอร์ตแล้วเว้ย!`);
+            } else {
+                localStorage.setItem('roh_lastAutoDCAMonth', dcaKey);
+            }
         }
     }
 
     function openBackupModal() { document.getElementById('backup-modal').classList.remove('hidden'); }
     function closeBackupModal() { document.getElementById('backup-modal').classList.add('hidden'); }
-    function getAllDataAsObject() { return { incomeData, meeDebtData, otherDebtData, personalExpenseData, stockData, assetData, jobCategories, otherJobCategories, stockQuickList }; }
+    function getAllDataAsObject() { return { incomeData, meeDebtData, otherDebtData, personalExpenseData, stockData, assetData, jobCategories, otherJobCategories, stockQuickList, dcaConfigData }; }
     function downloadBackupJSON() { const dataStr = JSON.stringify(getAllDataAsObject()); const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr); let linkElement = document.createElement('a'); linkElement.setAttribute('href', dataUri); linkElement.setAttribute('download', 'roh_backup_' + new Date().toISOString().split('T')[0] + '.json'); linkElement.click(); showNotification("📥 โหลดไฟล์ Backup เรียบร้อย!"); }
-    function uploadBackupJSON(event) { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = function(e) { try { const parsed = JSON.parse(e.target.result); if(parsed.incomeData) incomeData = parsed.incomeData; if(parsed.meeDebtData) meeDebtData = parsed.meeDebtData; if(parsed.otherDebtData) otherDebtData = parsed.otherDebtData; if(parsed.personalExpenseData) personalExpenseData = parsed.personalExpenseData; if(parsed.stockData) stockData = parsed.stockData; if(parsed.assetData) assetData = parsed.assetData; if(parsed.jobCategories) jobCategories = parsed.jobCategories; if(parsed.otherJobCategories) otherJobCategories = parsed.otherJobCategories; if(parsed.stockQuickList) stockQuickList = parsed.stockQuickList; saveData(); refreshAll(); closeBackupModal(); showNotification("📤 กู้คืนข้อมูลสำเร็จ!"); } catch(err) { showNotification("⚠️ ไฟล์พังหรือผิดฟอร์แมต", "error"); } }; reader.readAsText(file); event.target.value = ''; }
+    function uploadBackupJSON(event) { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = function(e) { try { const parsed = JSON.parse(e.target.result); if(parsed.incomeData) incomeData = parsed.incomeData; if(parsed.meeDebtData) meeDebtData = parsed.meeDebtData; if(parsed.otherDebtData) otherDebtData = parsed.otherDebtData; if(parsed.personalExpenseData) personalExpenseData = parsed.personalExpenseData; if(parsed.stockData) stockData = parsed.stockData; if(parsed.assetData) assetData = parsed.assetData; if(parsed.jobCategories) jobCategories = parsed.jobCategories; if(parsed.otherJobCategories) otherJobCategories = parsed.otherJobCategories; if(parsed.stockQuickList) stockQuickList = parsed.stockQuickList; if(parsed.dcaConfigData) dcaConfigData = parsed.dcaConfigData; saveData(); refreshAll(); closeBackupModal(); showNotification("📤 กู้คืนข้อมูลสำเร็จ!"); } catch(err) { showNotification("⚠️ ไฟล์พังหรือผิดฟอร์แมต", "error"); } }; reader.readAsText(file); event.target.value = ''; }
     function saveGasUrl() { const url = document.getElementById('gas-url-input').value.trim(); if(url) { localStorage.setItem('roh_gas_url', url); showNotification("✅ เซฟ URL เรียบร้อย"); } }
     async function pushToGoogleSheets() { const url = localStorage.getItem('roh_gas_url'); if(!url) { showNotification("⚠️ ใส่ Web App URL ก่อนดิ", "error"); return; } const btn = document.getElementById('btn-push-sheet'); btn.innerHTML = `⏳ กำลังดัน...`; btn.disabled = true; try { const payload = { action: 'backup', data: getAllDataAsObject() }; const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) }); const result = await res.json(); if(result.status === 'success') showNotification("☁️ แบ็คอัพขึ้น Sheet สำเร็จ!"); else showNotification("⚠️ Error: " + result.message, "error"); } catch(err) { showNotification("⚠️ ติดต่อ Sheet ไม่ได้", "error"); } finally { btn.innerHTML = `☁️ ⬆️ ดันขึ้น`; btn.disabled = false; } }
-    async function pullFromGoogleSheets() { const url = localStorage.getItem('roh_gas_url'); if(!url) { showNotification("⚠️ ใส่ Web App URL ก่อนดิ", "error"); return; } if(!confirm("⚠️ ยืนยันดึงข้อมูลมาทับ? ข้อมูลใหม่ที่ยังไม่ดันขึ้นจะหายนะ")) return; const btn = document.getElementById('btn-pull-sheet'); btn.innerHTML = `⏳ กำลังดึง...`; btn.disabled = true; try { const res = await fetch(url + '?action=restore'); const result = await res.json(); if(result.status === 'success' && result.data) { const parsed = result.data; if(parsed.incomeData) incomeData = parsed.incomeData; if(parsed.meeDebtData) meeDebtData = parsed.meeDebtData; if(parsed.otherDebtData) otherDebtData = parsed.otherDebtData; if(parsed.personalExpenseData) personalExpenseData = parsed.personalExpenseData; if(parsed.stockData) stockData = parsed.stockData; if(parsed.assetData) assetData = parsed.assetData; if(parsed.jobCategories) jobCategories = parsed.jobCategories; if(parsed.otherJobCategories) otherJobCategories = parsed.otherJobCategories; if(parsed.stockQuickList) stockQuickList = parsed.stockQuickList; saveData(); refreshAll(); closeBackupModal(); showNotification("☁️ กู้คืนจาก Sheet สำเร็จ!"); } else showNotification("⚠️ ดึงไม่สำเร็จ", "error"); } catch(err) { showNotification("⚠️ ดึงข้อมูลไม่ได้", "error"); } finally { btn.innerHTML = `☁️ ⬇️ ดึงมาทับ`; btn.disabled = false; } }
+    async function pullFromGoogleSheets() { const url = localStorage.getItem('roh_gas_url'); if(!url) { showNotification("⚠️ ใส่ Web App URL ก่อนดิ", "error"); return; } if(!confirm("⚠️ ยืนยันดึงข้อมูลมาทับ? ข้อมูลใหม่ที่ยังไม่ดันขึ้นจะหายนะ")) return; const btn = document.getElementById('btn-pull-sheet'); btn.innerHTML = `⏳ กำลังดึง...`; btn.disabled = true; try { const res = await fetch(url + '?action=restore'); const result = await res.json(); if(result.status === 'success' && result.data) { const parsed = result.data; if(parsed.incomeData) incomeData = parsed.incomeData; if(parsed.meeDebtData) meeDebtData = parsed.meeDebtData; if(parsed.otherDebtData) otherDebtData = parsed.otherDebtData; if(parsed.personalExpenseData) personalExpenseData = parsed.personalExpenseData; if(parsed.stockData) stockData = parsed.stockData; if(parsed.assetData) assetData = parsed.assetData; if(parsed.jobCategories) jobCategories = parsed.jobCategories; if(parsed.otherJobCategories) otherJobCategories = parsed.otherJobCategories; if(parsed.stockQuickList) stockQuickList = parsed.stockQuickList; if(parsed.dcaConfigData) dcaConfigData = parsed.dcaConfigData; saveData(); refreshAll(); closeBackupModal(); showNotification("☁️ กู้คืนจาก Sheet สำเร็จ!"); } else showNotification("⚠️ ดึงไม่สำเร็จ", "error"); } catch(err) { showNotification("⚠️ ดึงข้อมูลไม่ได้", "error"); } finally { btn.innerHTML = `☁️ ⬇️ ดึงมาทับ`; btn.disabled = false; } }
 
     window.onload = function() {
         const yearSelect = document.getElementById('global-year'); yearSelect.innerHTML = ''; const currentYear = new Date().getFullYear();
@@ -551,6 +588,42 @@
     function switchTab(evt, tabId) { document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden')); document.querySelectorAll('.tab-btn').forEach(t => { t.classList.remove('bg-indigo-600', 'text-white', 'shadow-md', 'border-transparent'); t.classList.add('bg-white', 'text-slate-600'); }); document.getElementById(tabId).classList.remove('hidden'); if(evt) { evt.currentTarget.classList.add('bg-indigo-600', 'text-white'); evt.currentTarget.classList.remove('bg-white', 'text-slate-600'); } if(tabId === 'tab7') renderDashboard(document.getElementById('global-year').value); refreshAll(); }
     function onGlobalFilterChange() { refreshAll(); }
     function getProjectFromDetail(detail) { if (!detail) return 'งานทั่วไป'; if (detail.includes(' - ')) return detail.split(' - ')[0].trim(); if (detail.includes('-')) return detail.split('-')[0].trim(); if (detail.includes(' : ')) return detail.split(' : ')[0].trim(); const parts = detail.split(/\s+/); if (parts.length > 1 && (parts[0].includes('โครงการ') || parts[0].match(/^\d+/))) return parts[0] + ' ' + parts[1]; return parts[0] || 'งานทั่วไป'; }
+
+    // --- DCA MODAL CRUD ---
+    function openDcaModal() { document.getElementById('dca-modal').classList.remove('hidden'); renderDcaConfig(); }
+    function closeDcaModal() { document.getElementById('dca-modal').classList.add('hidden'); }
+    function renderDcaConfig() {
+        const tb = document.getElementById('dca-table-body');
+        tb.innerHTML = '';
+        if(dcaConfigData.length === 0) { tb.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-slate-400 font-bold text-xs">ยังไม่มีรายการ DCA เพิ่มด้านบนเลยมึง</td></tr>`; return; }
+        dcaConfigData.forEach((d, idx) => {
+            tb.innerHTML += `<tr>
+                <td class="p-2 font-bold text-indigo-900">${d.name}</td>
+                <td class="p-2 text-right"><input type="number" value="${d.amount}" onchange="updateDcaAmount('${d.name}', this.value)" class="w-24 text-right bg-white border border-slate-200 outline-none focus:border-indigo-500 rounded px-2 py-1 font-bold text-emerald-600"></td>
+                <td class="p-2 text-center"><button onclick="deleteDcaItem('${d.name}')" class="text-rose-500 hover:bg-rose-100 p-1.5 rounded-lg transition">🗑️</button></td>
+            </tr>`;
+        });
+    }
+    function addDcaItem() {
+        const name = document.getElementById('new-dca-name').value.trim().toUpperCase();
+        const amt = parseFloat(document.getElementById('new-dca-amount').value) || 0;
+        if(!name || amt <= 0) { showNotification("⚠️ ใส่ชื่อกับยอดให้ครบสิวะไอ้โร๊ะ", "error"); return; }
+        if(dcaConfigData.some(d => d.name === name)) { showNotification("⚠️ มีหุ้นนี้ใน DCA แล้วมึง", "error"); return; }
+        dcaConfigData.push({name: name, amount: amt});
+        document.getElementById('new-dca-name').value = ''; document.getElementById('new-dca-amount').value = '';
+        saveData(); renderDcaConfig(); showNotification("✅ เพิ่ม DCA เรียบร้อย!");
+    }
+    function deleteDcaItem(name) {
+        showCustomConfirm("⚠️ ยืนยันลบ DCA?", `มึงจะลบ ${name} ออกจากระบบออโต้ใช่ป่าววะ?`, () => {
+            dcaConfigData = dcaConfigData.filter(d => d.name !== name);
+            saveData(); renderDcaConfig(); showNotification("🗑️ ลบ DCA ออกแล้วเว้ย");
+        });
+    }
+    function updateDcaAmount(name, val) {
+        const item = dcaConfigData.find(d => d.name === name);
+        if(item) { item.amount = parseFloat(val) || 0; saveData(); showNotification(`💾 อัปเดตยอด DCA ของ ${name} ละ`); }
+    }
+
 
     // --- TAB 1 TAGS ---
     function renderIncomeCategoryTags() { const c = document.getElementById('inc-cat-tags'); if(!c) return; c.innerHTML = ''; if(!currentSelectedIncomeCat && jobCategories.length > 0) { currentSelectedIncomeCat = jobCategories[0]; document.getElementById('inc-category-select').value = currentSelectedIncomeCat; } jobCategories.forEach((cat, idx) => { let colorClass = tagColors[idx % tagColors.length]; let isSel = (cat === currentSelectedIncomeCat) && !isEditingIncomeCat; let baseStyle = `px-3 py-1.5 rounded-xl text-xs font-bold border cursor-pointer transition-all ${colorClass}`; if(isSel) baseStyle += ` ring-2 ring-offset-1 opacity-100`; else baseStyle += ` opacity-60 hover:opacity-100`; if(isEditingIncomeCat) { c.innerHTML += `<div class="${baseStyle} flex items-center gap-1 group"><span class="line-through group-hover:no-underline">${cat}</span><button type="button" onclick="deleteIncomeCategory(${idx})" class="bg-white/50 rounded-full w-4 h-4 flex items-center justify-center text-[8px] hover:bg-rose-500 hover:text-white">✕</button></div>`; } else { c.innerHTML += `<div onclick="selectIncomeCategory('${cat}')" class="${baseStyle}">${cat}</div>`; } }); document.getElementById('btn-edit-inc-cat').innerText = isEditingIncomeCat ? '✅ เสร็จสิ้น' : '✏️ แก้ไข/ลบ'; document.getElementById('inc-category-select').value = currentSelectedIncomeCat; }
@@ -658,7 +731,7 @@
         for(let m=1; m<=12; m++){ let mStr = String(m).padStart(2,'0'); let mFlow = 0; stockData.filter(s => s.year===y && s.month===mStr).forEach(s => { let v = s.currency==='USD'?s.price*USD_TO_THB:s.price; if(s.type==='BUY') mFlow += v; if(s.type==='SELL') mFlow -= v; }); let curVal = prevVal + mFlow; let pct = prevVal === 0 ? 0 : ((curVal - prevVal) / prevVal) * 100; growthPctArr.push(pct); prevVal = curVal; }
         if(dashGrowthChart) dashGrowthChart.destroy(); dashGrowthChart = new Chart(document.getElementById('dashGrowthChart'), { type: 'line', data: { labels, datasets: [{label:'% เติบโตจากเดือนก่อน', data:growthPctArr, borderColor:'#8b5cf6', backgroundColor:'rgba(139,92,246,0.2)', fill:true, tension:0.3}] }, options: {responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}} });
 
-        // ===== อัปเดต: สรุปปันผลหุ้น (แทนที่เงินจม) =====
+        // ===== อัปเดต: สรุปปันผลหุ้น =====
         let divArr = Array(12).fill(0);
         let totalDiv = 0;
         stockData.filter(s => s.year === y && s.type === 'DIVIDEND').forEach(s => {
@@ -721,7 +794,7 @@
         othCatChart = new Chart(document.getElementById('othCatChart'), { type: 'bar', data: { labels: Object.keys(grps), datasets: [{type:'bar', label:'มูลค่างาน (บาท)', data:Object.values(grps).map(x=>x.v), backgroundColor:'#8b5cf6', yAxisID:'y'}, {type:'line', label:'จำนวนงาน', data:Object.values(grps).map(x=>x.c), borderColor:'#f43f5e', backgroundColor:'#f43f5e', yAxisID:'y1'}] }, options: {responsive:true, maintainAspectRatio:false, scales:{y:{type:'linear', position:'left'}, y1:{type:'linear', position:'right', grid:{drawOnChartArea:false}}}} });
     }
 
-    // --- ASSETS TAB 8 LOGIC (อัปเกรดตามสั่ง) ---
+    // --- ASSETS TAB 8 LOGIC ---
     function getValidPeriods() {
         const periods = []; const startYear = 2024; const currentYear = new Date().getFullYear(); const currentMonth = new Date().getMonth() + 1; const targetMonths = [3, 6, 9, 12]; const monthNames = {3: 'มี.ค.', 6: 'มิ.ย.', 9: 'ก.ย.', 12: 'ธ.ค.'};
         for (let y = startYear; y <= currentYear; y++) { for (let m of targetMonths) { if (y === 2024 && m < 12) continue; if (y < currentYear || (y === currentYear && currentMonth >= m)) { periods.push({ key: `${y}-${String(m).padStart(2, '0')}`, label: `${monthNames[m]}`, year: y, month: m }); } } }
