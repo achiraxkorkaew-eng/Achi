@@ -386,8 +386,8 @@
                 <div class="relative w-full h-[250px]"><canvas id="dashCashflowChart"></canvas></div>
             </div>
             <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
-                <h3 class="text-sm font-bold text-slate-700 mb-3 text-center">กำไรสุทธิสะสมตั้งแต่ต้นปี (Cumulative Wealth)</h3>
-                <div class="relative w-full h-[250px]"><canvas id="dashCumulativeChart"></canvas></div>
+                <h3 class="text-sm font-bold text-slate-700 mb-3 text-center">รายรับรวมรายไตรมาส (ทุก 3 เดือน)</h3>
+                <div class="relative w-full h-[250px]"><canvas id="dashQuarterlyChart"></canvas></div>
             </div>
         </div>
 
@@ -516,9 +516,8 @@
     let isEditingStockTags = false;
 
     let personalExpenseChartInstance = null;
-    let dashCashflowChart = null, dashCumulativeChart = null, dashIncomeTypeChart = null, dashTopProjectChart = null, dashExpensePieChart = null, dashAssetTypeChart = null, dashGrowthChart = null, dashYoYChart = null, dashDividendChart = null, dashYearlyIncomeChart = null;
-    let meeAreaChart = null, othCatChart = null, assetProportionChartInstance = null;
-    let editingIncomeId = null, editingStockId = null, editingMeePaidId = null, editingOtherPaidId = null;
+    let dashCashflowChart = null, dashQuarterlyChart = null, dashIncomeTypeChart = null, dashTopProjectChart = null, dashExpensePieChart = null, dashAssetTypeChart = null, dashGrowthChart = null, dashYoYChart = null, dashDividendChart = null, dashYearlyIncomeChart = null;
+    let meeAreaChart = null, othCatChart = null, assetProportionChartInstance = null;    let editingIncomeId = null, editingStockId = null, editingMeePaidId = null, editingOtherPaidId = null;
 
     function calculateMonthlyStockInvestments(year, month) {
         return stockData.filter(s => s.year === year && s.month === month && s.type === 'BUY').reduce((sum, s) => sum + (s.currency === 'USD' ? s.price * USD_TO_THB : s.price || 0), 0);
@@ -709,8 +708,30 @@
         safeSetText('dash-avg-inv', (totalInvY/currentMonthInt).toLocaleString(undefined, {maximumFractionDigits:0}) + ' ฿');
 
         if(dashCashflowChart) dashCashflowChart.destroy(); dashCashflowChart = new Chart(document.getElementById('dashCashflowChart'), { type: 'line', data: { labels, datasets: [{label: 'รายรับ', data: incArr, borderColor: '#10b981', backgroundColor: '#10b981', tension: 0.3}, {label: 'รายจ่าย', data: expArr, borderColor: '#f43f5e', backgroundColor: '#f43f5e', tension: 0.3}] }, options: {responsive:true, maintainAspectRatio:false} });
-        if(dashCumulativeChart) dashCumulativeChart.destroy(); dashCumulativeChart = new Chart(document.getElementById('dashCumulativeChart'), { type: 'line', data: { labels, datasets: [{label: 'กำไรสะสมสุทธิ', data: netCumArr, borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.2)', fill: true, tension: 0.3}] }, options: {responsive:true, maintainAspectRatio:false} });
+        if(dashCashflowChart) dashCashflowChart.destroy(); dashCashflowChart = new Chart(document.getElementById('dashCashflowChart'), { type: 'line', data: { labels, datasets: [{label: 'รายรับ', data: incArr, borderColor: '#10b981', backgroundColor: '#10b981', tension: 0.3}, {label: 'รายจ่าย', data: expArr, borderColor: '#f43f5e', backgroundColor: '#f43f5e', tension: 0.3}] }, options: {responsive:true, maintainAspectRatio:false} });
+        
+        // --- ส่วนที่กูแก้ให้ใหม่ กราฟไตรมาส ---
+        let q1 = incArr[0] + incArr[1] + incArr[2];
+        let q2 = incArr[3] + incArr[4] + incArr[5];
+        let q3 = incArr[6] + incArr[7] + incArr[8];
+        let q4 = incArr[9] + incArr[10] + incArr[11];
+        let qArr = [q1, q2, q3, q4];
+        let qColors = qArr.map(v => v > 90000 ? '#10b981' : '#ef4444');
 
+        if(dashQuarterlyChart) dashQuarterlyChart.destroy(); 
+        dashQuarterlyChart = new Chart(document.getElementById('dashQuarterlyChart'), { 
+            type: 'bar', 
+            data: { 
+                labels: ['Q1 (ม.ค.-มี.ค.)', 'Q2 (เม.ย.-มิ.ย.)', 'Q3 (ก.ค.-ก.ย.)', 'Q4 (ต.ค.-ธ.ค.)'], 
+                datasets: [{label: 'รายรับรวม (บาท)', data: qArr, backgroundColor: qColors, borderRadius: 4}] 
+            }, 
+            options: { 
+                responsive: true, maintainAspectRatio: false, 
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true } }
+            } 
+        });
+        // ------------------------------------
         let typeSums = {}; let projSums = {};
         incomeData.filter(d=>d.year===y).forEach(i=> { typeSums[i.type] = (typeSums[i.type]||0)+i.amount; let p = getProjectFromDetail(i.detail); projSums[p] = (projSums[p]||0)+(i.amount-(i.expense||0)); });
         meeDebtData.filter(d=>d.paid && d.paidYear===y).forEach(i=> { typeSums['ช่างมี้'] = (typeSums['ช่างมี้']||0)+i.amount; let p = getProjectFromDetail(i.detail); projSums[p] = (projSums[p]||0)+i.amount; });
