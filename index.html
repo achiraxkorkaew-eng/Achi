@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบบันทึกรายรับ-รายจ่าย & งวดงาน & หุ้น v12 (Roh Ultimate Pro Max)</title>
+    <title>ระบบบันทึกรายรับ-รายจ่าย & งวดงาน & หุ้น v14 (Gamified Edition)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
@@ -17,6 +17,11 @@
         .tab-panel { animation: fadeIn 0.3s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
         input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        @media print {
+            body * { visibility: hidden; }
+            #mee-print-area, #mee-print-area * { visibility: visible; }
+            #mee-print-area { position: absolute; left: 0; top: 0; width: 100%; max-height: none !important; overflow: visible !important; }
+        }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-screen">
@@ -86,7 +91,7 @@
     <header class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-6 rounded-2xl shadow-lg mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
             <h1 class="text-2xl md:text-3xl font-bold tracking-tight">ระบบบันทึกรายรับ-รายจ่าย & งวดงาน & หุ้น 🚀</h1>
-            <p class="text-indigo-200 text-sm mt-1">รุ่นคัสตอม v12 สำหรับ "ไอ้เหี้ยโร๊ะ" โดย เจ มิ หนู๋ย - เพิ่มระบบจัดการตั้งค่า DCA!</p>
+            <p class="text-indigo-200 text-sm mt-1">รุ่นคัสตอม v14 สำหรับ "ไอ้เหี้ยโร๊ะ" โดย เจ มิ หนู๋ย - อัปเกรดระบบเควสสะสมแต้ม & ถอนเงินรางวัลช็อปปิ้ง!</p>
         </div>
         <div class="flex flex-wrap items-center gap-3">
             <button onclick="openBackupModal()" class="bg-indigo-500 hover:bg-indigo-400 text-white font-bold py-2 px-4 rounded-xl text-sm transition shadow-lg border border-indigo-400/50 flex items-center gap-2">☁️ แบ็คอัพ</button>
@@ -110,6 +115,7 @@
         <button class="tab-btn px-5 py-3 rounded-xl font-semibold text-sm whitespace-nowrap bg-white text-slate-600 hover:bg-slate-100 transition-all duration-200" onclick="switchTab(event, 'tab6')">6. ภาษี 📄</button>
         <button class="tab-btn px-5 py-3 rounded-xl font-semibold text-sm whitespace-nowrap bg-white text-slate-600 hover:bg-slate-100 transition-all duration-200 border border-slate-200" onclick="switchTab(event, 'tab7')">7. แดชบอร์ด 📊</button>
         <button class="tab-btn px-5 py-3 rounded-xl font-semibold text-sm whitespace-nowrap bg-white text-slate-600 hover:bg-slate-100 transition-all duration-200 border border-emerald-200" onclick="switchTab(event, 'tab8')">8. ทรัพย์สิน 🏠</button>
+        <button class="tab-btn px-5 py-3 rounded-xl font-bold text-sm whitespace-nowrap bg-amber-500 text-slate-900 border border-amber-600 hover:bg-amber-400 transition-all duration-200" onclick="switchTab(event, 'tab9')">🏆 9. เควส & รางวัล</button>
     </div>
 
     <div id="tab1" class="tab-panel block">
@@ -176,13 +182,37 @@
                     </form>
                 </div>
             </div>
+            
             <div class="lg:col-span-2 space-y-6">
-                <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-                    <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-lg font-bold text-slate-900">🕒 งวดงานค้างจ่ายปัจจุบัน</h2>
-                        <span class="bg-rose-100 text-rose-700 px-3 py-1 rounded-lg text-sm font-bold" id="mee-active-total">รวม 0 ฿</span>
+                <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm" id="mee-active-section">
+                    <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3 mb-4 border-b border-slate-100 pb-3">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <h2 class="text-lg font-bold text-slate-900">🕒 งวดงานค้างจ่ายปัจจุบัน</h2>
+                            <button onclick="toggleMeeSort()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-bold px-2.5 py-1.5 rounded-lg transition border border-slate-200 flex items-center gap-1">🔀 เรียงชื่อ (<span id="mee-sort-label">ปกติ</span>)</button>
+                            <button onclick="printMeeActiveReport()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-bold px-3 py-1.5 rounded-lg transition flex items-center gap-1 shadow-sm">📄 เซฟรายงานงานค้าง (PDF)</button>
+                        </div>
+                        <span class="bg-rose-100 text-rose-700 px-3 py-1 rounded-lg text-sm font-bold w-fit" id="mee-active-total">รวม 0 ฿</span>
                     </div>
-                    <div class="overflow-x-auto"><table class="w-full text-left border-collapse min-w-[600px]"><thead><tr class="bg-slate-50 text-slate-400 text-xs uppercase tracking-wider"><th class="p-3 font-semibold">รายละเอียดงาน</th><th class="p-3 font-semibold text-center">ไร่</th><th class="p-3 font-semibold text-right">จำนวนเงิน</th><th class="p-3 font-semibold text-center">ขั้นตอน</th><th class="p-3 font-semibold text-center">ชำระเงิน</th></tr></thead><tbody id="mee-active-table-body" class="text-sm divide-y divide-slate-100"></tbody></table></div>
+                    
+                    <div id="mee-print-area" class="overflow-x-auto max-h-[550px] overflow-y-auto border border-slate-100 rounded-xl shadow-inner p-1 bg-slate-50/50">
+                        <div class="hidden print:block mb-4 p-2 border-b-2 border-slate-800">
+                            <h1 class="text-xl font-bold text-slate-900">📄 รายงานสรุปรายการงวดงานค้างจ่ายช่างมี้</h1>
+                            <p class="text-xs text-slate-500">ข้อมูลอัปเดต ณ วันที่: <span id="mee-pdf-date"></span></p>
+                        </div>
+                        <table class="w-full text-left border-collapse min-w-[650px] bg-white rounded-lg overflow-hidden">
+                            <thead>
+                                <tr class="bg-slate-900 text-white text-xs uppercase tracking-wider sticky top-0 z-10 shadow">
+                                    <th class="p-3.5 font-bold">รายละเอียดงาน / แปลงค้างจ่าย</th>
+                                    <th class="p-3.5 font-bold text-center w-20">พื้นที่ (ไร่)</th>
+                                    <th class="p-3.5 font-bold text-right w-32">จำนวนเงินค้าง</th>
+                                    <th class="p-3.5 font-bold text-center w-28 print:hidden">ขั้นตอน</th>
+                                    <th class="p-3.5 font-bold text-center w-36 print:hidden">ชำระเงิน</th>
+                                </tr>
+                            </thead>
+                            <tbody id="mee-active-table-body" class="text-sm divide-y divide-slate-100"></tbody>
+                            <tfoot id="mee-active-table-foot"></tfoot>
+                        </table>
+                    </div>
                 </div>
                 
                 <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
@@ -248,10 +278,27 @@
         </div>
     </div>
 
+    <!-- TAB 4: จ่ายส่วนตัว 🛒 (ปรับปรุงระบบบันทึกรายจ่ายรายสัปดาห์ & ดึงข้อมูลประเมินเควส) -->
     <div id="tab4" class="tab-panel hidden">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6">
             <div class="bg-gradient-to-br from-red-500 to-rose-600 text-white p-6 rounded-2xl shadow-sm"><span class="text-xs font-bold uppercase tracking-wider opacity-80">รวมรายจ่ายส่วนตัวสะสมเดือนนี้</span><div class="text-3xl font-bold mt-1" id="t4-month-expense">0.00 บ.</div></div>
+            
+            <!-- เพิ่มการ์ดประเมินเควส คุมงบ 30,000 บ. (เพดานหุ้น 4,000 บ.) -->
+            <div class="bg-white border border-slate-200 p-5 rounded-2xl shadow-sm md:col-span-2 flex flex-col justify-between">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <span class="text-xs font-bold text-indigo-600 uppercase tracking-wider">🎯 Status เควส "ผู้พิชิตความโลภ" (เป้าหมาย &lt; 30,000 บ.)</span>
+                        <div class="text-lg font-extrabold text-slate-950 mt-1" id="quest-budget-text">คำนวณ: 0 / 30,000 ฿</div>
+                    </div>
+                    <span id="quest-budget-badge" class="px-3 py-1 rounded-full text-[10px] font-black uppercase">กำลังดึงข้อมูล...</span>
+                </div>
+                <div class="w-full bg-slate-100 rounded-full h-2.5 mt-2.5 overflow-hidden">
+                    <div id="quest-budget-progress" class="bg-emerald-500 h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+                </div>
+                <p class="text-[9px] text-slate-400 mt-2">* ยอดหุ้นจะนำมารวมคำนวณสูงสุดเพียง 4,000 บาทเท่านั้น ส่วนที่เกินจะไม่นับรวมเป็นต้นทุนค่าใช้จ่ายเพื่อความแฟร์!</p>
+            </div>
         </div>
+        
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm h-fit">
                 <h2 class="text-lg font-bold text-slate-900 border-b border-slate-100 pb-3 mb-4">📝 บันทึกรายจ่ายส่วนตัวประจำเดือน</h2>
@@ -260,17 +307,49 @@
                         <div><label class="block text-[11px] font-bold text-rose-600 mb-1">ค่ากินรวม (บาท)</label><input type="number" step="0.01" id="exp-eating" class="w-full bg-rose-50 border border-rose-200 text-rose-800 font-semibold rounded-xl px-4 py-2 text-sm outline-none focus:border-rose-500"></div>
                         <div><label class="block text-[11px] font-bold text-amber-600 mb-1">ค่าบัตรเครดิต (บาท)</label><input type="number" step="0.01" id="exp-card" class="w-full bg-amber-50 border border-amber-200 text-amber-800 font-semibold rounded-xl px-4 py-2 text-sm outline-none focus:border-amber-500"></div>
                         <div><label class="block text-[11px] font-bold text-blue-600 mb-1">ค่าห้องพัก / ที่พัก (บาท)</label><input type="number" step="0.01" id="exp-rent" class="w-full bg-blue-50 border border-blue-200 text-blue-800 font-semibold rounded-xl px-4 py-2 text-sm outline-none focus:border-blue-500"></div>
-                        <div><label class="block text-[11px] font-bold text-pink-600 mb-1">ค่าใช้จ่ายส่วนตัว (บาท)</label><input type="number" step="0.01" id="exp-personal" class="w-full bg-pink-50 border border-pink-200 text-pink-800 font-semibold rounded-xl px-4 py-2 text-sm outline-none focus:border-pink-500"></div>
-                        <div><label class="block text-[11px] font-bold text-emerald-600 mb-1">หุ้นและกองทุน (บาท)</label><input type="number" step="0.01" id="exp-stocks" class="w-full bg-emerald-50 border border-emerald-200 text-emerald-800 font-semibold rounded-xl px-4 py-2 text-sm outline-none focus:border-emerald-500" readonly></div>
+                        
+                        <!-- ปรับปรุง: แยก "ค่าใช้จ่ายส่วนตัว" เป็นรายสัปดาห์ 1-4 ตามที่มี้ขอ ห้ามพังระบบหลักเดิม! -->
+                        <div class="bg-indigo-50/50 p-3.5 rounded-xl border border-indigo-100/80 space-y-2">
+                            <label class="block text-[11px] font-black text-indigo-950 flex justify-between">
+                                <span>📌 ค่าใช้จ่ายส่วนตัวสัปดาห์ (Week 1-4)</span>
+                                <span class="text-[9px] font-bold text-indigo-600 uppercase">เควสนักบันทึกไร้พ่าย</span>
+                            </label>
+                            <div class="grid grid-cols-4 gap-1.5">
+                                <div>
+                                    <span class="text-[8px] block text-center font-bold text-slate-400 mb-1">สัปดาห์ 1</span>
+                                    <input type="number" step="0.01" id="personal-w1" class="w-full bg-white border border-slate-200 text-center rounded-lg py-1.5 text-xs outline-none font-bold text-indigo-900" oninput="sumWeeklyPersonalExpenses()">
+                                </div>
+                                <div>
+                                    <span class="text-[8px] block text-center font-bold text-slate-400 mb-1">สัปดาห์ 2</span>
+                                    <input type="number" step="0.01" id="personal-w2" class="w-full bg-white border border-slate-200 text-center rounded-lg py-1.5 text-xs outline-none font-bold text-indigo-900" oninput="sumWeeklyPersonalExpenses()">
+                                </div>
+                                <div>
+                                    <span class="text-[8px] block text-center font-bold text-slate-400 mb-1">สัปดาห์ 3</span>
+                                    <input type="number" step="0.01" id="personal-w3" class="w-full bg-white border border-slate-200 text-center rounded-lg py-1.5 text-xs outline-none font-bold text-indigo-900" oninput="sumWeeklyPersonalExpenses()">
+                                </div>
+                                <div>
+                                    <span class="text-[8px] block text-center font-bold text-slate-400 mb-1">สัปดาห์ 4</span>
+                                    <input type="number" step="0.01" id="personal-w4" class="w-full bg-white border border-slate-200 text-center rounded-lg py-1.5 text-xs outline-none font-bold text-indigo-900" oninput="sumWeeklyPersonalExpenses()">
+                                </div>
+                            </div>
+                            <!-- ช่องหลักเดิมที่เอาไว้ดึงข้อมูลไปแสดงกราฟและเซฟลง DB -->
+                            <div class="flex justify-between items-center pt-1.5 border-t border-indigo-100">
+                                <span class="text-[9px] font-bold text-slate-500">รวมค่าส่วนตัวทั้งเดือน:</span>
+                                <input type="number" step="0.01" id="exp-personal" class="w-24 bg-transparent text-right font-black text-indigo-950 text-xs outline-none" readonly value="0">
+                            </div>
+                        </div>
+
+                        <div><label class="block text-[11px] font-bold text-emerald-600 mb-1">หุ้นและกองทุน (บาท) <span class="text-[9px] font-normal text-slate-400">(ดึงอัตโนมัติ)</span></label><input type="number" step="0.01" id="exp-stocks" class="w-full bg-emerald-50 border border-emerald-200 text-emerald-800 font-semibold rounded-xl px-4 py-2 text-sm outline-none focus:border-emerald-500" readonly></div>
                         <div><label class="block text-[11px] font-bold text-indigo-600 mb-1">เก็บรวมเกมกับอั๋น (บาท)</label><input type="number" step="0.01" id="exp-game-aun" class="w-full bg-indigo-50 border border-indigo-200 text-indigo-800 font-semibold rounded-xl px-4 py-2 text-sm outline-none focus:border-indigo-500"></div>
                         <div><label class="block text-[11px] font-bold text-orange-500 mb-1">รายจ่ายอื่นๆ (บาท)</label><input type="number" step="0.01" id="exp-other-ext" class="w-full bg-orange-50 border border-orange-200 text-orange-800 font-semibold rounded-xl px-4 py-2 text-sm outline-none focus:border-orange-500"></div>
                     </div>
                     <button type="submit" class="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold py-3 rounded-xl transition mt-2">💾 บันทึกยอดของเดือนนี้</button>
                 </form>
             </div>
+            
             <div class="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col">
-                <h2 class="text-lg font-bold text-slate-900 border-b border-slate-100 pb-3 mb-4">📊 กราฟเปรียบเทียบค่าใช้จ่ายรายเดือน (Stack)</h2>
-                <div class="relative w-full h-[350px]"><canvas id="personalExpenseChart"></canvas></div>
+                <h2 class="text-lg font-bold text-slate-900 border-b border-slate-100 pb-3 mb-4">📊 กราฟเปรียบเทียบค่าใช้จ่ายรายเดือน (Stack ซอยย่อย 3 ยอดใต้ชื่อเดือน)</h2>
+                <div class="relative w-full h-[370px]"><canvas id="personalExpenseChart"></canvas></div>
             </div>
         </div>
     </div>
@@ -379,15 +458,23 @@
             <div class="text-center w-full md:w-auto"><div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">ลงทุนเฉลี่ย / เดือน</div><div class="text-2xl font-black text-indigo-600" id="dash-avg-inv">0 ฿</div></div>
         </div>
 
-        <h2 class="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2"><span>💸</span> 1. หมวดภาพรวมกระแสเงินสดปีนี้</h2>
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <h2 class="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2"><span>💸</span> 1. หมวดภาพรวมกระแสเงินสดประจำปี</h2>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
             <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
-                <h3 class="text-sm font-bold text-slate-700 mb-3 text-center">รายรับรวม VS รายจ่ายรวม รายเดือน</h3>
-                <div class="relative w-full h-[250px]"><canvas id="dashCashflowChart"></canvas></div>
+                <h3 class="text-sm font-bold text-slate-700 mb-3 text-center">1.1 รายรับรวม VS รายจ่ายรวม รายเดือน (เลือกปีด้านบน)</h3>
+                <div class="relative w-full h-[230px]"><canvas id="dashCashflowChart"></canvas></div>
             </div>
             <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
-                <h3 class="text-sm font-bold text-slate-700 mb-3 text-center">รายรับรวมรายไตรมาส (ทุก 3 เดือน)</h3>
-                <div class="relative w-full h-[250px]"><canvas id="dashQuarterlyChart"></canvas></div>
+                <h3 class="text-sm font-bold text-slate-700 mb-3 text-center">1.2 รายรับรวมรายไตรมาส (ย่อขนาดกะทัดรัดเท่า 1.1 แล้วมึง)</h3>
+                <div class="relative w-full h-[230px]"><canvas id="dashQuarterlyChart"></canvas></div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 gap-6 mb-8">
+            <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+                <h3 class="text-sm font-bold text-indigo-950 mb-3 text-left flex items-center gap-2">📈 1.3 กระแสเงินสดสะสมระยะยาว (All-Time Cashflow เจาะจงเฉพาะตั้งแต่ ก.พ. 68 - ปัจจุบัน)</h3>
+                <p class="text-[11px] text-slate-400 mb-2">* ระบบจะไม่นำข้อมูลก่อนหน้าเดือนกุมภาพันธ์ พ.ศ. 2568 มาแสดงผลตามคำสั่งเว้ย</p>
+                <div class="relative w-full h-[320px]"><canvas id="dashAllTimeCashflowChart"></canvas></div>
             </div>
         </div>
 
@@ -428,10 +515,11 @@
                 <h2 class="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2"><span>🔵</span> 5. สรุปเงินปันผลจากหุ้นปีนี้</h2>
                 <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-center h-[280px]">
                     <div class="space-y-4">
-                        <div class="flex justify-between text-xs font-bold mb-2">
-                            <span class="text-blue-600" id="dash-dividend-text">ปันผลรวม: 0 ฿</span>
+                        <div class="flex flex-col gap-1 text-xs font-bold mb-2">
+                            <span class="text-blue-600 text-sm" id="dash-dividend-text">ปันผลรวม: 0 ฿</span>
+                            <span class="text-indigo-600 text-[11px]" id="dash-dividend-avg-text">เฉลี่ยต่อเดือน: 0 ฿ / เดือน</span>
                         </div>
-                        <div class="relative w-full h-[180px]"><canvas id="dashDividendChart"></canvas></div>
+                        <div class="relative w-full h-[160px]"><canvas id="dashDividendChart"></canvas></div>
                     </div>
                 </div>
             </div>
@@ -446,8 +534,8 @@
 
         <div class="mb-8">
             <h2 class="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2"><span>📊</span> 7. รายรับเปรียบเทียบรายปี (ตั้งแต่ปี 66 - ปัจจุบัน)</h2>
-            <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm h-[300px]">
-                <div class="relative w-full h-[250px]"><canvas id="dashYearlyIncomeChart"></canvas></div>
+            <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm h-250px">
+                <div class="relative w-full h-[200px]"><canvas id="dashYearlyIncomeChart"></canvas></div>
             </div>
         </div>
     </div>
@@ -493,6 +581,153 @@
         </div>
     </div>
 
+    <!-- TAB 9: ระบบความฟินความรวย เควส & รางวัล 🏆 (NEW!) -->
+    <div id="tab9" class="tab-panel hidden">
+        <!-- บอร์ดแต้ม & เงินสะสมรางวัล -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-gradient-to-br from-amber-500 to-orange-600 text-slate-900 p-6 rounded-2xl shadow-lg flex flex-col justify-between">
+                <div>
+                    <span class="text-xs font-black uppercase tracking-widest text-amber-950 opacity-80">⭐ แต้มสะสมของไอ้โร๊ะ</span>
+                    <div class="text-5xl font-black mt-2" id="reward-points-display">0</div>
+                    <p class="text-xs text-amber-950 font-bold mt-1">มูลค่าแลกเงินสดได้: <span id="reward-cash-value">0</span> บาท</p>
+                </div>
+                <span class="text-[10px] text-amber-950 mt-4 font-semibold">* อัตราแลกรางวัล 1 แต้ม = 2 บาทไทย</span>
+            </div>
+
+            <div class="bg-slate-900 text-white p-6 rounded-2xl shadow-lg flex flex-col justify-between border border-slate-800">
+                <div>
+                    <span class="text-xs font-bold uppercase tracking-widest text-emerald-400">💰 กองทุนรางวัลที่พร้อมถอน (Reward Pool)</span>
+                    <div class="text-4xl font-black mt-2 text-emerald-300" id="reward-pool-display">0.00 ฿</div>
+                    <p class="text-xs text-slate-400 mt-1">คำนวณจาก 3% ของรายรับสุทธิที่เก็บเงินสดเข้ากระเป๋าจริง</p>
+                </div>
+                <div class="text-[10px] text-rose-400 mt-4 font-black">⚡ จำกัดเพดานสูงสุดถอนรางวัลไม่เกิน 3,000 บาท!</div>
+            </div>
+
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                <div>
+                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">🎯 ความสำเร็จรวม</span>
+                    <div class="text-2xl font-extrabold text-indigo-950 mt-2" id="reward-claim-count">เคลมแล้ว 0 ครั้ง</div>
+                </div>
+                <p class="text-[11px] text-slate-500 mt-4 leading-relaxed">ยิ่งมี้ขยันประหยัด + ทวงหนี้ช่างมี้ + ออมหุ้น สลิปเงินรางวัลก็จะยิ่งโตเว้ย!</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- คอลัมน์ที่ 1 & 2: เควสบอร์ดประจำเดือน -->
+            <div class="lg:col-span-2 space-y-6">
+                <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-md">
+                    <div class="flex justify-between items-center border-b border-slate-100 pb-4 mb-4">
+                        <h2 class="text-xl font-black text-slate-900 flex items-center gap-2">🕹️ บอร์ดเคลมเควสการเงินประจำเดือน</h2>
+                        <span class="text-xs font-bold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full">เลือกเดือนด้านบนสุดเพื่อตรวจเควส</span>
+                    </div>
+
+                    <div class="space-y-4" id="quest-board-container">
+                        <!-- เควสที่ 1 -->
+                        <div class="p-4 rounded-2xl border border-slate-100 flex flex-col sm:flex-row justify-between sm:items-center gap-4 transition" id="q-record">
+                            <div class="space-y-1">
+                                <span class="bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase">Normal Quest</span>
+                                <h3 class="text-base font-bold text-slate-900">✍️ เควส "นักบันทึกไร้พ่าย"</h3>
+                                <p class="text-xs text-slate-500">บันทึก "ค่าใช้จ่ายส่วนตัว" แบบรายสัปดาห์ (W1-W4) ครบถ้วนตลอดทั้งเดือน</p>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <span class="text-xs font-bold text-amber-600">+100 แต้ม</span>
+                                <button id="btn-claim-q-record" class="px-4 py-2 bg-slate-100 text-slate-400 font-bold rounded-xl text-xs cursor-not-allowed" disabled>ยังไม่สำเร็จ</button>
+                            </div>
+                        </div>
+
+                        <!-- เควสที่ 2 -->
+                        <div class="p-4 rounded-2xl border border-slate-100 flex flex-col sm:flex-row justify-between sm:items-center gap-4 transition" id="q-stocks">
+                            <div class="space-y-1">
+                                <span class="bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase">Normal Quest</span>
+                                <h3 class="text-base font-bold text-slate-900">📈 เควส "ผู้ชุบเลี้ยงพอร์ต"</h3>
+                                <p class="text-xs text-slate-500">มียอดเงิน DCA หรือบันทึกซื้อหุ้น/กองทุนในระบบ ของเดือนนั้นๆ</p>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <span class="text-xs font-bold text-amber-600">+150 แต้ม</span>
+                                <button id="btn-claim-q-stocks" class="px-4 py-2 bg-slate-100 text-slate-400 font-bold rounded-xl text-xs cursor-not-allowed" disabled>ยังไม่สำเร็จ</button>
+                            </div>
+                        </div>
+
+                        <!-- เควสที่ 3 -->
+                        <div class="p-4 rounded-2xl border border-slate-100 flex flex-col sm:flex-row justify-between sm:items-center gap-4 transition" id="q-clearance">
+                            <div class="space-y-1">
+                                <span class="bg-purple-50 text-purple-700 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase text-purple-600">Boss Quest</span>
+                                <h3 class="text-base font-bold text-slate-900">💰 เควส "ปิดงวดพิฆาต"</h3>
+                                <p class="text-xs text-slate-500">มีการปิดงวดช่างมี้หรืองานอื่นสำเร็จ เปลี่ยนสถานะเป็นชำระแล้ว และมีเงินสดเข้ากระเป๋าจริง</p>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <span class="text-xs font-bold text-amber-600">+300 แต้ม</span>
+                                <button id="btn-claim-q-clearance" class="px-4 py-2 bg-slate-100 text-slate-400 font-bold rounded-xl text-xs cursor-not-allowed" disabled>ยังไม่สำเร็จ</button>
+                            </div>
+                        </div>
+
+                        <!-- เควสที่ 4 -->
+                        <div class="p-4 rounded-2xl border border-slate-100 flex flex-col sm:flex-row justify-between sm:items-center gap-4 transition" id="q-frugal">
+                            <div class="space-y-1">
+                                <span class="bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase">Legendary Quest</span>
+                                <h3 class="text-base font-bold text-slate-900">🛡️ เควส "ผู้พิชิตความโลภ"</h3>
+                                <p class="text-xs text-slate-500">ค่ากิน + บัตร + ห้องพัก + ค่าใช้จ่ายส่วนตัว + ยอดอื่นๆ + หุ้น (คิดยอดหุ้นไม่เกิน 4,000 บ.) ต่ำกว่า 30,000 บาท</p>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <span class="text-xs font-bold text-amber-600">+500 แต้ม</span>
+                                <button id="btn-claim-q-frugal" class="px-4 py-2 bg-slate-100 text-slate-400 font-bold rounded-xl text-xs cursor-not-allowed" disabled>ยังไม่สำเร็จ</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- คอลัมน์ที่ 3: ร้านค้า Premium Reward Shop -->
+            <div class="space-y-6">
+                <div class="bg-gradient-to-b from-slate-900 to-slate-950 p-6 rounded-3xl border border-slate-800 text-white shadow-xl">
+                    <h2 class="text-xl font-black mb-1 text-amber-400 flex items-center gap-2">🛒 Premium Reward Shop</h2>
+                    <p class="text-xs text-slate-400 border-b border-slate-800 pb-3 mb-4">เอาแต้มมาถอนเงินรางวัลสดปรนเปรอความสุขได้จริง!</p>
+                    
+                    <div class="space-y-3" id="shop-items-container">
+                        <!-- รายการสินค้า 1 -->
+                        <div class="bg-slate-800/80 p-3 rounded-xl border border-slate-700/50 flex justify-between items-center">
+                            <div><span class="text-xs font-bold text-slate-400">☕ สิทธิ์ถอนกาแฟ & ขนม</span><div class="text-sm font-black text-white mt-0.5">ถอนเงินรางวัล 100 บาท</div></div>
+                            <button onclick="redeemReward(50, 100)" class="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black rounded-lg text-xs transition">ใช้ 50 แต้ม</button>
+                        </div>
+                        <!-- รายการสินค้า 2 -->
+                        <div class="bg-slate-800/80 p-3 rounded-xl border border-slate-700/50 flex justify-between items-center">
+                            <div><span class="text-xs font-bold text-slate-400">🛍️ สิทธิ์สอยของ Shopee</span><div class="text-sm font-black text-white mt-0.5">ถอนเงินรางวัล 300 บาท</div></div>
+                            <button onclick="redeemReward(150, 300)" class="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black rounded-lg text-xs transition">ใช้ 150 แต้ม</button>
+                        </div>
+                        <!-- รายการสินค้า 3 -->
+                        <div class="bg-slate-800/80 p-3 rounded-xl border border-slate-700/50 flex justify-between items-center">
+                            <div><span class="text-xs font-bold text-slate-400">🎮 สอยเกม Steam ฟินๆ</span><div class="text-sm font-black text-white mt-0.5">ถอนเงินรางวัล 500 บาท</div></div>
+                            <button onclick="redeemReward(250, 500)" class="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black rounded-lg text-xs transition">ใช้ 250 แต้ม</button>
+                        </div>
+                        <!-- รายการสินค้า 4 -->
+                        <div class="bg-slate-800/80 p-3 rounded-xl border border-slate-700/50 flex justify-between items-center">
+                            <div><span class="text-xs font-bold text-slate-400">🥩 ชาบู-หมูกระทะพรีเมียม</span><div class="text-sm font-black text-white mt-0.5">ถอนเงินรางวัล 1,000 บาท</div></div>
+                            <button onclick="redeemReward(500, 1000)" class="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black rounded-lg text-xs transition">ใช้ 500 แต้ม</button>
+                        </div>
+                        <!-- รายการสินค้า 5 -->
+                        <div class="bg-slate-800/80 p-3 rounded-xl border border-slate-700/50 flex justify-between items-center">
+                            <div><span class="text-xs font-bold text-slate-400">🎁 ปลุกเสกสกินหรือของขวัญ</span><div class="text-sm font-black text-white mt-0.5">ถอนเงินรางวัล 2,000 บาท</div></div>
+                            <button onclick="redeemReward(1000, 2000)" class="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black rounded-lg text-xs transition">ใช้ 1,000 แต้ม</button>
+                        </div>
+                        <!-- รายการสินค้า 6 -->
+                        <div class="bg-amber-500/10 p-3 rounded-xl border border-amber-500/30 flex justify-between items-center">
+                            <div><span class="text-xs font-black text-amber-400">🔥 ชนเพดานระดับล้างโลก</span><div class="text-sm font-black text-amber-100 mt-0.5">ถอนเงินรางวัล 3,000 บาท</div></div>
+                            <button onclick="redeemReward(1500, 3000)" class="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black rounded-lg text-xs transition">ใช้ 1,500 แต้ม</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ประวัติการแลกแต้ม -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                    <h3 class="text-sm font-bold text-slate-900 border-b pb-2 mb-3">📋 ประวัติการถอนรางวัล</h3>
+                    <div class="overflow-y-auto max-h-[220px] space-y-2 text-xs" id="redemptions-log">
+                        <div class="text-center py-4 text-slate-400 font-medium">ยังไม่มีประวัติการถอนรางวัลเว้ยมึง</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
 
 <script>
@@ -501,8 +736,13 @@
 
     const USD_TO_THB = 35;
     let incomeData = [], meeDebtData = [], otherDebtData = [], personalExpenseData = [], stockData = [], assetData = [];
-    let dcaConfigData = []; // เพิ่มตัวแปรเก็บการตั้งค่า DCA
+    let dcaConfigData = []; 
     
+    // เควส & การแลกแต้มรางวัล
+    let rewardPoints = 0;
+    let claimedQuests = []; // Array สำหรับเก็บข้อมูลเควสที่เคยเคลมไปแล้ว [{year, month, questId}]
+    let redemptions = []; // ประวัติการถอนรางวัล [{id, date, pointsUsed, moneyReceived}]
+
     let jobCategories = ["งานฝั่ง", "Fastwork", "งานช่างมี้", "งานอื่น"];
     let otherJobCategories = ["งานออกแบบสถาปัตย์", "งานเขียนแบบ 2D", "งานโมเดล 3D", "งานประสานงาน", "งานอื่นๆ"];
     const workSteps = ["ยังไม่เริ่มงาน", "ขั้นทำแปลน", "ขั้นโมเดล", "ขั้นวีดีโอ", "งานสำเร็จ"];
@@ -514,9 +754,10 @@
 
     let stockQuickList = { th: ["LH", "TTB", "TRUE"], us: ["BAC", "JNJ", "AAPL", "GOOG", "AMZN", "MSFT"], fund: ["BGOLD", "BASIA"] };
     let isEditingStockTags = false;
+    let meeSortType = 'default'; 
 
     let personalExpenseChartInstance = null;
-    let dashCashflowChart = null, dashQuarterlyChart = null, dashIncomeTypeChart = null, dashTopProjectChart = null, dashExpensePieChart = null, dashAssetTypeChart = null, dashGrowthChart = null, dashYoYChart = null, dashDividendChart = null, dashYearlyIncomeChart = null;
+    let dashCashflowChart = null, dashAllTimeCashflowChart = null, dashQuarterlyChart = null, dashIncomeTypeChart = null, dashTopProjectChart = null, dashExpensePieChart = null, dashAssetTypeChart = null, dashGrowthChart = null, dashYoYChart = null, dashDividendChart = null, dashYearlyIncomeChart = null;
     let meeAreaChart = null, othCatChart = null, assetProportionChartInstance = null;    let editingIncomeId = null, editingStockId = null, editingMeePaidId = null, editingOtherPaidId = null;
 
     function calculateMonthlyStockInvestments(year, month) {
@@ -526,6 +767,10 @@
     // --- CORE & BACKUP FUNCTIONS ---
     function saveData() { 
         localStorage.setItem('roh_incomeData', JSON.stringify(incomeData)); localStorage.setItem('roh_meeDebtData', JSON.stringify(meeDebtData)); localStorage.setItem('roh_otherDebtData', JSON.stringify(otherDebtData)); localStorage.setItem('roh_personalExpenseData', JSON.stringify(personalExpenseData)); localStorage.setItem('roh_stockData', JSON.stringify(stockData)); localStorage.setItem('roh_jobCategories', JSON.stringify(jobCategories)); localStorage.setItem('roh_otherJobCategories', JSON.stringify(otherJobCategories)); localStorage.setItem('roh_stockQuickList', JSON.stringify(stockQuickList)); localStorage.setItem('roh_assetData', JSON.stringify(assetData)); localStorage.setItem('roh_dcaConfigData', JSON.stringify(dcaConfigData));
+        // เซฟข้อมูลแต้มเควสกับรางวัลเพิ่มเติม
+        localStorage.setItem('roh_rewardPoints', JSON.stringify(rewardPoints));
+        localStorage.setItem('roh_claimedQuests', JSON.stringify(claimedQuests));
+        localStorage.setItem('roh_redemptions', JSON.stringify(redemptions));
     }
     function loadData() {
         if(localStorage.getItem('roh_incomeData')) incomeData = JSON.parse(localStorage.getItem('roh_incomeData'));
@@ -540,13 +785,14 @@
         if(localStorage.getItem('roh_dcaConfigData')) {
             dcaConfigData = JSON.parse(localStorage.getItem('roh_dcaConfigData'));
         } else {
-            // ค่าเริ่มต้น ถ้ายังไม่เคยตั้ง DCA เลย
             dcaConfigData = [ {name: 'BAC', amount: 300}, {name: 'JNJ', amount: 450}, {name: 'AAPL', amount: 420}, {name: 'GOOG', amount: 540}, {name: 'AMZN', amount: 600}, {name: 'MSFT', amount: 690}, {name: 'BGOLD', amount: 500}, {name: 'BASIA', amount: 500} ];
         }
+        if(localStorage.getItem('roh_rewardPoints')) rewardPoints = JSON.parse(localStorage.getItem('roh_rewardPoints'));
+        if(localStorage.getItem('roh_claimedQuests')) claimedQuests = JSON.parse(localStorage.getItem('roh_claimedQuests'));
+        if(localStorage.getItem('roh_redemptions')) redemptions = JSON.parse(localStorage.getItem('roh_redemptions'));
         if(localStorage.getItem('roh_gas_url')) document.getElementById('gas-url-input').value = localStorage.getItem('roh_gas_url');
     }
 
-    // ฟังก์ชันรัน DCA แบบใหม่ (ดึงค่าตั้งต้นจาก dcaConfigData แทน)
     function checkAndRunAutoDCA() {
         const now = new Date(); const currentY = now.getFullYear().toString(); const currentM = String(now.getMonth() + 1).padStart(2, '0'); const dcaKey = `${currentY}-${currentM}`; let lastDCA = localStorage.getItem('roh_lastAutoDCAMonth');
         if (lastDCA !== dcaKey) {
@@ -563,12 +809,12 @@
 
     function openBackupModal() { document.getElementById('backup-modal').classList.remove('hidden'); }
     function closeBackupModal() { document.getElementById('backup-modal').classList.add('hidden'); }
-    function getAllDataAsObject() { return { incomeData, meeDebtData, otherDebtData, personalExpenseData, stockData, assetData, jobCategories, otherJobCategories, stockQuickList, dcaConfigData }; }
+    function getAllDataAsObject() { return { incomeData, meeDebtData, otherDebtData, personalExpenseData, stockData, assetData, jobCategories, otherJobCategories, stockQuickList, dcaConfigData, rewardPoints, claimedQuests, redemptions }; }
     function downloadBackupJSON() { const dataStr = JSON.stringify(getAllDataAsObject()); const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr); let linkElement = document.createElement('a'); linkElement.setAttribute('href', dataUri); linkElement.setAttribute('download', 'roh_backup_' + new Date().toISOString().split('T')[0] + '.json'); linkElement.click(); showNotification("📥 โหลดไฟล์ Backup เรียบร้อย!"); }
-    function uploadBackupJSON(event) { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = function(e) { try { const parsed = JSON.parse(e.target.result); if(parsed.incomeData) incomeData = parsed.incomeData; if(parsed.meeDebtData) meeDebtData = parsed.meeDebtData; if(parsed.otherDebtData) otherDebtData = parsed.otherDebtData; if(parsed.personalExpenseData) personalExpenseData = parsed.personalExpenseData; if(parsed.stockData) stockData = parsed.stockData; if(parsed.assetData) assetData = parsed.assetData; if(parsed.jobCategories) jobCategories = parsed.jobCategories; if(parsed.otherJobCategories) otherJobCategories = parsed.otherJobCategories; if(parsed.stockQuickList) stockQuickList = parsed.stockQuickList; if(parsed.dcaConfigData) dcaConfigData = parsed.dcaConfigData; saveData(); refreshAll(); closeBackupModal(); showNotification("📤 กู้คืนข้อมูลสำเร็จ!"); } catch(err) { showNotification("⚠️ ไฟล์พังหรือผิดฟอร์แมต", "error"); } }; reader.readAsText(file); event.target.value = ''; }
+    function uploadBackupJSON(event) { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = function(e) { try { const parsed = JSON.parse(e.target.result); if(parsed.incomeData) incomeData = parsed.incomeData; if(parsed.meeDebtData) meeDebtData = parsed.meeDebtData; if(parsed.otherDebtData) otherDebtData = parsed.otherDebtData; if(parsed.personalExpenseData) personalExpenseData = parsed.personalExpenseData; if(parsed.stockData) stockData = parsed.stockData; if(parsed.assetData) assetData = parsed.assetData; if(parsed.jobCategories) jobCategories = parsed.jobCategories; if(parsed.otherJobCategories) otherJobCategories = parsed.otherJobCategories; if(parsed.stockQuickList) stockQuickList = parsed.stockQuickList; if(parsed.dcaConfigData) dcaConfigData = parsed.dcaConfigData; if(parsed.rewardPoints) rewardPoints = parsed.rewardPoints; if(parsed.claimedQuests) claimedQuests = parsed.claimedQuests; if(parsed.redemptions) redemptions = parsed.redemptions; saveData(); refreshAll(); closeBackupModal(); showNotification("📤 กู้คืนข้อมูลสำเร็จ!"); } catch(err) { showNotification("⚠️ ไฟล์พังหรือผิดฟอร์แมต", "error"); } }; reader.readAsText(file); event.target.value = ''; }
     function saveGasUrl() { const url = document.getElementById('gas-url-input').value.trim(); if(url) { localStorage.setItem('roh_gas_url', url); showNotification("✅ เซฟ URL เรียบร้อย"); } }
     async function pushToGoogleSheets() { const url = localStorage.getItem('roh_gas_url'); if(!url) { showNotification("⚠️ ใส่ Web App URL ก่อนดิ", "error"); return; } const btn = document.getElementById('btn-push-sheet'); btn.innerHTML = `⏳ กำลังดัน...`; btn.disabled = true; try { const payload = { action: 'backup', data: getAllDataAsObject() }; const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) }); const result = await res.json(); if(result.status === 'success') showNotification("☁️ แบ็คอัพขึ้น Sheet สำเร็จ!"); else showNotification("⚠️ Error: " + result.message, "error"); } catch(err) { showNotification("⚠️ ติดต่อ Sheet ไม่ได้", "error"); } finally { btn.innerHTML = `☁️ ⬆️ ดันขึ้น`; btn.disabled = false; } }
-    async function pullFromGoogleSheets() { const url = localStorage.getItem('roh_gas_url'); if(!url) { showNotification("⚠️ ใส่ Web App URL ก่อนดิ", "error"); return; } if(!confirm("⚠️ ยืนยันดึงข้อมูลมาทับ? ข้อมูลใหม่ที่ยังไม่ดันขึ้นจะหายนะ")) return; const btn = document.getElementById('btn-pull-sheet'); btn.innerHTML = `⏳ กำลังดึง...`; btn.disabled = true; try { const res = await fetch(url + '?action=restore'); const result = await res.json(); if(result.status === 'success' && result.data) { const parsed = result.data; if(parsed.incomeData) incomeData = parsed.incomeData; if(parsed.meeDebtData) meeDebtData = parsed.meeDebtData; if(parsed.otherDebtData) otherDebtData = parsed.otherDebtData; if(parsed.personalExpenseData) personalExpenseData = parsed.personalExpenseData; if(parsed.stockData) stockData = parsed.stockData; if(parsed.assetData) assetData = parsed.assetData; if(parsed.jobCategories) jobCategories = parsed.jobCategories; if(parsed.otherJobCategories) otherJobCategories = parsed.otherJobCategories; if(parsed.stockQuickList) stockQuickList = parsed.stockQuickList; if(parsed.dcaConfigData) dcaConfigData = parsed.dcaConfigData; saveData(); refreshAll(); closeBackupModal(); showNotification("☁️ กู้คืนจาก Sheet สำเร็จ!"); } else showNotification("⚠️ ดึงไม่สำเร็จ", "error"); } catch(err) { showNotification("⚠️ ดึงข้อมูลไม่ได้", "error"); } finally { btn.innerHTML = `☁️ ⬇️ ดึงมาทับ`; btn.disabled = false; } }
+    async function pullFromGoogleSheets() { const url = localStorage.getItem('roh_gas_url'); if(!url) { showNotification("⚠️ ใส่ Web App URL ก่อนดิ", "error"); return; } if(!confirm("⚠️ ยืนยันดึงข้อมูลมาทับ? ข้อมูลใหม่ที่ยังไม่ดันขึ้นจะหายนะ")) return; const btn = document.getElementById('btn-pull-sheet'); btn.innerHTML = `⏳ กำลังดึง...`; btn.disabled = true; try { const res = await fetch(url + '?action=restore'); const result = await res.json(); if(result.status === 'success' && result.data) { const parsed = result.data; if(parsed.incomeData) incomeData = parsed.incomeData; if(parsed.meeDebtData) meeDebtData = parsed.meeDebtData; if(parsed.otherDebtData) otherDebtData = parsed.otherDebtData; if(parsed.personalExpenseData) personalExpenseData = parsed.personalExpenseData; if(parsed.stockData) stockData = parsed.stockData; if(parsed.assetData) assetData = parsed.assetData; if(parsed.jobCategories) jobCategories = parsed.jobCategories; if(parsed.otherJobCategories) otherJobCategories = parsed.otherJobCategories; if(parsed.stockQuickList) stockQuickList = parsed.stockQuickList; if(parsed.dcaConfigData) dcaConfigData = parsed.dcaConfigData; if(parsed.rewardPoints) rewardPoints = parsed.rewardPoints; if(parsed.claimedQuests) claimedQuests = parsed.claimedQuests; if(parsed.redemptions) redemptions = parsed.redemptions; saveData(); refreshAll(); closeBackupModal(); showNotification("☁️ กู้คืนจาก Sheet สำเร็จ!"); } else showNotification("⚠️ ดึงไม่สำเร็จ", "error"); } catch(err) { showNotification("⚠️ ดึงข้อมูลไม่ได้", "error"); } finally { btn.innerHTML = `☁️ ⬇️ ดึงมาทับ`; btn.disabled = false; } }
 
     window.onload = function() {
         const yearSelect = document.getElementById('global-year'); yearSelect.innerHTML = ''; const currentYear = new Date().getFullYear();
@@ -577,14 +823,29 @@
         loadData(); checkAndRunAutoDCA(); renderIncomeCategoryTags(); renderOtherCategoryTags(); generateInstallmentInputs(); refreshAll();
     };
 
-    function showNotification(message, type = "success") { const c = document.getElementById('toast-container'); const t = document.createElement('div'); t.className = `p-4 rounded-xl shadow-lg border text-sm font-semibold transition-all duration-300 transform translate-y-2 opacity-0 flex items-center gap-2 bg-white`; if(type==="error") t.classList.add('border-rose-100', 'text-rose-700'); else t.classList.add('border-emerald-100', 'text-emerald-700'); t.innerHTML = `<span>${type==="error"?'⚠️':'✅'}</span> <span>${message}</span>`; c.appendChild(t); setTimeout(()=> t.classList.remove('translate-y-2', 'opacity-0'), 10); setTimeout(()=> { t.classList.add('translate-y-2', 'opacity-0'); setTimeout(()=>t.remove(),300); }, 3000); }
+    function showNotification(message, type = "success") { const c = document.getElementById('toast-container'); const t = document.createElement('div'); t.className = `p-4 rounded-xl shadow-lg border text-sm font-semibold transition-all duration-300 transform translate-y-2 opacity-0 flex items-center gap-2 bg-white z-[100]`; if(type==="error") t.classList.add('border-rose-100', 'text-rose-700'); else t.classList.add('border-emerald-100', 'text-emerald-700'); t.innerHTML = `<span>${type==="error"?'⚠️':'✅'}</span> <span>${message}</span>`; c.appendChild(t); setTimeout(()=> t.classList.remove('translate-y-2', 'opacity-0'), 10); setTimeout(()=> { t.classList.add('translate-y-2', 'opacity-0'); setTimeout(()=>t.remove(),300); }, 3000); }
     let confirmCallback = null;
     function showCustomConfirm(title, message, onConfirm) { document.getElementById('confirm-title').innerText = title; document.getElementById('confirm-message').innerText = message; confirmCallback = onConfirm; document.getElementById('custom-confirm-modal').classList.remove('hidden'); }
     document.getElementById('confirm-cancel-btn').onclick = ()=> document.getElementById('custom-confirm-modal').classList.add('hidden');
     document.getElementById('confirm-ok-btn').onclick = ()=> { document.getElementById('custom-confirm-modal').classList.add('hidden'); if(confirmCallback) confirmCallback(); };
 
+    // --- ฟังก์ชันนำมาใช้จัดการชำระเงินของช่างมี้และงานอื่น (แก้บัคหลักในเวอร์ชัน v14) ---
+    function payJob(id, type) { 
+        let d = type==='mee'?meeDebtData:otherDebtData; 
+        let r = d.find(x=>x.id===id); 
+        if(r){ 
+            r.paid=true; 
+            r.paidYear=document.getElementById('global-year').value; 
+            r.paidMonth=document.getElementById('global-month').value; 
+            r.paidDate=new Date().toLocaleDateString('th-TH'); 
+            saveData(); 
+            refreshAll(); 
+            showNotification("✔️ บันทึกเคลียร์ชำระงวดงานสำเร็จแล้วเว้ยมึง!");
+        } 
+    }
+
     function safeSetText(id, val) { const el=document.getElementById(id); if(el) el.innerText=val; }
-    function switchTab(evt, tabId) { document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden')); document.querySelectorAll('.tab-btn').forEach(t => { t.classList.remove('bg-indigo-600', 'text-white', 'shadow-md', 'border-transparent'); t.classList.add('bg-white', 'text-slate-600'); }); document.getElementById(tabId).classList.remove('hidden'); if(evt) { evt.currentTarget.classList.add('bg-indigo-600', 'text-white'); evt.currentTarget.classList.remove('bg-white', 'text-slate-600'); } if(tabId === 'tab7') renderDashboard(document.getElementById('global-year').value); refreshAll(); }
+    function switchTab(evt, tabId) { document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden')); document.querySelectorAll('.tab-btn').forEach(t => { t.classList.remove('bg-indigo-600', 'text-white', 'shadow-md', 'border-transparent', 'bg-amber-500'); t.classList.add('bg-white', 'text-slate-600'); }); document.getElementById(tabId).classList.remove('hidden'); if(evt) { if(tabId === 'tab9') { evt.currentTarget.classList.add('bg-amber-500', 'text-slate-900'); evt.currentTarget.classList.remove('bg-white', 'text-slate-600'); } else { evt.currentTarget.classList.add('bg-indigo-600', 'text-white'); evt.currentTarget.classList.remove('bg-white', 'text-slate-600'); } } if(tabId === 'tab7') renderDashboard(document.getElementById('global-year').value); refreshAll(); }
     function onGlobalFilterChange() { refreshAll(); }
     function getProjectFromDetail(detail) { if (!detail) return 'งานทั่วไป'; if (detail.includes(' - ')) return detail.split(' - ')[0].trim(); if (detail.includes('-')) return detail.split('-')[0].trim(); if (detail.includes(' : ')) return detail.split(' : ')[0].trim(); const parts = detail.split(/\s+/); if (parts.length > 1 && (parts[0].includes('โครงการ') || parts[0].match(/^\d+/))) return parts[0] + ' ' + parts[1]; return parts[0] || 'งานทั่วไป'; }
 
@@ -597,7 +858,7 @@
         if(dcaConfigData.length === 0) { tb.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-slate-400 font-bold text-xs">ยังไม่มีรายการ DCA เพิ่มด้านบนเลยมึง</td></tr>`; return; }
         dcaConfigData.forEach((d, idx) => {
             tb.innerHTML += `<tr>
-                <td class="p-2 font-bold text-indigo-900">${d.name}</td>
+                <td class="p-2 font-bold text-indigo-950">${d.name}</td>
                 <td class="p-2 text-right"><input type="number" value="${d.amount}" onchange="updateDcaAmount('${d.name}', this.value)" class="w-24 text-right bg-white border border-slate-200 outline-none focus:border-indigo-500 rounded px-2 py-1 font-bold text-emerald-600"></td>
                 <td class="p-2 text-center"><button onclick="deleteDcaItem('${d.name}')" class="text-rose-500 hover:bg-rose-100 p-1.5 rounded-lg transition">🗑️</button></td>
             </tr>`;
@@ -623,6 +884,23 @@
         if(item) { item.amount = parseFloat(val) || 0; saveData(); showNotification(`💾 อัปเดตยอด DCA ของ ${name} ละ`); }
     }
 
+    // --- ช่างมี้ SORT FUNCTION ---
+    function toggleMeeSort() {
+        if(meeSortType === 'default') {
+            meeSortType = 'name-asc';
+            document.getElementById('mee-sort-label').innerText = 'ชื่อ ก-ฮ';
+        } else {
+            meeSortType = 'default';
+            document.getElementById('mee-sort-label').innerText = 'ปกติ';
+        }
+        refreshAll();
+    }
+
+    // --- ฟังก์ชันบันทึกรายงาน PDF งวดค้างจ่ายหน้า 2 ---
+    function printMeeActiveReport() {
+        document.getElementById('mee-pdf-date').innerText = new Date().toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+        window.print();
+    }
 
     // --- TAB 1 TAGS ---
     function renderIncomeCategoryTags() { const c = document.getElementById('inc-cat-tags'); if(!c) return; c.innerHTML = ''; if(!currentSelectedIncomeCat && jobCategories.length > 0) { currentSelectedIncomeCat = jobCategories[0]; document.getElementById('inc-category-select').value = currentSelectedIncomeCat; } jobCategories.forEach((cat, idx) => { let colorClass = tagColors[idx % tagColors.length]; let isSel = (cat === currentSelectedIncomeCat) && !isEditingIncomeCat; let baseStyle = `px-3 py-1.5 rounded-xl text-xs font-bold border cursor-pointer transition-all ${colorClass}`; if(isSel) baseStyle += ` ring-2 ring-offset-1 opacity-100`; else baseStyle += ` opacity-60 hover:opacity-100`; if(isEditingIncomeCat) { c.innerHTML += `<div class="${baseStyle} flex items-center gap-1 group"><span class="line-through group-hover:no-underline">${cat}</span><button type="button" onclick="deleteIncomeCategory(${idx})" class="bg-white/50 rounded-full w-4 h-4 flex items-center justify-center text-[8px] hover:bg-rose-500 hover:text-white">✕</button></div>`; } else { c.innerHTML += `<div onclick="selectIncomeCategory('${cat}')" class="${baseStyle}">${cat}</div>`; } }); document.getElementById('btn-edit-inc-cat').innerText = isEditingIncomeCat ? '✅ เสร็จสิ้น' : '✏️ แก้ไข/ลบ'; document.getElementById('inc-category-select').value = currentSelectedIncomeCat; }
@@ -636,7 +914,7 @@
     function selectOtherCategory(cat) { currentSelectedOtherCat = cat; renderOtherCategoryTags(); }
     function toggleEditOtherCat() { isEditingOtherCat = !isEditingOtherCat; renderOtherCategoryTags(); }
     function addOtherCategory() { const val = document.getElementById('new-other-cat-input').value.trim(); if(!val) return; if(otherJobCategories.includes(val)){ showNotification("ซ้ำว่ะ", "error"); return; } otherJobCategories.push(val); document.getElementById('new-other-cat-input').value = ''; saveData(); currentSelectedOtherCat = val; isEditingOtherCat = false; renderOtherCategoryTags(); showNotification("เพิ่มประเภทใหม่ละ!"); refreshAll(); }
-    function deleteOtherCategory(idx) { otherJobCategories.splice(idx, 1); saveData(); if(currentSelectedOtherCat === otherJobCategories[idx] || !otherJobCategories.includes(currentSelectedOtherCat)) { currentSelectedOtherCat = otherJobCategories[0] || ''; } renderOtherCategoryTags(); refreshAll(); }
+    function deleteOtherCategory(idx) { otherJobCategories.splice(idx, 1); saveData(); if(currentSelectedOtherCat === otherJobCategories[idx] || !otherJobCategories.includes(currentSelectedOtherCat)) { otherJobCategories[0] || ''; } renderOtherCategoryTags(); refreshAll(); }
 
     // --- TAB 5 TAGS ---
     function toggleEditStockTags() { isEditingStockTags = !isEditingStockTags; document.getElementById('btn-edit-stock-tags').innerText = isEditingStockTags ? '✅ เสร็จสิ้น' : '✏️ แก้ไข/ลบ'; document.getElementById('edit-stock-tag-controls').classList.toggle('hidden'); renderStockQuickSelect(); }
@@ -664,7 +942,12 @@
         let yInc = incomeData.filter(d=>d.year===y).reduce((s,i)=>s+i.amount,0) + meeDebtData.filter(d=>d.paid && d.paidYear===y).reduce((s,i)=>s+i.amount,0) + otherDebtData.filter(d=>d.paid && d.paidYear===y).reduce((s,i)=>s+(i.taxDeducted?i.amount*0.97:i.amount),0); let yExp = incomeData.filter(d=>d.year===y).reduce((s,i)=>s+(i.expense||0),0);
         safeSetText('t1-year-net-accumulated', (yInc-yExp).toLocaleString(undefined, {minimumFractionDigits: 2})+' บาท');
 
-        let unMee = meeDebtData.filter(d=> !d.paid); renderMeeActive(unMee); renderMeePaid(meeDebtData.filter(d=> d.paid)); renderMeeChart(y);
+        let unMee = meeDebtData.filter(d=> !d.paid); 
+        if(meeSortType === 'name-asc') {
+            unMee.sort((a, b) => a.detail.localeCompare(b.detail, 'th'));
+        }
+        renderMeeActive(unMee); renderMeePaid(meeDebtData.filter(d=> d.paid)); renderMeeChart(y);
+        
         let unOth = otherDebtData.filter(d=> !d.paid); renderOtherActive(unOth); renderOtherPaid(otherDebtData.filter(d=> d.paid)); renderOthChart(y);
         
         safeSetText('mee-active-total', 'รวมเงินค้าง: ' + unMee.reduce((s,i)=>s+i.amount,0).toLocaleString() + ' ฿');
@@ -675,20 +958,229 @@
         let calcStocks = calculateMonthlyStockInvestments(y, m); 
         let t4Net = (px.eating||0) + (px.creditCard||0) + (px.rent||0) + (px.personal||0) + calcStocks + (px.gameAun||0) + (px.otherExt||0);
         safeSetText('t4-month-expense', t4Net.toLocaleString(undefined, {minimumFractionDigits: 2})+' บ.');
+        
+        // อัปเดตหน้ากากระบบประเมินผลเควส
+        updateQuestStatusCard(px, calcStocks);
+
         renderPersonalExpenseChart(y);
 
         let stks = stockData.filter(d=> d.year===y && d.month===m); safeSetText('t5-month-stock-turnover', stks.reduce((s,i)=>s+(i.currency==='USD'?i.price*USD_TO_THB:i.price),0).toLocaleString(undefined, {minimumFractionDigits: 2})+' บาท'); renderStockQuickSelect(); renderStocksTable(stockData);
         
         renderTaxLedger(y, m);
         renderAssets();
+        
+        // เควสบอร์ดประจำแท็บ 9
+        updateQuestBoardUI(y, m, px, calcStocks);
+        updateRewardStats();
 
         if(document.getElementById('tab7').classList.contains('block')) { renderDashboard(y); }
+    }
+
+    // --- ฟังก์ชันบันทึกรายจ่ายส่วนตัวแบบรายสัปดาห์ 1-4 ---
+    function sumWeeklyPersonalExpenses() {
+        let w1 = parseFloat(document.getElementById('personal-w1').value) || 0;
+        let w2 = parseFloat(document.getElementById('personal-w2').value) || 0;
+        let w3 = parseFloat(document.getElementById('personal-w3').value) || 0;
+        let w4 = parseFloat(document.getElementById('personal-w4').value) || 0;
+        
+        // ดันยอดรวมส่งกลับไปที่ช่อง exp-personal ตัวแปรเดิมเพื่อหลีกเลี่ยงผลกระทบโครงสร้างระบบเก่า
+        document.getElementById('exp-personal').value = w1 + w2 + w3 + w4;
+    }
+
+    // --- คำนวณความคืบหน้าของเควสคุมงบ 30,000 บ. (เพดานหุ้น 4,000 บ.) ---
+    function updateQuestStatusCard(px, stocksVal) {
+        let eating = px.eating || 0;
+        let card = px.creditCard || 0;
+        let rent = px.rent || 0;
+        let personal = parseFloat(document.getElementById('exp-personal').value) || px.personal || 0;
+        let game = px.gameAun || 0;
+        let other = px.otherExt || 0;
+        
+        // หุ้นคิดคุมเพดานไม่เกิน 4,000 บ. ตามสัญญาลูกผู้ชาย!
+        let effectiveStocks = Math.min(stocksVal, 4000);
+        
+        // ยอดใช้จ่ายที่นับรวมคิดเควส
+        let totalCountedExpense = eating + card + rent + personal + game + other + effectiveStocks;
+        
+        const qText = document.getElementById('quest-budget-text');
+        const qBadge = document.getElementById('quest-budget-badge');
+        const qBar = document.getElementById('quest-budget-progress');
+
+        if(qText && qBadge && qBar) {
+            qText.innerHTML = `ใช้จริง: <span class="font-black text-indigo-950">${totalCountedExpense.toLocaleString(undefined, {minimumFractionDigits: 2})}</span> / 30,000 ฿ (หุ้นคุมที่ ${effectiveStocks.toLocaleString()} ฿)`;
+            
+            let percent = Math.min((totalCountedExpense / 30000) * 100, 100);
+            qBar.style.width = `${percent}%`;
+
+            if(totalCountedExpense <= 30000) {
+                qBadge.innerText = "ทรงดีมากมึง! 👍";
+                qBadge.className = "px-3 py-1 rounded-full text-[10px] font-black uppercase bg-emerald-100 text-emerald-800";
+                qBar.className = "bg-emerald-500 h-2.5 rounded-full transition-all duration-300";
+            } else {
+                qBadge.innerText = "งบบานแล้วไอ้เหี้ยโร๊ะ! 🚨";
+                qBadge.className = "px-3 py-1 rounded-full text-[10px] font-black uppercase bg-rose-100 text-rose-800 animate-pulse";
+                qBar.className = "bg-rose-500 h-2.5 rounded-full transition-all duration-300";
+            }
+        }
+    }
+
+    // --- อัปเดตและเช็กระบบเควสบอร์ดในแท็บ 9 ประจำเดือน ---
+    function updateQuestBoardUI(y, m, px, stocksVal) {
+        // 1. เควส "นักบันทึกไร้พ่าย"
+        let w1 = parseFloat(document.getElementById('personal-w1').value) || 0;
+        let w2 = parseFloat(document.getElementById('personal-w2').value) || 0;
+        let w3 = parseFloat(document.getElementById('personal-w3').value) || 0;
+        let w4 = parseFloat(document.getElementById('personal-w4').value) || 0;
+        let isRecordSuccess = (w1 > 0 && w2 > 0 && w3 > 0 && w4 > 0);
+
+        // 2. เควส "ผู้ชุบเลี้ยงพอร์ต"
+        let isStocksSuccess = (stocksVal > 0);
+
+        // 3. เควส "ปิดงวดพิฆาต" (มีงานเคลียร์ชำระในเดือนและปีที่ระบุหรือไม่)
+        let isClearanceSuccess = meeDebtData.some(d => d.paid && d.paidYear === y && d.paidMonth === m) || 
+                                 otherDebtData.some(d => d.paid && d.paidYear === y && d.paidMonth === m);
+
+        // 4. เควส "ผู้พิชิตความโลภ"
+        let eating = px.eating || 0;
+        let card = px.creditCard || 0;
+        let rent = px.rent || 0;
+        let personal = (w1 + w2 + w3 + w4) || px.personal || 0;
+        let game = px.gameAun || 0;
+        let other = px.otherExt || 0;
+        let totalCountedExpense = eating + card + rent + personal + game + other + Math.min(stocksVal, 4000);
+        let isFrugalSuccess = (totalCountedExpense > 0 && totalCountedExpense <= 30000);
+
+        setupQuestCard('q-record', 'btn-claim-q-record', 'q_record', y, m, isRecordSuccess);
+        setupQuestCard('q-stocks', 'btn-claim-q-stocks', 'q_stocks', y, m, isStocksSuccess);
+        setupQuestCard('q-clearance', 'btn-claim-q-clearance', 'q_clearance', y, m, isClearanceSuccess);
+        setupQuestCard('q-frugal', 'btn-claim-q-frugal', 'q_frugal', y, m, isFrugalSuccess);
+    }
+
+    function setupQuestCard(cardId, btnId, questKey, y, m, isSuccess) {
+        const card = document.getElementById(cardId);
+        const btn = document.getElementById(btnId);
+        if(!card || !btn) return;
+
+        let hasClaimed = claimedQuests.some(q => q.year === y && q.month === m && q.questId === questKey);
+
+        if(hasClaimed) {
+            card.className = "p-4 rounded-2xl border border-emerald-200 bg-emerald-50/50 flex flex-col sm:flex-row justify-between sm:items-center gap-4 transition";
+            btn.innerText = "เคลมแต้มแล้ว ✔️";
+            btn.className = "px-4 py-2 bg-emerald-600 text-white font-bold rounded-xl text-xs cursor-default";
+            btn.onclick = null;
+            btn.disabled = true;
+        } else if(isSuccess) {
+            card.className = "p-4 rounded-2xl border border-amber-300 bg-amber-50/40 flex flex-col sm:flex-row justify-between sm:items-center gap-4 transition animate-pulse";
+            btn.innerText = "กดรับแต้ม! 🎁";
+            btn.className = "px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-black rounded-xl text-xs shadow-lg transition-all transform hover:scale-105 cursor-pointer";
+            btn.onclick = () => claimQuestPoints(questKey, y, m);
+            btn.disabled = false;
+        } else {
+            card.className = "p-4 rounded-2xl border border-slate-200 flex flex-col sm:flex-row justify-between sm:items-center gap-4 transition";
+            btn.innerText = "ยังไม่สำเร็จ";
+            btn.className = "px-4 py-2 bg-slate-100 text-slate-400 font-bold rounded-xl text-xs cursor-not-allowed";
+            btn.onclick = null;
+            btn.disabled = true;
+        }
+    }
+
+    // --- กดยืนยันเคลมรับคะแนนรางวัล ---
+    function claimQuestPoints(questKey, y, m) {
+        let pointsToAdd = 0;
+        let questTitle = "";
+        if(questKey === 'q_record') { pointsToAdd = 100; questTitle = "✍️ นักบันทึกไร้พ่าย"; }
+        if(questKey === 'q_stocks') { pointsToAdd = 150; questTitle = "📈 ผู้ชุบเลี้ยงพอร์ต"; }
+        if(questKey === 'q_clearance') { pointsToAdd = 300; questTitle = "💰 ปิดงวดพิฆาต"; }
+        if(questKey === 'q_frugal') { pointsToAdd = 500; questTitle = "🛡️ ผู้พิชิตความโลภ"; }
+
+        rewardPoints += pointsToAdd;
+        claimedQuests.push({ year: y, month: m, questId: questKey });
+        saveData();
+        refreshAll();
+        showNotification(`🎉 ยินดีด้วยมี้! เคลมเควส [${questTitle}] สำเร็จ รับไปเลย +${pointsToAdd} แต้ม!`);
+    }
+
+    // --- คำนวณสรุปสถานะสถิติของสะสมกองกลางรางวัล และประวัติการแลก ---
+    function updateRewardStats() {
+        safeSetText('reward-points-display', rewardPoints);
+        safeSetText('reward-cash-value', (rewardPoints * 2).toLocaleString());
+        safeSetText('reward-claim-count', `เคลมความสำเร็จแล้ว ${claimedQuests.length} ครั้ง`);
+
+        // คำนวณรายรับทั้งหมดที่เก็บได้จริง 100% (ลบภาษีแล้วหากมี)
+        let totalPaidIncomesSum = incomeData.reduce((s,i)=>s+i.amount,0) + 
+                                  meeDebtData.filter(d=>d.paid).reduce((s,i)=>s+i.amount,0) + 
+                                  otherDebtData.filter(d=>d.paid).reduce((s,i)=>s+(i.taxDeducted?i.amount*0.97:i.amount),0);
+
+        // กองทุนรางวัลสะสม 3% ของรายรับจริง
+        let rewardPoolTotalMoney = totalPaidIncomesSum * 0.03;
+
+        // ยอดรวมเงินรางวัลที่เคยแลกไปแล้วทั้งหมด
+        let totalRedeemedSum = redemptions.reduce((s, r) => s + r.moneyReceived, 0);
+
+        // เงินคงเหลือที่พร้อมให้ถอน (จำกัดเพดานรวมยอดรางวัลสูงสุดไม่เกิน 3,000 บาทไทย!)
+        let availablePoolMoney = Math.max(0, Math.min(rewardPoolTotalMoney - totalRedeemedSum, 3000));
+
+        safeSetText('reward-pool-display', availablePoolMoney.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' ฿');
+
+        // แสดงประวัติการแลกลง Ledger Log
+        const log = document.getElementById('redemptions-log');
+        if(log) {
+            log.innerHTML = '';
+            if(redemptions.length === 0) {
+                log.innerHTML = `<div class="text-center py-4 text-slate-400 font-medium">ยังไม่มีประวัติการถอนรางวัลเว้ยมึง</div>`;
+            } else {
+                redemptions.forEach(r => {
+                    log.innerHTML += `<div class="p-2 border-b border-slate-100 flex justify-between items-center bg-slate-50 rounded-lg">
+                        <div>
+                            <span class="font-extrabold text-slate-800">🎉 ถอนสิทธิ์: -${r.pointsUsed} แต้ม</span>
+                            <div class="text-[9px] text-slate-400 font-medium">${r.date}</div>
+                        </div>
+                        <span class="font-black text-emerald-600">+${r.moneyReceived} บ.</span>
+                    </div>`;
+                });
+            }
+        }
+    }
+
+    // --- ฟังก์ชันแลกแต้มรางวัลที่ Premium Shop ---
+    function redeemReward(pointsNeeded, cashReward) {
+        if(rewardPoints < pointsNeeded) {
+            showNotification("⚠️ แต้มสะสมของมี้ไม่พอนะเว้ย ไปประหยัดหรือตามงวดงานเพิ่มก่อนดิ!", "error");
+            return;
+        }
+
+        // เช็กวงเงินที่มีจริงในกองทุนรางวัล 3%
+        let totalPaidIncomesSum = incomeData.reduce((s,i)=>s+i.amount,0) + 
+                                  meeDebtData.filter(d=>d.paid).reduce((s,i)=>s+i.amount,0) + 
+                                  otherDebtData.filter(d=>d.paid).reduce((s,i)=>s+(i.taxDeducted?i.amount*0.97:i.amount),0);
+
+        let rewardPoolTotalMoney = totalPaidIncomesSum * 0.03;
+        let totalRedeemedSum = redemptions.reduce((s, r) => s + r.moneyReceived, 0);
+        let availablePoolMoney = Math.max(0, Math.min(rewardPoolTotalMoney - totalRedeemedSum, 3000));
+
+        if(availablePoolMoney < cashReward) {
+            showNotification("⚠️ เงินสดสะสม 3% ในกองทุนรางวัลมีไม่พอถอนเว้ย! ยอมรับรายรับให้มากกว่านี้ก่อนสิมึง", "error");
+            return;
+        }
+
+        showCustomConfirm("🛒 แลกรางวัลชีวิต!", `มึงตกลงจะใช้ ${pointsNeeded} แต้ม แลกถอนเงินสด ${cashReward} บาทใช่ปะ?`, () => {
+            rewardPoints -= pointsNeeded;
+            redemptions.push({
+                id: Date.now().toString(),
+                date: new Date().toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }),
+                pointsUsed: pointsNeeded,
+                moneyReceived: cashReward
+            });
+            saveData();
+            refreshAll();
+            showNotification(`🎁 ถอนรางวัลแลกเงินสด ${cashReward} บาทสำเร็จ! เงินรางวัลถูกหักออกจากหลอดเรียบร้อยเว้ย!`);
+        });
     }
 
     // --- DASHBOARD RENDERING ---
     function renderDashboard(y) {
         Chart.defaults.font.family = 'Sarabun'; const labels = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
-        let incArr = Array(12).fill(0), expArr = Array(12).fill(0), netCumArr = []; let cumSum = 0; let totalIncY=0, totalExpY=0, totalInvY=0;
+        let incArr = Array(12).fill(0), expArr = Array(12).fill(0); let totalIncY=0, totalExpY=0, totalInvY=0;
         let currentMonthInt = parseInt(document.getElementById('global-month').value) || 1;
         
         for(let m=1; m<=12; m++) {
@@ -699,7 +1191,7 @@
             let calcStocks = calculateMonthlyStockInvestments(y, mStr);
             let pe = (px.eating||0)+(px.creditCard||0)+(px.rent||0)+(px.personal||0)+calcStocks+(px.gameAun||0)+(px.otherExt||0);
             
-            incArr[m-1] = mi; expArr[m-1] = me + pe; cumSum += (mi - (me + pe)); netCumArr.push(cumSum);
+            incArr[m-1] = mi; expArr[m-1] = me + pe;
             if(m <= currentMonthInt) { totalIncY += mi; totalExpY += (me+pe); totalInvY += calcStocks; }
         }
         
@@ -708,9 +1200,51 @@
         safeSetText('dash-avg-inv', (totalInvY/currentMonthInt).toLocaleString(undefined, {maximumFractionDigits:0}) + ' ฿');
 
         if(dashCashflowChart) dashCashflowChart.destroy(); dashCashflowChart = new Chart(document.getElementById('dashCashflowChart'), { type: 'line', data: { labels, datasets: [{label: 'รายรับ', data: incArr, borderColor: '#10b981', backgroundColor: '#10b981', tension: 0.3}, {label: 'รายจ่าย', data: expArr, borderColor: '#f43f5e', backgroundColor: '#f43f5e', tension: 0.3}] }, options: {responsive:true, maintainAspectRatio:false} });
-        if(dashCashflowChart) dashCashflowChart.destroy(); dashCashflowChart = new Chart(document.getElementById('dashCashflowChart'), { type: 'line', data: { labels, datasets: [{label: 'รายรับ', data: incArr, borderColor: '#10b981', backgroundColor: '#10b981', tension: 0.3}, {label: 'รายจ่าย', data: expArr, borderColor: '#f43f5e', backgroundColor: '#f43f5e', tension: 0.3}] }, options: {responsive:true, maintainAspectRatio:false} });
         
-        // --- ส่วนที่กูแก้ให้ใหม่ กราฟไตรมาส ---
+        // ===== แก้ไขข้อ 4: กราฟ All-Time Cashflow ลากจาวตั้งแต่ กุมภาพันธ์ 2568 (2025) เป็นต้นไปเท่านั้น ก่อนหน้านั้นตัดทิ้ง! =====
+        let allTimeLabels = [];
+        let allTimeInc = [];
+        let allTimeExp = [];
+        let startYearAll = 2025; 
+        let endYearAll = new Date().getFullYear();
+        let mShortThai = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+        
+        for(let yr = startYearAll; yr <= endYearAll; yr++) {
+            let yrStr = yr.toString();
+            for(let m=1; m<=12; m++) {
+                if(yr === 2025 && m < 2) continue;
+                if(yr === endYearAll && m > (new Date().getMonth() + 1)) continue;
+                
+                let mStr = String(m).padStart(2,'0');
+                let mi = incomeData.filter(d=>d.year===yrStr && d.month===mStr).reduce((s,i)=>s+i.amount,0) + meeDebtData.filter(d=>d.paid && d.paidYear===yrStr && d.paidMonth===mStr).reduce((s,i)=>s+i.amount,0) + otherDebtData.filter(d=>d.paid && d.paidYear===yrStr && d.paidMonth===mStr).reduce((s,i)=>s+(i.taxDeducted?i.amount*0.97:i.amount),0);
+                let me = incomeData.filter(d=>d.year===yrStr && d.month===mStr).reduce((s,i)=>s+(i.expense||0),0);
+                let px = personalExpenseData.find(d=> d.year===yrStr && d.month===mStr) || {}; 
+                let calcStocks = calculateMonthlyStockInvestments(yrStr, mStr);
+                let pe = (px.eating||0)+(px.creditCard||0)+(px.rent||0)+(px.personal||0)+calcStocks+(px.gameAun||0)+(px.otherExt||0);
+                
+                allTimeLabels.push(`${mShortThai[m-1]} ${String(yr+543).substring(2)}`);
+                allTimeInc.push(mi);
+                allTimeExp.push(me + pe);
+            }
+        }
+        if(dashAllTimeCashflowChart) dashAllTimeCashflowChart.destroy();
+        dashAllTimeCashflowChart = new Chart(document.getElementById('dashAllTimeCashflowChart'), {
+            type: 'line',
+            data: {
+                labels: allTimeLabels,
+                datasets: [
+                    { label: 'รายรับ (ก.พ. 68 - ปัจจุบัน)', data: allTimeInc, borderColor: '#059669', backgroundColor: 'rgba(5, 150, 105, 0.05)', fill: true, tension: 0.2, borderWidth: 2.5 },
+                    { label: 'รายจ่าย (ก.พ. 68 - ปัจจุบัน)', data: allTimeExp, borderColor: '#dc2626', backgroundColor: 'rgba(220, 38, 38, 0.05)', fill: true, tension: 0.2, borderWidth: 2.5 }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: { x: { ticks: { font: { size: 10, weight: 'bold' }, maxRotation: 45, minRotation: 45 } } }
+            }
+        });
+        
+        // --- กราฟไตรมาส ---
         let q1 = incArr[0] + incArr[1] + incArr[2];
         let q2 = incArr[3] + incArr[4] + incArr[5];
         let q3 = incArr[6] + incArr[7] + incArr[8];
@@ -731,7 +1265,7 @@
                 scales: { y: { beginAtZero: true } }
             } 
         });
-        // ------------------------------------
+
         let typeSums = {}; let projSums = {};
         incomeData.filter(d=>d.year===y).forEach(i=> { typeSums[i.type] = (typeSums[i.type]||0)+i.amount; let p = getProjectFromDetail(i.detail); projSums[p] = (projSums[p]||0)+(i.amount-(i.expense||0)); });
         meeDebtData.filter(d=>d.paid && d.paidYear===y).forEach(i=> { typeSums['ช่างมี้'] = (typeSums['ช่างมี้']||0)+i.amount; let p = getProjectFromDetail(i.detail); projSums[p] = (projSums[p]||0)+i.amount; });
@@ -752,7 +1286,7 @@
         for(let m=1; m<=12; m++){ let mStr = String(m).padStart(2,'0'); let mFlow = 0; stockData.filter(s => s.year===y && s.month===mStr).forEach(s => { let v = s.currency==='USD'?s.price*USD_TO_THB:s.price; if(s.type==='BUY') mFlow += v; if(s.type==='SELL') mFlow -= v; }); let curVal = prevVal + mFlow; let pct = prevVal === 0 ? 0 : ((curVal - prevVal) / prevVal) * 100; growthPctArr.push(pct); prevVal = curVal; }
         if(dashGrowthChart) dashGrowthChart.destroy(); dashGrowthChart = new Chart(document.getElementById('dashGrowthChart'), { type: 'line', data: { labels, datasets: [{label:'% เติบโตจากเดือนก่อน', data:growthPctArr, borderColor:'#8b5cf6', backgroundColor:'rgba(139,92,246,0.2)', fill:true, tension:0.3}] }, options: {responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}} });
 
-        // ===== อัปเดต: สรุปปันผลหุ้น =====
+        // ===== 5. สรุปเงินปันผลจากหุ้นปีนี้ =====
         let divArr = Array(12).fill(0);
         let totalDiv = 0;
         stockData.filter(s => s.year === y && s.type === 'DIVIDEND').forEach(s => {
@@ -761,7 +1295,10 @@
             divArr[mIdx] += v;
             totalDiv += v;
         });
+        let averageDivMonthly = totalDiv / 12;
         document.getElementById('dash-dividend-text').innerText = `ปันผลรวมปีนี้: ${totalDiv.toLocaleString(undefined, {minimumFractionDigits: 2})} ฿`;
+        document.getElementById('dash-dividend-avg-text').innerText = `เฉลี่ยต่อเดือน: ${averageDivMonthly.toLocaleString(undefined, {minimumFractionDigits: 2})} ฿ / เดือน`;
+        
         if(dashDividendChart) dashDividendChart.destroy(); 
         dashDividendChart = new Chart(document.getElementById('dashDividendChart'), { 
             type: 'bar', 
@@ -776,8 +1313,8 @@
         safeSetText('dash-yoy-title', `ปี ${parseInt(y)+543} VS ปี ${parseInt(prevY)+543}`);
         if(dashYoYChart) dashYoYChart.destroy(); dashYoYChart = new Chart(document.getElementById('dashYoYChart'), { type: 'bar', data: { labels: ['รายรับรวม', 'รายจ่ายรวม', 'กำไรสุทธิ'], datasets: [ {label:`ปี ${parseInt(prevY)+543}`, data:[incPrev, expPrev, incPrev-expPrev], backgroundColor:'#cbd5e1'}, {label:`ปี ${parseInt(y)+543}`, data:[incCur, expCur, incCur-expCur], backgroundColor:'#8b5cf6'} ] }, options: {responsive:true, maintainAspectRatio:false} });
 
-        // ===== อัปเดต: 7. รายรับรายปี 66 - ปัจจุบัน =====
-        let startYearNum = 2023; // ปี 66
+        // ===== 7. รายรับรายปี 66 - ปัจจุบัน =====
+        let startYearNum = 2023; 
         let curYearNum = new Date().getFullYear();
         let yearLabels = [];
         let yearlyIncData = [];
@@ -910,28 +1447,74 @@
     }
 
     // --- CRUD WRAPPERS ---
-    function addIncome(e) { e.preventDefault(); incomeData.push({ id: Date.now().toString(), year: document.getElementById('global-year').value, month: document.getElementById('global-month').value, type: document.getElementById('inc-category-select').value, detail: document.getElementById('inc-detail').value.trim(), amount: parseFloat(document.getElementById('inc-amount').value)||0, expense: parseFloat(document.getElementById('inc-expense').value)||0 }); document.getElementById('income-form').reset(); saveData(); showNotification("บันทึกสำเร็จ!"); refreshAll(); }
+    function addIncome(e) { e.preventDefault(); incomeData.push({ id: Date.now().toString(), year: document.getElementById('global-year').value, month: document.getElementById('global-month').value, type: document.getElementById('inc-category-select').value, detail: document.getElementById('inc-detail').value.trim(), amount: parseFloat(document.getElementById('inc-amount').value)||0, expense: parseFloat(document.getElementById('inc-expense').value)||0 }); document.getElementById('income-form').reset(); saveData(); showNotification("บันทึกรายรับสำเร็จ!"); refreshAll(); }
     function renderIncome(manual, pMee, pOth) { let tb=document.getElementById('income-table-body'); tb.innerHTML=''; if(!manual.length && !pMee.length && !pOth.length) { tb.innerHTML=`<tr><td colspan="6" class="p-4 text-center">ไม่มีข้อมูล</td></tr>`; return; } manual.forEach(i=> { if(editingIncomeId===i.id) { tb.innerHTML+=`<tr class="bg-indigo-50"><td colspan="2" class="p-2"><input id="ei-type-${i.id}" value="${i.type}" class="border px-2 py-1 w-full text-xs"></td><td class="p-2"><input id="ei-det-${i.id}" value="${i.detail}" class="border px-2 py-1 w-full text-xs"></td><td class="p-2"><input type="number" id="ei-amt-${i.id}" value="${i.amount}" class="border px-2 py-1 w-20 text-xs text-right"></td><td class="p-2"><input type="number" id="ei-exp-${i.id}" value="${i.expense||0}" class="border px-2 py-1 w-20 text-xs text-right"></td><td class="p-2 text-center"><button onclick="saveEditIncome('${i.id}')" class="text-emerald-500 mr-2">💾</button><button onclick="editingIncomeId=null; refreshAll()" class="text-slate-400">❌</button></td></tr>`; } else { tb.innerHTML+=`<tr><td class="p-3 font-bold">${i.detail.split(' ')[0]}</td><td class="p-3"><span class="px-2 py-1 bg-indigo-50 text-indigo-700 text-[10px] rounded">${i.type}</span></td><td class="p-3 text-xs">${i.detail}</td><td class="p-3 text-right text-emerald-600 font-bold">${i.amount.toLocaleString()}</td><td class="p-3 text-right text-rose-600">${i.expense||0}</td><td class="p-3 text-center"><button onclick="editingIncomeId='${i.id}'; refreshAll()" class="text-indigo-500 mr-2">✏️</button><button onclick="deleteData('${i.id}','inc')" class="text-rose-500">🗑️</button></td></tr>`; } }); pMee.forEach(i=> { tb.innerHTML+=`<tr class="bg-emerald-50/50"><td class="p-3 font-bold text-slate-700">${i.detail.split(' ')[0]}</td><td class="p-3"><span class="px-2 py-1 bg-emerald-100 text-emerald-800 text-[10px] rounded">ช่างมี้</span></td><td class="p-3 text-xs text-slate-600">${i.detail} <span class="text-[9px] text-emerald-600 font-bold ml-1">👉 ดึงจากหน้าช่างมี้ (จ่ายแล้ว)</span></td><td class="p-3 text-right text-emerald-600 font-bold">${i.amount.toLocaleString()}</td><td class="p-3 text-right text-slate-300">-</td><td class="p-3 text-center text-[10px] text-slate-400 italic">แท็บ 2</td></tr>`; }); pOth.forEach(i=> { let netAmt = i.taxDeducted ? i.amount*0.97 : i.amount; tb.innerHTML+=`<tr class="bg-amber-50/50"><td class="p-3 font-bold text-slate-700">${i.detail.split(' ')[0]}</td><td class="p-3"><span class="px-2 py-1 bg-amber-100 text-amber-800 text-[10px] rounded">${i.category}</span></td><td class="p-3 text-xs text-slate-600">${i.detail} <span class="text-[9px] text-amber-600 font-bold ml-1">👉 ดึงจากหน้างานอื่น (จ่ายแล้ว)</span></td><td class="p-3 text-right text-emerald-600 font-bold">${netAmt.toLocaleString()}</td><td class="p-3 text-right text-slate-300">-</td><td class="p-3 text-center text-[10px] text-slate-400 italic">แท็บ 3</td></tr>`; }); }
     function saveEditIncome(id) { let r=incomeData.find(x=>x.id===id); if(r){ r.type=document.getElementById(`ei-type-${id}`).value; r.detail=document.getElementById(`ei-det-${id}`).value; r.amount=parseFloat(document.getElementById(`ei-amt-${id}`).value)||0; r.expense=parseFloat(document.getElementById(`ei-exp-${id}`).value)||0; } editingIncomeId=null; saveData(); refreshAll(); }
 
     function addMeeDebt(e) { e.preventDefault(); meeDebtData.push({ id: Date.now().toString(), detail: document.getElementById('mee-detail').value, rai: parseFloat(document.getElementById('mee-rai').value)||0, amount: parseFloat(document.getElementById('mee-amount').value)||0, step: 'ยังไม่เริ่มงาน', paid: false, paidYear:'', paidMonth:'', paidDate:'' }); document.getElementById('mee-form').reset(); saveData(); showNotification("สำเร็จ!"); refreshAll(); }
-    function renderMeeActive(data) { let tb=document.getElementById('mee-active-table-body'); tb.innerHTML=''; data.forEach(i=> tb.innerHTML+=`<tr><td class="p-3 font-semibold text-xs">${i.detail}</td><td class="p-3 text-center text-xs">${i.rai}</td><td class="p-3 text-right text-rose-500 font-bold">${i.amount.toLocaleString()}</td><td class="p-3 text-center"><select onchange="changeStep('${i.id}','mee',this.value)" class="text-[10px] border p-1 rounded"><option value="${i.step}" hidden>${i.step}</option>${workSteps.map(s=>`<option value="${s}">${s}</option>`).join('')}</select></td><td class="p-3 text-center"><button onclick="payJob('${i.id}','mee')" class="bg-emerald-100 text-emerald-800 text-[10px] px-2 py-1 rounded font-bold mr-2">ชำระแล้ว</button><button onclick="deleteData('${i.id}','mee')" class="text-rose-500">🗑️</button></td></tr>`); }
+    function renderMeeActive(data) { 
+        let tb=document.getElementById('mee-active-table-body'); 
+        tb.innerHTML=''; 
+        if(data.length===0){ 
+            tb.innerHTML=`<tr><td colspan="5" class="p-6 text-center text-slate-400 font-medium">ไม่มีรายการงานค้างจ่ายปัจจุบันเลยมึง</td></tr>`; 
+            document.getElementById('mee-active-table-foot').innerHTML = '';
+            return; 
+        } 
+        let totalRai = 0;
+        let totalAmt = 0;
+        data.forEach(i=> {
+            totalRai += i.rai || 0;
+            totalAmt += i.amount || 0;
+            tb.innerHTML+=`<tr class="hover:bg-slate-50 transition"><td class="p-3.5 font-semibold text-xs text-slate-700">${i.detail}</td><td class="p-3.5 text-center text-xs font-bold text-indigo-950">${i.rai}</td><td class="p-3.5 text-right text-rose-600 font-black text-base">${i.amount.toLocaleString()}</td><td class="p-3.5 text-center print:hidden"><select onchange="changeStep('${i.id}','mee',this.value)" class="text-[11px] border border-slate-200 shadow-sm p-1.5 rounded font-medium bg-white"><option value="${i.step}" hidden>${i.step}</option>${workSteps.map(s=>`<option value="${s}">${s}</option>`).join('')}</select></td><td class="p-3.5 text-center print:hidden"><button onclick="payJob('${i.id}','mee')" class="bg-emerald-500 hover:bg-emerald-600 text-white text-[11px] px-3 py-1.5 rounded-lg font-bold shadow-sm transition mr-2">ชำระแล้ว</button><button onclick="deleteData('${i.id}','mee')" class="text-rose-500 hover:bg-rose-50 p-1.5 rounded-lg transition">🗑️</button></td></tr>`;
+        });
+        
+        // เรนเดอร์ยอดสรุปใต้สุดตารางงานค้าง (ทั้งในหน้าจอปกติและตอนสั่งพิมพ์ PDF เว้ยมึง)
+        let tf = document.getElementById('mee-active-table-foot');
+        if(tf) {
+            tf.innerHTML = `<tr class="bg-slate-100 font-extrabold text-slate-900 border-t-2 border-slate-300">
+                <td class="p-3.5 text-right text-xs uppercase tracking-wider font-bold">ยอดสรุปงวดงานค้างช่างมี้ทั้งหมด:</td>
+                <td class="p-3.5 text-center text-xs font-black text-indigo-950">${totalRai.toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits: 1})} ไร่</td>
+                <td class="p-3.5 text-right text-rose-600 font-black text-base">${totalAmt.toLocaleString()} ฿</td>
+                <td class="print:hidden"></td>
+                <td class="print:hidden"></td>
+            </tr>`;
+        }
+    }
     function renderMeePaid(data) { let tb=document.getElementById('mee-paid-table-body'); tb.innerHTML=''; data.sort((a,b)=> (b.paidYear+b.paidMonth).localeCompare(a.paidYear+a.paidMonth)); let curGrp = ''; data.forEach(i=> { let grp = `${i.paidYear}-${i.paidMonth}`; if(grp !== curGrp) { tb.innerHTML+=`<tr class="bg-slate-200/60"><td colspan="5" class="p-2 text-xs font-bold text-slate-700">ปี ${parseInt(i.paidYear)+543} เดือน ${i.paidMonth}</td></tr>`; curGrp=grp; } if(editingMeePaidId===i.id) { tb.innerHTML+=`<tr class="bg-indigo-50"><td class="p-2 flex gap-1"><input id="em-d-${i.id}" value="${i.paidDate}" class="w-20 text-xs border p-1"><select id="em-m-${i.id}" class="w-16 text-xs border"><option value="01">01</option><option value="02">02</option><option value="03">03</option><option value="04">04</option><option value="05">05</option><option value="06">06</option><option value="07">07</option><option value="08">08</option><option value="09">09</option><option value="10">10</option><option value="11">11</option><option value="12">12</option></select><input id="em-y-${i.id}" value="${i.paidYear}" class="w-16 text-xs border p-1"></td><td class="p-2 text-xs">${i.detail}</td><td class="p-2 text-center text-xs">${i.rai}</td><td class="p-2 text-right">${i.amount}</td><td class="p-2 text-center"><button onclick="saveMeePaid('${i.id}')" class="text-emerald-500 mr-2">💾</button><button onclick="editingMeePaidId=null; refreshAll()" class="text-slate-400">❌</button></td></tr>`; setTimeout(()=>document.getElementById(`em-m-${i.id}`).value=i.paidMonth, 10); } else { tb.innerHTML+=`<tr><td class="p-3 text-[10px] text-slate-500">${i.paidDate||'-'}</td><td class="p-3 font-semibold text-xs">${i.detail}</td><td class="p-3 text-center text-xs">${i.rai}</td><td class="p-3 text-right text-emerald-600 font-bold">${i.amount.toLocaleString()}</td><td class="p-3 text-center"><button onclick="editingMeePaidId='${i.id}'; refreshAll()" class="text-indigo-500 mr-2 text-[10px]">✏️ โยกเดือน</button><button onclick="deleteData('${i.id}','mee')" class="text-rose-500">🗑️</button></td></tr>`; } }); }
     function saveMeePaid(id) { let r=meeDebtData.find(x=>x.id===id); if(r){ r.paidDate=document.getElementById(`em-d-${id}`).value; r.paidMonth=document.getElementById(`em-m-${id}`).value; r.paidYear=document.getElementById(`em-y-${id}`).value; } editingMeePaidId=null; saveData(); refreshAll(); }
 
     function addOtherDebt(e) { e.preventDefault(); const c=Math.max(1,parseInt(document.getElementById('other-installments-count').value)||1), tax=document.getElementById('other-withholding-tax').checked, base=document.getElementById('other-detail').value; for(let i=1;i<=c;i++){ otherDebtData.push({ id:Date.now().toString()+i, category:document.getElementById('other-category-select').value, detail:c>1?`${base} (งวด ${i}/${c})`:base, amount:parseFloat(document.getElementById(`installment-amount-${i}`).value)||0, taxDeducted:tax, step:'ยังไม่เริ่มงาน', paid:false, paidYear:'', paidMonth:'', paidDate:'' }); } document.getElementById('other-debt-form').reset(); document.getElementById('other-withholding-tax').checked=false; generateInstallmentInputs(); saveData(); renderOtherCategoryTags(); showNotification("สำเร็จ!"); refreshAll(); }
     function renderOtherActive(data) { let tb=document.getElementById('other-active-table-body'); tb.innerHTML=''; data.forEach(i=> tb.innerHTML+=`<tr><td class="p-3 text-[10px]"><span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded">${i.category}</span></td><td class="p-3 font-semibold text-xs">${i.detail}</td><td class="p-3 text-right text-amber-600 font-bold">${i.amount.toLocaleString()}</td><td class="p-3 text-center text-[10px] ${i.taxDeducted?'text-rose-500':'text-slate-300'}">${i.taxDeducted?'หัก':'ไม่หัก'}</td><td class="p-3 text-center"><select onchange="changeStep('${i.id}','oth',this.value)" class="text-[10px] border p-1 rounded"><option value="${i.step}" hidden>${i.step}</option>${workSteps.map(s=>`<option value="${s}">${s}</option>`).join('')}</select></td><td class="p-3 text-center"><button onclick="payJob('${i.id}','oth')" class="bg-emerald-100 text-emerald-800 text-[10px] px-2 py-1 rounded font-bold mr-2">ชำระแล้ว</button><button onclick="deleteData('${i.id}','oth')" class="text-rose-500">🗑️</button></td></tr>`); }
-    function renderOtherPaid(data) { let tb=document.getElementById('other-paid-table-body'); tb.innerHTML=''; data.sort((a,b)=> (b.paidYear+b.paidMonth).localeCompare(a.paidYear+a.paidMonth)); let curGrp = ''; data.forEach(i=> { let grp = `${i.paidYear}-${i.paidMonth}`; if(grp !== curGrp) { tb.innerHTML+=`<tr class="bg-slate-200/60"><td colspan="5" class="p-2 text-xs font-bold text-slate-700">ปี ${parseInt(i.paidYear)+543} เดือน ${i.paidMonth}</td></tr>`; curGrp=grp; } if(editingOtherPaidId===i.id) { tb.innerHTML+=`<tr class="bg-indigo-50"><td class="p-2 flex gap-1"><input id="eo-d-${i.id}" value="${i.paidDate}" class="w-20 text-xs border p-1"><select id="eo-m-${i.id}" class="w-16 text-xs border"><option value="01">01</option><option value="02">02</option><option value="03">03</option><option value="04">04</option><option value="05">05</option><option value="06">06</option><option value="07">07</option><option value="08">08</option><option value="09">09</option><option value="10">10</option><option value="11">11</option><option value="12">12</option></select><input id="eo-y-${i.id}" value="${i.paidYear}" class="w-16 text-xs border p-1"></td><td class="p-2 text-xs">${i.category}</td><td class="p-2 text-xs">${i.detail}</td><td class="p-2 text-right">${i.amount}</td><td class="p-2 text-center"><button onclick="saveOtherPaid('${i.id}')" class="text-emerald-500 mr-2">💾</button><button onclick="editingOtherPaidId=null; refreshAll()" class="text-slate-400">❌</button></td></tr>`; setTimeout(()=>document.getElementById(`eo-m-${i.id}`).value=i.paidMonth, 10); } else { tb.innerHTML+=`<tr><td class="p-3 text-[10px] text-slate-500">${i.paidDate||'-'}</td><td class="p-3 text-[10px]"><span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded">${i.category}</span></td><td class="p-3 font-semibold text-xs">${i.detail}</td><td class="p-3 text-right text-emerald-600 font-bold">${(i.taxDeducted?i.amount*0.97:i.amount).toLocaleString()}</td><td class="p-3 text-center"><button onclick="editingOtherPaidId='${i.id}'; refreshAll()" class="text-indigo-500 mr-2 text-[10px]">✏️ โยกเดือน</button><button onclick="deleteData('${i.id}','oth')" class="text-rose-500">🗑️</button></td></tr>`; } }); }
+    function renderOtherPaid(data) { let tb=document.getElementById('other-paid-table-body'); tb.innerHTML=''; data.sort((a,b)=> (b.paidYear+b.paidMonth).localeCompare(a.paidYear+a.paidMonth)); let curGrp = ''; data.forEach(i=> { let grp = `${i.paidYear}-${i.paidMonth}`; if(grp !== curGrp) { tb.innerHTML+=`<tr class="bg-slate-200/60"><td colspan="5" class="p-2 text-xs font-bold text-slate-700">ปี ${parseInt(i.paidYear)+543} เดือน ${i.paidMonth}</td></tr>`; curGrp=grp; } if(editingOtherPaidId===i.id) { tb.innerHTML+=`<tr class="bg-indigo-50"><td class="p-2 flex gap-1"><input id="eo-d-${i.id}" value="${i.paidDate}" class="w-20 text-xs border p-1"><select id="eo-m-${i.id}" class="w-16 text-xs border"><option value="01">01</option><option value="02">02</option><option value="03">03</option><option value="04">04</option><option value="05">05</option><option value="06">06</option><option value="07">07</option><option value="08">08</option><option value="09">09</option><option value="10">10</option><option value="11">11</option><option value="12">12</option></select><input id="eo-y-${i.id}" value="${i.paidYear}" class="w-16 text-xs border p-1"></td><td class="p-2 text-xs">${i.category}</td><td class="p-2 text-xs">${i.detail}</td><td class="p-2 text-right">${i.amount}</td><td class="p-2 text-center"><button onclick="saveOtherPaid('${i.id}')" class="text-emerald-500 mr-2">💾</button><button onclick="editingOtherPaidId=null; refreshAll()" class="text-slate-400">❌</button></td></tr>`; setTimeout(()=>document.getElementById(`eo-m-${i.id}`).value=i.month, 10); } else { tb.innerHTML+=`<tr><td class="p-3 text-[10px] text-slate-500">${i.paidDate||'-'}</td><td class="p-3 text-[10px]"><span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded">${i.category}</span></td><td class="p-3 font-semibold text-xs">${i.detail}</td><td class="p-3 text-right text-emerald-600 font-bold">${(i.taxDeducted?i.amount*0.97:i.amount).toLocaleString()}</td><td class="p-3 text-center"><button onclick="editingOtherPaidId='${i.id}'; refreshAll()" class="text-indigo-500 mr-2 text-[10px]">✏️ โยกเดือน</button><button onclick="deleteData('${i.id}','oth')" class="text-rose-500">🗑️</button></td></tr>`; } }); }
     function saveOtherPaid(id) { let r=otherDebtData.find(x=>x.id===id); if(r){ r.paidDate=document.getElementById(`eo-d-${id}`).value; r.paidMonth=document.getElementById(`eo-m-${id}`).value; r.paidYear=document.getElementById(`eo-y-${id}`).value; } editingOtherPaidId=null; saveData(); refreshAll(); }
 
     function changeStep(id, type, val) { let d = type==='mee'?meeDebtData:otherDebtData; let r = d.find(x=>x.id===id); if(r){ r.step=val; saveData(); } }
-    function payJob(id, type) { let d = type==='mee'?meeDebtData:otherDebtData; let r = d.find(x=>x.id===id); if(r){ r.paid=true; r.paidYear=document.getElementById('global-year').value; r.paidMonth=document.getElementById('global-month').value; r.paidDate=new Date().toLocaleDateString('th-TH'); saveData(); refreshAll(); } }
 
     function saveMonthlyPersonalExpenses(e) {
         e.preventDefault(); const y=document.getElementById('global-year').value, m=document.getElementById('global-month').value;
         let r = personalExpenseData.find(d=> d.year===y && d.month===m);
-        const nD = { year:y, month:m, eating:parseFloat(document.getElementById('exp-eating').value)||0, creditCard:parseFloat(document.getElementById('exp-card').value)||0, rent:parseFloat(document.getElementById('exp-rent').value)||0, personal:parseFloat(document.getElementById('exp-personal').value)||0, gameAun:parseFloat(document.getElementById('exp-game-aun').value)||0, otherExt:parseFloat(document.getElementById('exp-other-ext').value)||0 };
-        if(r) Object.assign(r, nD); else personalExpenseData.push(nD); saveData(); showNotification("บันทึกรายจ่ายสำเร็จ!"); refreshAll();
+        
+        // ดึงยอดสัปดาห์
+        let w1 = parseFloat(document.getElementById('personal-w1').value) || 0;
+        let w2 = parseFloat(document.getElementById('personal-w2').value) || 0;
+        let w3 = parseFloat(document.getElementById('personal-w3').value) || 0;
+        let w4 = parseFloat(document.getElementById('personal-w4').value) || 0;
+
+        const nD = { 
+            year:y, 
+            month:m, 
+            eating:parseFloat(document.getElementById('exp-eating').value)||0, 
+            creditCard:parseFloat(document.getElementById('exp-card').value)||0, 
+            rent:parseFloat(document.getElementById('exp-rent').value)||0, 
+            personal:w1 + w2 + w3 + w4, // บันทึกยอดสุทธิลงฐานข้อมูลเดิม
+            gameAun:parseFloat(document.getElementById('exp-game-aun').value)||0, 
+            otherExt:parseFloat(document.getElementById('exp-other-ext').value)||0,
+            personalW1: w1, // เซฟซอยย่อยลงตัวแปรเสริมเพื่อความเนียน!
+            personalW2: w2,
+            personalW3: w3,
+            personalW4: w4
+        };
+        if(r) Object.assign(r, nD); else personalExpenseData.push(nD); saveData(); showNotification("บันทึกรายจ่ายส่วนตัวเรียบร้อย!"); refreshAll();
     }
     
     function loadPersonalExpenseForm(y, m) {
@@ -939,7 +1522,16 @@
         document.getElementById('exp-eating').value = r.eating || 0;
         document.getElementById('exp-card').value = r.creditCard || 0;
         document.getElementById('exp-rent').value = r.rent || 0;
-        document.getElementById('exp-personal').value = r.personal || 0;
+        
+        // โหลดค่ารายสัปดาห์ใส่กล่อง ถ้าไม่มีของเก่าให้ขึ้น 0
+        document.getElementById('personal-w1').value = r.personalW1 || 0;
+        document.getElementById('personal-w2').value = r.personalW2 || 0;
+        document.getElementById('personal-w3').value = r.personalW3 || 0;
+        document.getElementById('personal-w4').value = r.personalW4 || 0;
+        
+        // สั่งคำนวณผลรวมรายสัปดาห์ดันเข้ากล่องหลักอัตโนมัติ
+        sumWeeklyPersonalExpenses();
+
         document.getElementById('exp-stocks').value = calculateMonthlyStockInvestments(y, m);
         document.getElementById('exp-game-aun').value = r.gameAun || 0;
         document.getElementById('exp-other-ext').value = r.otherExt || 0;
@@ -948,11 +1540,58 @@
     function renderPersonalExpenseChart(y) {
         if(personalExpenseChartInstance) personalExpenseChartInstance.destroy();
         let eat=[], crd=[], rnt=[], per=[], stk=[], gm=[], oth=[];
+        let multiLineLabels = [];
+        const baseMonthsThai = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+
         for(let m=1;m<=12;m++){
             let mStr = String(m).padStart(2,'0'); let px = personalExpenseData.find(d=> d.year===y && d.month===mStr) || {};
-            eat.push(px.eating||0); crd.push(px.creditCard||0); rnt.push(px.rent||0); per.push(px.personal||0); stk.push(calculateMonthlyStockInvestments(y, mStr)); gm.push(px.gameAun||0); oth.push(px.otherExt||0);
+            let cEat = px.eating||0;
+            let cCrd = px.creditCard||0;
+            let cRnt = px.rent||0;
+            let cPer = px.personal||0;
+            let cStk = calculateMonthlyStockInvestments(y, mStr);
+            let cGm  = px.gameAun||0;
+            let cOth = px.otherExt||0;
+            
+            eat.push(cEat); crd.push(cCrd); rnt.push(cRnt); per.push(cPer); stk.push(cStk); gm.push(cGm); oth.push(cOth);
+            
+            let totalAll = cEat + cCrd + rnt + cPer + cStk + cGm + cOth;
+            let totalExpensesOnly = cEat + cCrd + rnt + cPer + cGm + cOth; 
+
+            if (totalAll > 0) {
+                multiLineLabels.push([
+                    baseMonthsThai[m-1],
+                    `รวม: ${totalAll.toLocaleString(undefined, {maximumFractionDigits:0})}`,
+                    `จ่าย: ${totalExpensesOnly.toLocaleString(undefined, {maximumFractionDigits:0})}`,
+                    `หุ้น: ${cStk.toLocaleString(undefined, {maximumFractionDigits:0})}`
+                ]);
+            } else {
+                multiLineLabels.push(baseMonthsThai[m-1]);
+            }
         }
-        personalExpenseChartInstance = new Chart(document.getElementById('personalExpenseChart'), { type: 'bar', data: { labels: ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'], datasets: [{label:'ค่ากิน', data:eat, backgroundColor:'#f43f5e'}, {label:'บัตรเครดิต', data:crd, backgroundColor:'#fbbf24'}, {label:'ที่พัก', data:rnt, backgroundColor:'#3b82f6'}, {label:'ส่วนตัว', data:per, backgroundColor:'#ec4899'}, {label:'หุ้น/ลงทุน', data:stk, backgroundColor:'#10b981'}, {label:'เกม+อั๋น', data:gm, backgroundColor:'#6366f1'}, {label:'อื่นๆ', data:oth, backgroundColor:'#f97316'}] }, options:{responsive:true, maintainAspectRatio:false, scales:{x:{stacked:true}, y:{stacked:true}}} });
+        personalExpenseChartInstance = new Chart(document.getElementById('personalExpenseChart'), { 
+            type: 'bar', 
+            data: { 
+                labels: multiLineLabels, 
+                datasets: [{label:'ค่ากิน', data:eat, backgroundColor:'#f43f5e'}, {label:'บัตรเครดิต', data:crd, backgroundColor:'#fbbf24'}, {label:'ที่พัก', data:rnt, backgroundColor:'#3b82f6'}, {label:'ส่วนตัว', data:per, backgroundColor:'#ec4899'}, {label:'หุ้น/ลงทุน', data:stk, backgroundColor:'#10b981'}, {label:'เกม+อั๋น', data:gm, backgroundColor:'#6366f1'}, {label:'อื่นๆ', data:oth, backgroundColor:'#f97316'}] 
+            }, 
+            options:{
+                responsive:true, 
+                maintainAspectRatio:false, 
+                scales:{
+                    x:{
+                        stacked:true, 
+                        ticks:{
+                            font:{size:9, weight:'bold'},
+                            autoSkip: false,
+                            maxRotation: 0,
+                            minRotation: 0
+                        }
+                    }, 
+                    y:{stacked:true}
+                }
+            } 
+        });
     }
 
     function addStockTransaction(e) {
@@ -965,7 +1604,7 @@
     
     function deleteData(id, target) { showCustomConfirm("ลบจริง?", "ลบแล้วหายเลยนะเว้ย", ()=>{ if(target==='inc') incomeData=incomeData.filter(x=>x.id!==id); if(target==='mee') meeDebtData=meeDebtData.filter(x=>x.id!==id); if(target==='oth') otherDebtData=otherDebtData.filter(x=>x.id!==id); if(target==='stk') stockData=stockData.filter(x=>x.id!==id); if(target==='ast') assetData=assetData.filter(x=>x.id!==id); saveData(); refreshAll(); });}
 
-    function renderTaxLedger(y,m) { let tb = document.getElementById('tax-table-body'); tb.innerHTML=''; let itemsM = otherDebtData.filter(d=> d.paid && d.taxDeducted && d.paidYear===y && d.paidMonth===m); let itemsY = otherDebtData.filter(d=> d.paid && d.taxDeducted && d.paidYear===y); let tTM=0; let tTY=0; itemsY.forEach(i=>{ tTY += i.amount*0.03; }); itemsM.forEach(i=> { let g=i.amount, t=g*0.03, n=g-t; tTM+=t; tb.innerHTML+=`<tr><td class="p-4 text-[10px]">${i.paidDate||'-'}</td><td class="p-4 text-xs font-bold">${i.detail}</td><td class="p-4 text-right text-xs">${g.toLocaleString(undefined, {minimumFractionDigits: 2})}</td><td class="p-4 text-right text-rose-500 font-bold text-xs">-${t.toLocaleString(undefined, {minimumFractionDigits: 2})}</td><td class="p-4 text-right text-emerald-600 font-bold text-xs">${n.toLocaleString(undefined, {minimumFractionDigits: 2})}</td></tr>`; }); safeSetText('tax-total-deducted', tTM.toLocaleString(undefined, {minimumFractionDigits: 2})+' บาท'); safeSetText('tax-yearly-deducted', tTY.toLocaleString(undefined, {minimumFractionDigits: 2})+' บาท'); }
+    function renderTaxLedger(y,m) { let tb = document.getElementById('tax-table-body'); tb.innerHTML=''; let itemsM = otherDebtData.filter(d=> d.paid && d.taxDeducted && d.paidYear===y && d.paidMonth===m); let itemsY = otherDebtData.filter(d=> d.paid && d.taxDeducted && d.paidYear===y); let tTM=0; let tTY=0; itemsY.forEach(i=>{ tTY += i.amount*0.03; }); itemsM.forEach(i=> { let g=i.amount, t=g*0.03, n=g-t; tTM+=t; tb.innerHTML+=`<tr><td class="p-4 text-[10px]">${i.paidDate||'-'}</td><td class="p-4 text-xs font-bold">${i.detail}</td><td class="p-4 text-right text-xs">${g.toLocaleString(undefined, {minimumFractionDigits: 2})}</td><td class="p-4 text-right text-rose-400 font-bold text-xs">-${t.toLocaleString(undefined, {minimumFractionDigits: 2})}</td><td class="p-4 text-right text-emerald-600 font-bold text-xs">${n.toLocaleString(undefined, {minimumFractionDigits: 2})}</td></tr>`; }); safeSetText('tax-total-deducted', tTM.toLocaleString(undefined, {minimumFractionDigits: 2})+' บาท'); safeSetText('tax-yearly-deducted', tTY.toLocaleString(undefined, {minimumFractionDigits: 2})+' บาท'); }
 </script>
 </body>
 </html>
