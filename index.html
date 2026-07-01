@@ -687,7 +687,7 @@
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <!-- วิเคราะห์พอร์ตลงทุน -->
                 <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-center">
-                    <h3 class="text-sm font-bold text-slate-700 mb-4 flex items-center gap-2">💼 มูลค่าพอร์ตลงทุน (หุ้น, กองทุน, แบงก์)</h3>
+                    <h3 class="text-sm font-bold text-slate-700 mb-4 flex items-center gap-2">💼 มูลค่าพอร์ตลงทุนรวมทั้งหมด (หุ้น, กองทุน)</h3>
                     <div class="relative w-full h-[200px]"><canvas id="dashAssetTypeChart"></canvas></div>
                 </div>
 
@@ -1229,10 +1229,12 @@
     }
 
     function evaluatePortfolioAllocation() {
-        const y = document.getElementById('global-year').value;
         let typeVols = { th: 0, us: 0, fund: 0, bank: 0 };
-        stockData.filter(d=>d.year===y).forEach(s => { 
+        stockData.forEach(s => { 
             let v = s.currency==='USD'?(s.price||0)*USD_TO_THB:(s.price||0); 
+            if (s.type === 'SELL') v = -v;
+            else if (s.type === 'DIVIDEND') v = 0;
+
             if(stockQuickList.th.includes(s.name)) typeVols.th += v; 
             else if(stockQuickList.us.includes(s.name)) typeVols.us += v; 
             else if(stockQuickList.fund.includes(s.name)) typeVols.fund += v; 
@@ -1746,22 +1748,24 @@
         expListHtml += `<li class="flex justify-between items-center text-xs font-black pt-1.5 border-t border-slate-200 mt-1.5"><span class="text-slate-700">รวมทั้งหมด</span><span class="text-rose-600">${fmtNum(totalExpSumList)} <span class="text-rose-400 font-bold text-[9px]">(~${fmtNum(totalAvgM)}/ด.)</span></span></li></ul>`;
         document.getElementById('dash-expense-pie-list').innerHTML = expListHtml;
 
-        // 4: วิเคราะห์พอร์ต (Bar)
-        let typeVols2 = { th: 0, us: 0, fund: 0, bank: 0 };
-        stockData.filter(d=>d.year===y).forEach(s => { 
+        // 4: วิเคราะห์พอร์ต (Bar) - All Time, No Bank
+        let typeVols2 = { th: 0, us: 0, fund: 0 };
+        stockData.forEach(s => { 
             let v = s.currency==='USD'?(s.price||0)*USD_TO_THB:(s.price||0); 
+            if (s.type === 'SELL') v = -v;
+            else if (s.type === 'DIVIDEND') v = 0;
+
             if(stockQuickList.th.includes(s.name)) typeVols2.th += v; 
             else if(stockQuickList.us.includes(s.name)) typeVols2.us += v; 
             else if(stockQuickList.fund.includes(s.name)) typeVols2.fund += v; 
-            else if(stockQuickList.bank && stockQuickList.bank.includes(s.name)) typeVols2.bank += v;
         });
         
         if(dashAssetTypeChart) dashAssetTypeChart.destroy(); 
         dashAssetTypeChart = new Chart(document.getElementById('dashAssetTypeChart'), { 
             type: 'bar', 
             data: { 
-                labels: ['หุ้นไทย', 'หุ้น US', 'กองทุน', 'แบงก์'], 
-                datasets: [{label:'มูลค่า', data:[typeVols2.th, typeVols2.us, typeVols2.fund, typeVols2.bank], backgroundColor:['#f59e0b', '#3b82f6', '#10b981', '#8b5cf6']}] 
+                labels: ['หุ้นไทย', 'หุ้น US', 'กองทุน'], 
+                datasets: [{label:'มูลค่าคงเหลือทั้งหมด', data:[Math.max(0, typeVols2.th), Math.max(0, typeVols2.us), Math.max(0, typeVols2.fund)], backgroundColor:['#f59e0b', '#3b82f6', '#10b981']}] 
             }, 
             options: {
                 responsive:true, maintainAspectRatio:false, 
