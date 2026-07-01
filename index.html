@@ -86,7 +86,7 @@
         <p class="text-xs text-slate-500 mb-4 border-b border-slate-100 pb-4">ระบบจะบันทึกซื้อให้อัตโนมัติทุกครั้งที่ขึ้นเดือนใหม่ในปฏิทิน ถ้ายอดไหนอยากเพิ่มลดก็แก้ตรงนี้ได้เลย</p>
 
         <div class="flex gap-2 mb-4">
-            <input type="text" id="new-dca-name" class="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none uppercase font-bold text-indigo-900" placeholder="ชื่อหุ้น (เช่น MSFT, BGOLD)">
+            <input type="text" id="new-dca-name" class="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none uppercase font-bold text-indigo-950" placeholder="ชื่อหุ้น (เช่น MSFT, BGOLD)">
             <input type="number" id="new-dca-amount" class="w-32 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none font-bold" placeholder="ยอด (บาท)">
             <button onclick="addDcaItem()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 rounded-xl transition shadow-sm">➕</button>
         </div>
@@ -390,7 +390,7 @@
                             <span>ชื่อย่อหุ้น / สินทรัพย์ <span class="text-[10px] font-normal text-slate-400">(คลิกเลือกแท็กด้านล่าง)</span></span>
                             <button type="button" onclick="toggleEditStockTags()" class="text-[10px] text-indigo-500 font-bold hover:underline" id="btn-edit-stock-tags">✏️ แก้ไข/ลบ</button>
                         </label>
-                        <input type="text" class="w-full bg-slate-50 border rounded-xl px-4 py-2.5 text-sm uppercase font-bold text-indigo-900 focus:border-indigo-500 outline-none" id="stock-name" required>
+                        <input type="text" class="w-full bg-slate-50 border rounded-xl px-4 py-2.5 text-sm uppercase font-bold text-indigo-950 focus:border-indigo-500 outline-none" id="stock-name" required>
                         
                         <div id="edit-stock-tag-controls" class="hidden flex gap-1.5 mt-2 mb-2 p-2 bg-slate-100 rounded-lg border border-slate-200">
                             <select id="new-stock-tag-cat" class="bg-white border border-slate-200 rounded-lg px-2 py-1.5 text-xs outline-none">
@@ -550,9 +550,7 @@
             <p class="text-xs text-slate-500">รวมเครื่องมือประเมินความปลอดภัย วิเคราะห์อนาคต และแจ้งเตือนความเสี่ยงส่วนบุคคล</p>
         </div>
 
-        <!-- ========================================== -->
         <!-- หมวดที่ 1: วิเคราะห์รายรับ รายจ่าย -->
-        <!-- ========================================== -->
         <div class="bg-slate-100 p-3 rounded-t-xl mt-6 border-b-2 border-indigo-500">
             <h2 class="text-xl font-black text-slate-900 flex items-center gap-2">📊 1. กลุ่มวิเคราะห์รายรับ - รายจ่าย</h2>
         </div>
@@ -579,7 +577,7 @@
                     
                     <div id="p-mom-warning-box" class="p-3 rounded-xl border relative mb-3 transition-colors">
                         <div class="flex justify-between items-center">
-                            <span class="text-[11px] font-bold" id="p-mom-warning-title-text">เทรนด์รายจ่ายกระเป๋าฉีก MoM</span>
+                            <span class="text-[11px] font-bold" id="p-mom-warning-title-text">เทรนด์รายจ่าย MoM</span>
                             <span class="w-2.5 h-2.5 rounded-full inline-block" id="p-mom-warning-pulse"></span>
                         </div>
                         <div class="text-lg font-black mt-1" id="p-mom-warning-title">สถานะปกติ</div>
@@ -673,10 +671,7 @@
             
         </div>
 
-
-        <!-- ========================================== -->
         <!-- หมวดที่ 2: วิเคราะห์การลงทุน -->
-        <!-- ========================================== -->
         <div class="bg-slate-100 p-3 rounded-t-xl mt-12 border-b-2 border-indigo-500">
             <h2 class="text-xl font-black text-slate-900 flex items-center gap-2">📈 2. กลุ่มวิเคราะห์การลงทุน</h2>
         </div>
@@ -685,12 +680,28 @@
             
             <!-- แถวที่ 1: วิเคราะห์พอร์ต + น้ำหนักพอร์ต -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <!-- วิเคราะห์พอร์ตลงทุน -->
+                <!-- ส่วนช่องกรอกมูลค่าพอร์ตจริงๆ แยกรายประเภท -->
                 <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-center">
-                    <h3 class="text-sm font-bold text-slate-700 mb-4 flex items-center gap-2">💼 มูลค่าพอร์ตลงทุนรวมทั้งหมด (หุ้น, กองทุน)</h3>
-                    <div class="relative w-full h-[200px]"><canvas id="dashAssetTypeChart"></canvas></div>
+                    <h3 class="text-sm font-bold text-slate-700 mb-4 flex items-center gap-2">
+                        💼 มูลค่าพอร์ตลงทุนจริง (Update ณ ปัจจุบัน)
+                    </h3>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                        <div>
+                            <label class="block text-[10px] font-bold text-amber-600 mb-1">หุ้นไทยจริง (฿)</label>
+                            <input type="number" id="real-val-th" value="0" class="w-full bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 text-sm font-bold outline-none focus:border-amber-500 text-amber-900" onchange="renderDashboard(document.getElementById('global-year').value)">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-blue-600 mb-1">หุ้น US จริง (฿)</label>
+                            <input type="number" id="real-val-us" value="0" class="w-full bg-blue-50 border border-blue-200 rounded-xl px-3 py-2 text-sm font-bold outline-none focus:border-blue-500 text-blue-900" onchange="renderDashboard(document.getElementById('global-year').value)">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-emerald-600 mb-1">กองทุนจริง (฿)</label>
+                            <input type="number" id="real-val-fund" value="0" class="w-full bg-emerald-50 border border-emerald-200 rounded-xl px-3 py-2 text-sm font-bold outline-none focus:border-emerald-500 text-emerald-900" onchange="renderDashboard(document.getElementById('global-year').value)">
+                        </div>
+                    </div>
+                    <div class="relative w-full h-[250px]"><canvas id="dashAssetTypeChart"></canvas></div>
                 </div>
-
                 <!-- น้ำหนักสัดส่วนพอร์ต -->
                 <div class="bg-white p-5 rounded-3xl border border-indigo-100 shadow-sm flex flex-col justify-between">
                     <div>
@@ -1085,7 +1096,7 @@
 
     function addOtherDebt(e) { e.preventDefault(); const c=Math.max(1,parseInt(document.getElementById('other-installments-count').value)||1), tax=document.getElementById('other-withholding-tax').checked, base=document.getElementById('other-detail').value; for(let i=1;i<=c;i++){ otherDebtData.push({ id:Date.now().toString()+i, category:document.getElementById('other-category-select').value, detail:c>1?`${base} (งวด ${i}/${c})`:base, amount:parseFloat(document.getElementById(`installment-amount-${i}`).value)||0, taxDeducted:tax, step:'ยังไม่เริ่มงาน', paid:false, paidYear:'', paidMonth:'', paidDate:'' }); } document.getElementById('other-debt-form').reset(); document.getElementById('other-withholding-tax').checked=false; generateInstallmentInputs(); saveData(); renderOtherCategoryTags(); showNotification("สำเร็จ!"); refreshAll(); }
     function renderOtherActive(data) { let tb=document.getElementById('other-active-table-body'); tb.innerHTML=''; data.forEach(i=> tb.innerHTML+=`<tr><td class="p-3 text-[10px]"><span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded">${i.category}</span></td><td class="p-3 font-semibold text-xs">${i.detail}</td><td class="p-3 text-right text-amber-600 font-bold">${i.amount.toLocaleString()}</td><td class="p-3 text-center text-[10px] ${i.taxDeducted?'text-rose-500':'text-slate-300'}">${i.taxDeducted?'หัก':'ไม่หัก'}</td><td class="p-3 text-center"><select onchange="changeStep('${i.id}','oth',this.value)" class="text-[10px] border p-1 rounded"><option value="${i.step}" hidden>${i.step}</option>${workSteps.map(s=>`<option value="${s}">${s}</option>`).join('')}</select></td><td class="p-3 text-center"><button onclick="payJob('${i.id}','oth')" class="bg-emerald-100 text-emerald-800 text-[10px] px-2 py-1 rounded font-bold mr-2">ชำระแล้ว</button><button onclick="deleteData('${i.id}','oth')" class="text-rose-500">🗑️</button></td></tr>`); }
-    function renderOtherPaid(data) { let tb=document.getElementById('other-paid-table-body'); tb.innerHTML=''; data.sort((a,b)=> (b.paidYear+b.paidMonth).localeCompare(a.paidYear+a.paidMonth)); let curGrp = ''; data.forEach(i=> { let grp = `${i.paidYear}-${i.paidMonth}`; if(grp !== curGrp) { tb.innerHTML+=`<tr class="bg-slate-200/60"><td colspan="5" class="p-2 text-xs font-bold text-slate-700">ปี ${parseInt(i.paidYear)+543} เดือน ${i.paidMonth}</td></tr>`; curGrp=grp; } if(editingOtherPaidId===i.id) { tb.innerHTML+=`<tr class="bg-indigo-50"><td class="p-2 flex gap-1"><input id="eo-d-${i.id}" value="${i.paidDate}" class="w-20 text-xs border p-1"><select id="eo-m-${i.id}" class="w-16 text-xs border"><option value="01">01</option><option value="02">02</option><option value="03">03</option><option value="04">04</option><option value="05">05</option><option value="06">06</option><option value="07">07</option><option value="08">08</option><option value="09">09</option><option value="10">10</option><option value="11">11</option><option value="12">12</option></select><input id="eo-y-${i.id}" value="${i.year}" class="w-16 text-xs border p-1"></td><td class="p-2 text-xs">${i.category}</td><td class="p-2 text-xs">${i.detail}</td><td class="p-2 text-right">${i.amount}</td><td class="p-2 text-center"><button onclick="saveOtherPaid('${i.id}')" class="text-emerald-500 mr-2">💾</button><button onclick="editingOtherPaidId=null; refreshAll()" class="text-slate-400">❌</button></td></tr>`; setTimeout(()=>document.getElementById(`eo-m-${i.id}`).value=i.month, 10); } else { let netAmt = i.taxDeducted?i.amount*0.97:i.amount; tb.innerHTML+=`<tr><td class="p-3 text-[10px] text-slate-500">${i.paidDate||'-'}</td><td class="p-3 text-[10px]"><span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded">${i.category}</span></td><td class="p-3 font-semibold text-xs">${i.detail}</td><td class="p-3 text-right text-emerald-600 font-bold">${netAmt.toLocaleString()}</td><td class="p-3 text-center"><button onclick="editingOtherPaidId='${i.id}'; refreshAll()" class="text-indigo-500 mr-2 text-[10px]">✏️ โยกเดือน</button><button onclick="deleteData('${i.id}','oth')" class="text-rose-500">🗑️</button></td></tr>`; } }); }
+    function renderOtherPaid(data) { let tb=document.getElementById('other-paid-table-body'); tb.innerHTML=''; data.sort((a,b)=> (b.paidYear+b.paidMonth).localeCompare(a.paidYear+a.paidMonth)); let curGrp = ''; data.forEach(i=> { let grp = `${i.paidYear}-${i.paidMonth}`; if(grp !== curGrp) { tb.innerHTML+=`<tr class="bg-slate-200/60"><td colspan="5" class="p-2 text-xs font-bold text-slate-700">ปี ${parseInt(i.paidYear)+543} เดือน ${i.paidMonth}</td></tr>`; curGrp=grp; } if(editingOtherPaidId===i.id) { tb.innerHTML+=`<tr class="bg-indigo-50"><td class="p-2 flex gap-1"><input id="eo-d-${i.id}" value="${i.paidDate}" class="w-20 text-xs border p-1"><select id="eo-m-${i.id}" class="w-16 text-xs border"><option value="01">01</option><option value="02">02</option><option value="03">03</option><option value="04">04</option><option value="05">04</option><option value="06">06</option><option value="07">07</option><option value="08">08</option><option value="09">09</option><option value="10">10</option><option value="11">11</option><option value="12">12</option></select><input id="eo-y-${i.id}" value="${i.year}" class="w-16 text-xs border p-1"></td><td class="p-2 text-xs">${i.category}</td><td class="p-2 text-xs">${i.detail}</td><td class="p-2 text-right">${i.amount}</td><td class="p-2 text-center"><button onclick="saveOtherPaid('${i.id}')" class="text-emerald-500 mr-2">💾</button><button onclick="editingOtherPaidId=null; refreshAll()" class="text-slate-400">❌</button></td></tr>`; setTimeout(()=>document.getElementById(`eo-m-${i.id}`).value=i.month, 10); } else { let netAmt = i.taxDeducted?i.amount*0.97:i.amount; tb.innerHTML+=`<tr><td class="p-3 text-[10px] text-slate-500">${i.paidDate||'-'}</td><td class="p-3 text-[10px]"><span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded">${i.category}</span></td><td class="p-3 font-semibold text-xs">${i.detail}</td><td class="p-3 text-right text-emerald-600 font-bold">${netAmt.toLocaleString()}</td><td class="p-3 text-center"><button onclick="editingOtherPaidId='${i.id}'; refreshAll()" class="text-indigo-500 mr-2 text-[10px]">✏️ โยกเดือน</button><button onclick="deleteData('${i.id}','oth')" class="text-rose-500">🗑️</button></td></tr>`; } }); }
     function saveOtherPaid(id) { let r=otherDebtData.find(x=>x.id===id); if(r){ r.paidDate=document.getElementById(`eo-d-${id}`).value; r.paidMonth=document.getElementById(`eo-m-${id}`).value; r.paidYear=document.getElementById(`eo-y-${id}`).value; } editingOtherPaidId=null; saveData(); refreshAll(); }
 
     function changeStep(id, type, val) { let d = type==='mee'?meeDebtData:otherDebtData; let r = d.find(x=>x.id===id); if(r){ r.step=val; saveData(); } }
@@ -1097,14 +1108,10 @@
 
     function addStockTransaction(e) { 
         e.preventDefault(); 
-        
         let basePrice = parseFloat(document.getElementById('stock-price').value) || 0;
         let fee = parseFloat(document.getElementById('stock-fee').value) || 0;
         let type = document.getElementById('stock-type').value;
-        
-        // หักลบค่าธรรมเนียมอัตโนมัติ ตามฝั่ง ซื้อ หรือ ขาย (หักเป็นลบเสมอตามที่ผู้ใช้ร้องขอ)
         let finalPrice = basePrice - fee;
-
         stockData.push({ 
             id: Date.now().toString(), 
             year: document.getElementById('global-year').value, 
@@ -1116,14 +1123,12 @@
             fee: fee,
             currency: document.getElementById('stock-currency').value 
         }); 
-        
         document.getElementById('stock-form').reset(); 
         document.querySelectorAll('input[name="stock-type-radio"]')[0].checked = true; 
         document.getElementById('stock-type').value = 'BUY'; 
         document.getElementById('stock-currency').value = 'THB'; 
         document.getElementById('stock-fee').value = '0';
         setStockCurrency('THB'); 
-        
         saveData(); 
         refreshAll(); 
         showNotification("บันทึกพอร์ตเรียบร้อย (คำนวณหักลบค่าธรรมเนียมให้แล้ว)!");
@@ -1278,8 +1283,18 @@
         let expTotalArr = Array(12).fill(0), genExpArr = Array(12).fill(0), invExpArr = Array(12).fill(0); 
         
         let totalIncY=0, totalExpY=0, totalGenExpY=0, totalInvY=0, totalDividendY=0;
-        let currentMonthInt = parseInt(m) || 1;
         
+        let currentMonthInt = new Date().getMonth() + 1;
+        let currentYearInt = new Date().getFullYear();
+        let ySelectedInt = parseInt(y);
+        
+        let divisorMonths;
+        if (ySelectedInt < currentYearInt) {
+            divisorMonths = 12;
+        } else {
+            divisorMonths = Math.max(1, currentMonthInt - 1);
+        }
+
         for(let mIdx=1; mIdx<=12; mIdx++) {
             let mStr = String(mIdx).padStart(2,'0');
             
@@ -1307,7 +1322,7 @@
             let divM = stockData.filter(s => s.year === y && s.month === mStr && s.type === 'DIVIDEND').reduce((s, x) => s + (x.currency === 'USD' ? (x.price||0) * USD_TO_THB : (x.price||0)), 0);
             totalDividendY += divM;
 
-            if(mIdx <= currentMonthInt) { 
+            if(mIdx < currentMonthInt || ySelectedInt < currentYearInt) { 
                 totalIncY += miTotal; 
                 totalExpY += expTotal; 
                 totalGenExpY += genExp;
@@ -1315,51 +1330,55 @@
             }
         }
         
-        safeSetText('dash-avg-inc', fmtNum(totalIncY/currentMonthInt) + ' ฿');
-        safeSetText('dash-avg-exp', fmtNum(totalExpY/currentMonthInt) + ' ฿');
-        safeSetText('dash-avg-gen-exp', fmtNum(totalGenExpY/currentMonthInt) + ' ฿');
-        safeSetText('dash-avg-inv', fmtNum(totalInvY/currentMonthInt) + ' ฿');
+        safeSetText('dash-avg-inc', fmtNum(totalIncY/divisorMonths) + ' ฿');
+        safeSetText('dash-avg-exp', fmtNum(totalExpY/divisorMonths) + ' ฿');
+        safeSetText('dash-avg-gen-exp', fmtNum(totalGenExpY/divisorMonths) + ' ฿');
+        safeSetText('dash-avg-inv', fmtNum(totalInvY/divisorMonths) + ' ฿');
 
-        // ==========================================
-        // 1. หมวดรายรับ-รายจ่าย
-        // ==========================================
-
-        // ดัชนีเงินจมในลม
         let unMeeTotal = meeDebtData.filter(d => !d.paid).reduce((s, i) => s + i.amount, 0);
         let unOthTotal = otherDebtData.filter(d => !d.paid).reduce((s, i) => s + i.amount, 0);
         let accountsReceivableTotal = unMeeTotal + unOthTotal;
         safeSetText('p-accounts-receivable', accountsReceivableTotal.toLocaleString() + " ฿");
 
-        // ระบบแจ้งเตือนกระเป๋าฉีก MoM
-        let currentMonthGenExp = genExpArr[currentMonthInt - 1] || 0;
-        let past3Avg = getPast3MonthAvgGenExp(y, m);
+        let selectedM = parseInt(m);
+        let selectedY = parseInt(y);
+        let lastMonthInt = selectedM - 1;
+        let lastMonthYear = selectedY;
+        if (lastMonthInt === 0) { lastMonthInt = 12; lastMonthYear--; }
+        let lastMStr = String(lastMonthInt).padStart(2, '0');
+        let lastYStr = String(lastMonthYear);
+
+        let lastMonthPx = personalExpenseData.find(d => d.year === lastYStr && d.month === lastMStr) || {};
+        let lastMonthMe = incomeData.filter(d => d.year === lastYStr && d.month === lastMStr).reduce((s, x) => s + (x.expense || 0), 0);
+        let lastMonthGenExp = lastMonthMe + (lastMonthPx.eating || 0) + (lastMonthPx.creditCard || 0) + (lastMonthPx.rent || 0) + (lastMonthPx.personal || 0) + (lastMonthPx.otherExt || 0);
+
+        let past3Avg = getPast3MonthAvgGenExp(lastYStr, lastMStr);
         let warningBox = document.getElementById('p-mom-warning-box');
         let warningPulse = document.getElementById('p-mom-warning-pulse');
         let warningTitleText = document.getElementById('p-mom-warning-title-text');
-        
+
+        safeSetText('p-mom-warning-title-text', `เทรนด์รายจ่าย MoM ของเดือน${labels[lastMonthInt-1]}`);
+
         if (past3Avg > 0) {
-            let diff = currentMonthGenExp - past3Avg;
+            let diff = lastMonthGenExp - past3Avg;
             let pctIncrease = (diff / past3Avg * 100).toFixed(0);
             
             if (diff > past3Avg * 0.10) { 
-                // ใช้เยอะเกินไป (Bad - RED)
                 safeSetText('p-mom-warning-title', `🚨 มึงจ่ายหนักขึ้น +${pctIncrease}%!`);
-                safeSetText('p-mom-warning-desc', `เดือนนี้ใช้ ${fmtNum(currentMonthGenExp)} บ. (เฉลี่ยเดิม ${fmtNum(past3Avg)} บ.)`);
+                safeSetText('p-mom-warning-desc', `เดือนที่แล้วใช้ ${fmtNum(lastMonthGenExp)} บ. (เฉลี่ยเดิม ${fmtNum(past3Avg)} บ.)`);
                 warningBox.className = "p-3 rounded-xl border relative mb-3 transition-colors bg-rose-100 border-rose-500 text-rose-900";
                 warningPulse.className = "w-2.5 h-2.5 rounded-full inline-block animate-ping bg-rose-600";
                 warningTitleText.className = "text-[11px] font-bold text-rose-800";
             } else if (diff <= 0) {
-                // ประหยัดขึ้น (Good - GREEN)
                 let pctDecrease = Math.abs(pctIncrease);
                 safeSetText('p-mom-warning-title', `🟢 ประหยัดลง ${pctDecrease}% เยี่ยม!`);
-                safeSetText('p-mom-warning-desc', `เดือนนี้ใช้ ${fmtNum(currentMonthGenExp)} บ. (น้อยกว่าเฉลี่ย ${fmtNum(past3Avg)} บ.)`);
+                safeSetText('p-mom-warning-desc', `เดือนที่แล้วใช้ ${fmtNum(lastMonthGenExp)} บ. (น้อยกว่าเฉลี่ย ${fmtNum(past3Avg)} บ.)`);
                 warningBox.className = "p-3 rounded-xl border relative mb-3 transition-colors bg-emerald-100 border-emerald-400 text-emerald-900";
                 warningPulse.className = "w-2.5 h-2.5 rounded-full inline-block bg-emerald-600";
                 warningTitleText.className = "text-[11px] font-bold text-emerald-800";
             } else {
-                // ปกติ ทรงๆตัว (Normal)
                 safeSetText('p-mom-warning-title', `🟡 ทรงๆ ตัว (+${pctIncrease}%)`);
-                safeSetText('p-mom-warning-desc', `เดือนนี้ ${fmtNum(currentMonthGenExp)} บ. (ใกล้เคียงเฉลี่ย ${fmtNum(past3Avg)} บ.)`);
+                safeSetText('p-mom-warning-desc', `เดือนที่แล้ว ${fmtNum(lastMonthGenExp)} บ. (ใกล้เคียงเฉลี่ย ${fmtNum(past3Avg)} บ.)`);
                 warningBox.className = "p-3 rounded-xl border relative mb-3 transition-colors bg-amber-50 border-amber-200 text-amber-900";
                 warningPulse.className = "w-2.5 h-2.5 rounded-full inline-block bg-amber-500";
                 warningTitleText.className = "text-[11px] font-bold text-amber-800";
@@ -1371,7 +1390,6 @@
             warningPulse.className = "w-2.5 h-2.5 rounded-full inline-block bg-emerald-500";
         }
 
-        // ตรวจจับหนี้บัตรเครดิต
         let pxCurrent = personalExpenseData.find(d => d.year === y && d.month === m) || {};
         let currentCardAmt = pxCurrent.creditCard || 0;
         let currentMonthCollectedCash = incomeData.filter(d => d.year === y && d.month === m).reduce((s, i) => s + i.amount, 0) +
@@ -1392,7 +1410,6 @@
             cardWarnEl.className = "font-bold text-emerald-600";
         }
 
-        // 3. Runway ถ้าตกงานจะอยู่ได้อีก... (ดึงค่า ทรัพย์สินส่วนตัว)
         let periods = getValidPeriods();
         let personalLatestTotal = 0;
         if(periods.length > 0) {
@@ -1400,11 +1417,10 @@
             personalLatestTotal = assetData.reduce((s, a) => s + (parseFloat(a.values[latestP.key]) || 0), 0);
         }
         
-        // คำนวณรายจ่ายเฉลี่ย (รวมออมลงทุนด้วย)
-        let monthlyInvestmentAmt = totalInvY / currentMonthInt; // ของใหม่
-        let avgMonthlyGenExp = totalGenExpY / currentMonthInt;
-        let survivalBurnRate = avgMonthlyGenExp + monthlyInvestmentAmt; // รวมออมด้วยตามสั่ง
-        if(survivalBurnRate <= 0) survivalBurnRate = 15000; // default ขั้นต่ำกัน error
+        let monthlyInvestmentAmt = totalInvY / divisorMonths;
+        let avgMonthlyGenExp = totalGenExpY / divisorMonths;
+        let survivalBurnRate = avgMonthlyGenExp + monthlyInvestmentAmt; 
+        if(survivalBurnRate <= 0) survivalBurnRate = 15000; 
 
         let survivalMonths = personalLatestTotal / survivalBurnRate;
         let survivalYears = Math.floor(survivalMonths / 12);
@@ -1434,13 +1450,7 @@
             ratingEl.className = "text-[10px] font-bold bg-rose-100 text-rose-800 px-3 py-1 rounded-full inline-block mt-2 animate-pulse transition-colors";
         }
 
-
-        // ==========================================
-        // 2. หมวดการลงทุน
-        // ==========================================
-
-        // ดัชนีปันผลเลี้ยงชีพ
-        let avgMonthlyDiv = totalDividendY / currentMonthInt;
+        let avgMonthlyDiv = totalDividendY / divisorMonths;
         let freedomRate = avgMonthlyGenExp > 0 ? (avgMonthlyDiv / avgMonthlyGenExp) * 100 : 0;
         safeSetText('p-dividend-freedom-rate', freedomRate.toFixed(1) + "%");
         document.getElementById('p-dividend-freedom-bar').style.width = Math.min(freedomRate, 100) + "%";
@@ -1451,12 +1461,10 @@
         else freedomDesc = "🥺 สู้ต่อมึง ปั๊มปันผลเพิ่มอีกนิด! <br>" + freedomDesc;
         document.getElementById('p-dividend-freedom-desc').innerHTML = freedomDesc;
 
-
-        // พยากรณ์ความรวย 5 ปีข้างหน้า
         safeSetText('p-avg-monthly-save-lbl', fmtNum(monthlyInvestmentAmt));
         
         let wealthLabels = ['เริ่ม', 'ปี 1', 'ปี 2', 'ปี 3', 'ปี 4', 'ปี 5'];
-        let wealthBase = personalLatestTotal; // ใช้ของโร๊ะคนเดียว
+        let wealthBase = personalLatestTotal; 
         let projectionData = [wealthBase];
         let currentTempWealth = wealthBase;
         let annualGrowthRate = 0.07; 
@@ -1470,7 +1478,7 @@
         }
 
         let finalWealth = projectionData[5];
-        safeSetText('p-wealth-final-huge', fmtCompact(finalWealth)); // โชว์เป็น K หรือ M
+        safeSetText('p-wealth-final-huge', fmtCompact(finalWealth)); 
 
         if(wealthProjectionChart) wealthProjectionChart.destroy();
         wealthProjectionChart = new Chart(document.getElementById('wealthProjectionChart'), {
@@ -1514,8 +1522,6 @@
             }
         });
 
-
-        // 8. สลิปคำนวณภาษี (สำหรับแท็บ 6 - คำนวณให้พร้อม)
         let grossIncomeY = incomeData.filter(d=>d.year===y).reduce((s,i)=>s+i.amount,0) + 
                              meeDebtData.filter(d=>d.paid && d.paidYear===y).reduce((s,i)=>s+i.amount,0) + 
                              otherDebtData.filter(d=>d.paid && d.paidYear===y).reduce((s,i)=>s+i.amount,0);
@@ -1572,14 +1578,8 @@
             }
         }
 
-        // ==========================================
-        // กราฟต่างๆ ในหมวด 1 และ 2
-        // ==========================================
-
-        // 6: ประเมินสัดส่วนพอร์ต
         evaluatePortfolioAllocation();
 
-        // 1.1 Chart (รายรับ 3 เส้น VS จ่าย 3 เส้น)
         if(dashCashflowChart) dashCashflowChart.destroy(); 
         dashCashflowChart = new Chart(document.getElementById('dashCashflowChart'), { 
             type: 'line', 
@@ -1589,7 +1589,6 @@
                     {label: 'รายรับรวม', data: incArr, borderColor: '#10b981', backgroundColor: '#10b981', borderWidth: 3, tension: 0.3}, 
                     {label: 'รับช่างมี้', data: incMeeArr, borderColor: '#059669', backgroundColor: 'transparent', borderDash: [5,5], borderWidth: 1.5, tension: 0.3}, 
                     {label: 'รับงานอื่น', data: incOthArr, borderColor: '#f59e0b', backgroundColor: 'transparent', borderDash: [5,5], borderWidth: 1.5, tension: 0.3}, 
-                    
                     {label: 'รายจ่ายรวม', data: expTotalArr, borderColor: '#ef4444', backgroundColor: '#ef4444', borderWidth: 3, tension: 0.3},
                     {label: 'จ่ายทั่วไป', data: genExpArr, borderColor: '#f43f5e', backgroundColor: 'transparent', borderDash: [5,5], borderWidth: 1.5, tension: 0.3},
                     {label: 'จ่ายลงทุน', data: invExpArr, borderColor: '#3b82f6', backgroundColor: 'transparent', borderDash: [5,5], borderWidth: 1.5, tension: 0.3}
@@ -1601,7 +1600,6 @@
             } 
         });
         
-        // 1.2 ไตรมาส
         let qArr = [ incArr[0]+incArr[1]+incArr[2], incArr[3]+incArr[4]+incArr[5], incArr[6]+incArr[7]+incArr[8], incArr[9]+incArr[10]+incArr[11] ];
         let prevY = (parseInt(y)-1).toString();
         let prevIncArr = Array(12).fill(0);
@@ -1632,7 +1630,6 @@
             } 
         });
 
-        // 1.3 All-Time กระแสเงินสดสะสม
         let allTimeLabels = [], atIncTot = [], atIncMee = [], atIncOth = [], atExpTot = [], atExpGen = [], atExpInv = [];
         let startYearAll = 2024; let endYearAll = new Date().getFullYear(); 
         let mShortThai = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
@@ -1672,7 +1669,6 @@
                     { label: 'รายรับรวม', data: atIncTot, borderColor: '#059669', backgroundColor: 'rgba(5, 150, 105, 0.05)', fill: true, tension: 0.2, borderWidth: 2.5 },
                     { label: 'รับช่างมี้', data: atIncMee, borderColor: '#10b981', borderDash: [4,4], tension: 0.2, borderWidth: 1.5 },
                     { label: 'รับงานอื่น', data: atIncOth, borderColor: '#f59e0b', borderDash: [4,4], tension: 0.2, borderWidth: 1.5 },
-
                     { label: 'รายจ่ายรวม', data: atExpTot, borderColor: '#dc2626', backgroundColor: 'rgba(220, 38, 38, 0.05)', fill: true, tension: 0.2, borderWidth: 2.5 },
                     { label: 'จ่ายทั่วไป', data: atExpGen, borderColor: '#f43f5e', borderDash: [4,4], tension: 0.2, borderWidth: 1.5 },
                     { label: 'จ่ายลงทุน', data: atExpInv, borderColor: '#2563eb', borderDash: [4,4], tension: 0.2, borderWidth: 1.5 }
@@ -1685,7 +1681,6 @@
             }
         });
 
-        // 2: สัดส่วนงาน
         let typeSums = {}; let projSums = {};
         incomeData.filter(d=>d.year===y).forEach(i=> { typeSums[i.type] = (typeSums[i.type]||0)+i.amount; let p = getProjectFromDetail(i.detail); projSums[p] = (projSums[p]||0)+(i.amount-(i.expense||0)); });
         meeDebtData.filter(d=>d.paid && d.paidYear===y).forEach(i=> { typeSums['ช่างมี้'] = (typeSums['ช่างมี้']||0)+i.amount; let p = getProjectFromDetail(i.detail); projSums[p] = (projSums[p]||0)+i.amount; });
@@ -1712,7 +1707,6 @@
         incListHtml += `<li class="flex justify-between items-center text-sm font-black pt-2 border-t border-slate-200 mt-2"><span class="text-slate-700">รวมทั้งหมด</span><span class="text-emerald-600">${fmtNum(totalIncSum)} ฿</span></li></ul>`;
         document.getElementById('dash-income-type-list').innerHTML = incListHtml;
 
-        // Top 10
         let sortedProj = Object.entries(projSums).sort((a,b)=>b[1]-a[1]).slice(0,10); 
         if(dashTopProjectChart) dashTopProjectChart.destroy(); 
         dashTopProjectChart = new Chart(document.getElementById('dashTopProjectChart'), { 
@@ -1721,7 +1715,6 @@
             options: {indexAxis: 'y', responsive:true, maintainAspectRatio:false, plugins: { datalabels: { display: true, align: 'end', anchor: 'end', color: '#475569', font: {size: 9}, formatter: (val) => fmtCompact(val) } } } 
         });
 
-        // 3: สัดส่วนรายจ่าย (Pie) + หารเฉลี่ยต่อเดือน
         let exTot = {eating:0, creditCard:0, rent:0, personal:0, stocks:0, gameAun:0, otherExt:0};
         personalExpenseData.filter(d=>d.year===y).forEach(p=>{ exTot.eating+=p.eating||0; exTot.creditCard+=p.creditCard||0; exTot.rent+=p.rent||0; exTot.personal+=p.personal||0; exTot.stocks+=calculateMonthlyStockInvestments(y, p.month); exTot.gameAun+=p.gameAun||0; exTot.otherExt+=p.otherExt||0; });
         
@@ -1740,44 +1733,65 @@
         let totalExpSumList = exData.reduce((a,b)=>a+b,0);
         exLabels.forEach((label, idx) => {
             if(exData[idx] > 0) {
-                let avgM = exData[idx] / currentMonthInt;
+                let avgM = exData[idx] / divisorMonths;
                 expListHtml += `<li class="flex justify-between items-center text-[11px] font-bold"><div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full" style="background-color:${exColors[idx]}"></span><span class="text-slate-600">${label}</span></div><span class="text-slate-900">${fmtNum(exData[idx])} <span class="text-slate-400 font-normal text-[9px]">(~${fmtNum(avgM)}/ด.)</span></span></li>`;
             }
         });
-        let totalAvgM = totalExpSumList / currentMonthInt;
+        let totalAvgM = totalExpSumList / divisorMonths;
         expListHtml += `<li class="flex justify-between items-center text-xs font-black pt-1.5 border-t border-slate-200 mt-1.5"><span class="text-slate-700">รวมทั้งหมด</span><span class="text-rose-600">${fmtNum(totalExpSumList)} <span class="text-rose-400 font-bold text-[9px]">(~${fmtNum(totalAvgM)}/ด.)</span></span></li></ul>`;
         document.getElementById('dash-expense-pie-list').innerHTML = expListHtml;
 
-        // 4: วิเคราะห์พอร์ต (Bar) - All Time, No Bank
-        let typeVols2 = { th: 0, us: 0, fund: 0 };
+        let typeBase = { th: 0, us: 0, fund: 0 };
         stockData.forEach(s => { 
-            let v = s.currency==='USD'?(s.price||0)*USD_TO_THB:(s.price||0); 
+            let v = s.currency === 'USD' ? (s.price || 0) * USD_TO_THB : (s.price || 0); 
             if (s.type === 'SELL') v = -v;
             else if (s.type === 'DIVIDEND') v = 0;
 
-            if(stockQuickList.th.includes(s.name)) typeVols2.th += v; 
-            else if(stockQuickList.us.includes(s.name)) typeVols2.us += v; 
-            else if(stockQuickList.fund.includes(s.name)) typeVols2.fund += v; 
+            if (stockQuickList.th.includes(s.name)) typeBase.th += v; 
+            else if (stockQuickList.us.includes(s.name)) typeBase.us += v; 
+            else if (stockQuickList.fund.includes(s.name)) typeBase.fund += v; 
         });
-        
+
+        let realTh = parseFloat(document.getElementById('real-val-th').value) || 0;
+        let realUs = parseFloat(document.getElementById('real-val-us').value) || 0;
+        let realFund = parseFloat(document.getElementById('real-val-fund').value) || 0;
+
+        let profTh = realTh - Math.max(0, typeBase.th);
+        let profUs = realUs - Math.max(0, typeBase.us);
+        let profFund = realFund - Math.max(0, typeBase.fund);
+
         if(dashAssetTypeChart) dashAssetTypeChart.destroy(); 
         dashAssetTypeChart = new Chart(document.getElementById('dashAssetTypeChart'), { 
             type: 'bar', 
             data: { 
                 labels: ['หุ้นไทย', 'หุ้น US', 'กองทุน'], 
-                datasets: [{label:'มูลค่าคงเหลือทั้งหมด', data:[Math.max(0, typeVols2.th), Math.max(0, typeVols2.us), Math.max(0, typeVols2.fund)], backgroundColor:['#f59e0b', '#3b82f6', '#10b981']}] 
+                datasets: [
+                    {
+                        label:'กำไร/ขาดทุน', 
+                        data:[profTh, profUs, profFund], 
+                        backgroundColor: ['rgba(245, 158, 11, 0.5)', 'rgba(59, 130, 246, 0.5)', 'rgba(16, 185, 129, 0.5)'],
+                        borderWidth: 1
+                    },
+                    {
+                        label:'เงินต้น (สะสม)', 
+                        data:[Math.max(0, typeBase.th), Math.max(0, typeBase.us), Math.max(0, typeBase.fund)], 
+                        backgroundColor:['#f59e0b', '#3b82f6', '#10b981']
+                    }
+                ] 
             }, 
             options: {
-                responsive:true, maintainAspectRatio:false, 
+                responsive: true, maintainAspectRatio: false, 
                 plugins:{
                     legend:{display:false},
-                    datalabels: { display: true, align: 'top', anchor: 'end', color: '#475569', font: {size: 10, weight: 'bold'}, formatter: (val) => val > 0 ? fmtCompact(val) : '' }
+                    datalabels: { 
+                        display: true, align: 'center', color: '#fff', font: {size: 10, weight: 'bold'}, 
+                        formatter: (val) => val === 0 ? '' : fmtCompact(Math.abs(val))
+                    }
                 },
-                scales: { y: { display: false } }
+                scales: { x: { stacked: true }, y: { stacked: true, display: false } }
             } 
         });
 
-        // MoM Growth %
         let cumValue = 0; stockData.filter(s => parseInt(s.year) < parseInt(y)).forEach(s => { let v = s.currency==='USD'?(s.price||0)*USD_TO_THB:(s.price||0); if(s.type==='BUY') cumValue += v; if(s.type==='SELL') cumValue -= v; });
         let growthPctArr = []; let prevVal = cumValue;
         for(let mIdx=1; mIdx<=12; mIdx++){ let mStr = String(mIdx).padStart(2,'0'); let mFlow = 0; stockData.filter(s => s.year===y && s.month===mStr).forEach(s => { let v = s.currency==='USD'?(s.price||0)*USD_TO_THB:(s.price||0); if(s.type==='BUY') mFlow += v; if(s.type==='SELL') mFlow -= v; }); let curVal = prevVal + mFlow; let pct = prevVal === 0 ? 0 : ((curVal - prevVal) / prevVal) * 100; growthPctArr.push(pct); prevVal = curVal; }
@@ -1795,19 +1809,18 @@
             } 
         });
 
-        // 5: ปันผลแยกประเภท (เปิดปิดได้)
         let divThArr = Array(12).fill(0), divUsArr = Array(12).fill(0), divFundArr = Array(12).fill(0), divBankArr = Array(12).fill(0), divOtherArr = Array(12).fill(0);
-        let totalDiv = 0, tTh=0, tUs=0, tFund=0, tBank=0, tOth=0;
+        let totalDiv = 0;
         
         stockData.filter(s => s.year === y && s.type === 'DIVIDEND').forEach(s => {
             let mIdx = parseInt(s.month) - 1;
             let v = s.currency === 'USD' ? (s.price||0) * USD_TO_THB : (s.price||0);
             totalDiv += v;
-            if(stockQuickList.th.includes(s.name)) { divThArr[mIdx] += v; tTh += v; }
-            else if(stockQuickList.us.includes(s.name)) { divUsArr[mIdx] += v; tUs += v; }
-            else if(stockQuickList.fund.includes(s.name)) { divFundArr[mIdx] += v; tFund += v; }
-            else if(stockQuickList.bank && stockQuickList.bank.includes(s.name)) { divBankArr[mIdx] += v; tBank += v; }
-            else { divOtherArr[mIdx] += v; tOth += v; }
+            if(stockQuickList.th.includes(s.name)) { divThArr[mIdx] += v; }
+            else if(stockQuickList.us.includes(s.name)) { divUsArr[mIdx] += v; }
+            else if(stockQuickList.fund.includes(s.name)) { divFundArr[mIdx] += v; }
+            else if(stockQuickList.bank && stockQuickList.bank.includes(s.name)) { divBankArr[mIdx] += v; }
+            else { divOtherArr[mIdx] += v; }
         });
         
         document.getElementById('dash-dividend-text').innerHTML = `
@@ -1836,7 +1849,6 @@
             } 
         });
 
-        // 6: YoY
         function calcYearSums(yr) { let totalI = incomeData.filter(d=>d.year===yr).reduce((s,i)=>s+i.amount,0) + meeDebtData.filter(d=>d.paid && d.paidYear===yr).reduce((s,i)=>s+i.amount,0) + otherDebtData.filter(d=>d.paid && d.paidYear===yr).reduce((s,i)=>s+(i.taxDeducted?i.amount*0.97:i.amount),0); let totalE = incomeData.filter(d=>d.year===yr).reduce((s,i)=>s+(i.expense||0),0); personalExpenseData.filter(d=>d.year===yr).forEach(p=>{ totalE += (p.eating||0)+(p.creditCard||0)+(p.rent||0)+(p.personal||0)+(calculateMonthlyStockInvestments(yr, p.month))+(p.gameAun||0)+(p.otherExt||0); }); return {i: totalI, e: totalE}; }
         let sumsCur = calcYearSums(y); let incCur = sumsCur.i; let expCur = sumsCur.e; let netCur = incCur - expCur;
         let sumsPrev = calcYearSums(prevY); let incPrev = sumsPrev.i; let expPrev = sumsPrev.e; let netPrev = incPrev - expPrev;
@@ -1870,7 +1882,6 @@
             } 
         });
 
-        // 7: Yearly All (Bar+Line)
         let startYearNum = 2023; 
         let curYearNum = new Date().getFullYear();
         let yearLabels = [];
@@ -1959,7 +1970,6 @@
         const periods = getValidPeriods();
         if (periods.length === 0) return;
         const latestP = periods[periods.length - 1].key;
-
         _renderSingleAssetDash('personal', assetData, 'personalAssetMiniChart', 'sliders-personal', 'target-total-personal', 'emerald', personalAssetMiniChartInst, latestP);
         _renderSingleAssetDash('aun', aunAssetData, 'aunAssetMiniChart', 'sliders-aun', 'target-total-aun', 'rose', aunAssetMiniChartInst, latestP);
         _renderSingleAssetDash('combined', combinedAssetData, 'combinedAssetMiniChart', 'sliders-combined', 'target-total-combined', 'blue', combinedAssetMiniChartInst, latestP);
